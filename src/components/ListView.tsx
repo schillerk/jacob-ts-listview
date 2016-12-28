@@ -1,4 +1,5 @@
 import * as React from "react";
+import * as ReactDOM from "react-dom"
 
 import { GestaltList } from './GestaltList'
 
@@ -6,8 +7,8 @@ import { Gestalt, GestaltInstance, createGestaltInstance } from '../domain';
 import * as Util from '../util';
 
 export interface ListViewState {
-    searchAddBox: string
-    gestalts: { [id: string]: Gestalt }
+    searchAddBox?: string
+    gestalts?: { [id: string]: Gestalt }
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -16,7 +17,7 @@ export interface ListViewProps extends React.Props<ListView> {
 
 
 export class ListView extends React.Component<ListViewProps, ListViewState> {
-
+    searchAddBox : HTMLTextAreaElement;
 
     constructor(props: ListViewProps) {
         super(props);
@@ -34,10 +35,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     componentDidMount() {
-        // real way to focus search add box
+        this.searchAddBox.focus();
     }
 
-    addGestaltAndClearTextBox(text: string): void {
+    addGestalt(text: string): void {
         console.log('add')
         let uid: string = Util.getGUID()
         let newGestalt: Gestalt = {
@@ -45,11 +46,28 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             text: text,
             relatedIds: []
         }
-        let newGestalts = {
-            ...this.state.gestalts,
-            [uid]: newGestalt
-        }
-        this.setState({ ...this.state, gestalts: newGestalts, searchAddBox: "" })
+
+
+        let newGestalts = this.state.gestalts
+        newGestalts[uid] = newGestalt
+        // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
+        // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
+        // newGestalts[Object.keys(newGestalts)[0]].relatedIds[0]="ooo"
+
+
+        // // newGestalts[uid]= newGestalt 
+        // // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
+        // // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
+        // newGestalts[Object.keys(newGestalts)[0]].relatedIds[0]="ooo"
+
+        // newGestalts[Object.keys(newGestalts)[0]].relatedIds[0]="ooo"
+
+        //no need for an immutable copy, react pick up changes to objects in state!
+        // let newGestalts = {
+        //     ...this.state.gestalts,
+        //     [uid]: newGestalt
+        // }
+        this.setState({ gestalts: newGestalts })
     }
 
     render() {
@@ -71,19 +89,19 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     placeholder="Search/add gestalts: "
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
                         console.log(e.keyCode)
-                        let target: any = e.target
                         if (e.keyCode === 13) {
                             e.preventDefault() // prevents onChange
-                            this.addGestaltAndClearTextBox(target.value)
+                            this.addGestalt(e.currentTarget.value)
+                            this.setState({ searchAddBox: "" })
                         }
                     }
                     }
                     onChange={(e: React.FormEvent<HTMLTextAreaElement>): void => {
-                        let target: any = e.target
-                        this.setState({ ...this.state, searchAddBox: target.value })
+                        this.setState({ searchAddBox: e.currentTarget.value })
                     }
                     }
-                    ref={(searchAddBox) => searchAddBox.focus() /* #hack */ } tabIndex={2} cols={20} value={this.state.searchAddBox}>
+                    ref={(e: HTMLTextAreaElement) => { this.searchAddBox = e; }}
+                    tabIndex={2} cols={20} value={this.state.searchAddBox}>
 
                 </textarea>
                 <GestaltList
