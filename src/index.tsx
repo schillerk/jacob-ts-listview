@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { LLViz } from "./components/LLViz";
+import { ListView } from "./components/ListView";
 
 ReactDOM.render(
-    <LLViz />,
-    document.getElementById("example")
+    <ListView />,
+    document.getElementById("app-container")
 );

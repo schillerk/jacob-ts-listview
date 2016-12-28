@@ -47,8 +47,8 @@
 	"use strict";
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(2);
-	var LLViz_1 = __webpack_require__(3);
-	ReactDOM.render(React.createElement(LLViz_1.LLViz, null), document.getElementById("example"));
+	var ListView_1 = __webpack_require__(3);
+	ReactDOM.render(React.createElement(ListView_1.ListView, null), document.getElementById("app-container"));
 
 
 /***/ },
@@ -73,124 +73,137 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
+	var __assign = (this && this.__assign) || Object.assign || function(t) {
+	    for (var s, i = 1, n = arguments.length; i < n; i++) {
+	        s = arguments[i];
+	        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+	            t[p] = s[p];
+	    }
+	    return t;
+	};
 	var React = __webpack_require__(1);
-	var LinkedList_1 = __webpack_require__(4);
-	var LLViz = (function (_super) {
-	    __extends(LLViz, _super);
-	    function LLViz(props) {
+	var GestaltList_1 = __webpack_require__(4);
+	var Util = __webpack_require__(6);
+	var ListView = (function (_super) {
+	    __extends(ListView, _super);
+	    function ListView(props) {
 	        var _this = _super.call(this, props) || this;
-	        _this.state = { theList: new LinkedList_1.LinkedList(), lastPopped: "" };
+	        _this.state = {
+	            searchAddBox: "",
+	            gestalts: {
+	                '0': {
+	                    gestaltId: '0',
+	                    text: 'hack with jacob!',
+	                    relatedIds: []
+	                }
+	            }
+	        };
 	        return _this;
 	    }
-	    LLViz.prototype.render = function () {
-	        var _this = this;
-	        return React.createElement("div", null,
-	            "Stack:",
-	            React.createElement("div", null,
-	                "\"",
-	                this.state.theList.toString() || "\u00a0",
-	                "\""),
-	            React.createElement("div", null,
-	                "[",
-	                this.state.theList.toArray().map(function (e) { return e.toString() + ", "; }) || "\u00a0",
-	                "]"),
-	            React.createElement("button", { onClick: function () { _this.state.theList.push("yo" + Math.round(Math.random() * 10)); _this.forceUpdate(); } }, "push"),
-	            React.createElement("br", null),
-	            React.createElement("button", { onClick: function () { _this.state.lastPopped = _this.state.theList.pop(); _this.forceUpdate(); return; } }, "pop"),
-	            React.createElement("span", null, this.state.lastPopped));
+	    ListView.prototype.addGestaltAndClearTextBox = function (text) {
+	        console.log('add');
+	        var uid = Util.getGUID();
+	        var newGestalt = {
+	            gestaltId: uid,
+	            text: text,
+	            relatedIds: []
+	        };
+	        var newGestalts = __assign({}, this.state.gestalts, (_a = {}, _a[uid] = newGestalt, _a));
+	        this.setState(__assign({}, this.state, { gestalts: newGestalts, searchAddBox: "" }));
+	        var _a;
 	    };
-	    return LLViz;
+	    ListView.prototype.render = function () {
+	        var _this = this;
+	        return (React.createElement("div", null,
+	            React.createElement("textarea", { placeholder: "Search/add gestalts: ", onKeyDown: function (e) {
+	                    console.log(e.keyCode);
+	                    var target = e.target;
+	                    if (e.keyCode === 13) {
+	                        e.preventDefault(); // prevents onChange
+	                        _this.addGestaltAndClearTextBox(target.value);
+	                    }
+	                }, onChange: function (e) {
+	                    var target = e.target;
+	                    _this.setState(__assign({}, _this.state, { searchAddBox: target.value }));
+	                }, ref: "filter", tabIndex: 2, cols: 10, value: this.state.searchAddBox }),
+	            React.createElement(GestaltList_1.GestaltList, { gestalts: this.state.gestalts })));
+	    };
+	    return ListView;
 	}(React.Component));
-	exports.LLViz = LLViz;
+	exports.ListView = ListView;
 
 
 /***/ },
 /* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var React = __webpack_require__(1);
+	var GestaltComponent_1 = __webpack_require__(5);
+	var GestaltList = (function (_super) {
+	    __extends(GestaltList, _super);
+	    function GestaltList(props) {
+	        return _super.call(this, props) || this;
+	    }
+	    GestaltList.prototype.render = function () {
+	        var _this = this;
+	        return (React.createElement("ul", null, Object.keys(this.props.gestalts).map(function (id) {
+	            return React.createElement(GestaltComponent_1.GestaltComponent, { key: id, gestalt: _this.props.gestalts[id] });
+	        })));
+	    };
+	    return GestaltList;
+	}(React.Component));
+	exports.GestaltList = GestaltList;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var React = __webpack_require__(1);
+	var GestaltComponent = (function (_super) {
+	    __extends(GestaltComponent, _super);
+	    function GestaltComponent(props) {
+	        return _super.call(this, props) || this;
+	    }
+	    GestaltComponent.prototype.render = function () {
+	        return (React.createElement("li", null, this.props.gestalt.text));
+	    };
+	    return GestaltComponent;
+	}(React.Component));
+	exports.GestaltComponent = GestaltComponent;
+
+
+/***/ },
+/* 6 */
 /***/ function(module, exports) {
 
 	"use strict";
-	var LLNode = (function () {
-	    function LLNode(val, next) {
-	        if (next === void 0) { next = null; }
-	        this.next = null;
-	        this.val = val;
-	        this.next = next;
+	var count = 0;
+	function getGUID() {
+	    count++;
+	    return "UNIQUE_ID_" + count.toString();
+	}
+	exports.getGUID = getGUID;
+	function objectToArray(object) {
+	    var arr = [];
+	    for (var key in object) {
+	        arr.push(object[key]);
 	    }
-	    LLNode.prototype.toString = function () {
-	        return this.val + "";
-	    };
-	    return LLNode;
-	}());
-	var LinkedList = (function () {
-	    function LinkedList() {
-	        this.head = null;
-	    }
-	    LinkedList.prototype.push = function (v) {
-	        var n = new LLNode(v);
-	        n.next = this.head;
-	        this.head = n;
-	    };
-	    LinkedList.prototype.pop = function () {
-	        var o = this.head;
-	        if (o !== null) {
-	            this.head = this.head.next;
-	            return o.val;
-	        }
-	        else {
-	            return undefined;
-	        }
-	    };
-	    // push(s:any ) : void {
-	    //     if(typeof s === "string") {
-	    //     let n: LLNode =new LLNode(s)
-	    //     n.next=this.head
-	    //     this.head=n
-	    //     }
-	    // }
-	    // push(n:LLNode ) : void
-	    // push(n:any ) : void {
-	    //     console.log(typeof n)
-	    //     if(typeof n === "string") {
-	    //         this.push(new LLNode(n))
-	    //     }
-	    //     else if(typeof n === "LLNode") {
-	    //         n.next=this.head
-	    //         this.head=n
-	    //     }
-	    //     else
-	    //         throw "er"
-	    // }
-	    //prints results in reverse insertion order
-	    LinkedList.prototype.toString = function () {
-	        var n = this.head;
-	        var o = "";
-	        while (n !== null) {
-	            o += n.toString() + "->";
-	            n = n.next;
-	        }
-	        o += "[null]";
-	        return o;
-	    };
-	    //prints results in reverse insertion order
-	    LinkedList.prototype.toArray = function () {
-	        var n = this.head;
-	        var o = [];
-	        while (n !== null) {
-	            o.push(n.val);
-	            n = n.next;
-	        }
-	        return o;
-	    };
-	    return LinkedList;
-	}());
-	exports.LinkedList = LinkedList;
-	// let l: Stack<string> = new LinkedList<string>()
-	// l.push("yo")
-	// l.push("yo2")
-	// l.push("yo3")
-	// console.log(l.toString())
-	// console.log(l.pop())
-	// console.log(l.toString())
+	    return arr;
+	}
+	exports.objectToArray = objectToArray;
 
 
 /***/ }
