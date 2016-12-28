@@ -28,7 +28,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 <ul style={{display: 'inline'}}>
                     {this.props.gestalt.relatedIds.map(id => {
                         return (
-                            <li style={{display: 'inline-block', border: '1px solid gray', margin: '4px', padding: '2px'}}>
+                            <li key={id} style={{display: 'inline-block', border: '1px solid gray', margin: '4px', padding: '2px'}}>
                                 {id}
                             </li>
                         )
