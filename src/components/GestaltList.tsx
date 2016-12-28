@@ -24,7 +24,7 @@ export class GestaltList extends React.Component<GestaltListProps, GestaltListSt
     render() {
         return (
             <ul>
-                {Object.keys(this.props.gestalts).map(id => {
+                {Object.keys(this.props.gestalts).reverse().map(id => {
                     return <GestaltComponent
                         key={id}
                         gestalt={this.props.gestalts[id]}

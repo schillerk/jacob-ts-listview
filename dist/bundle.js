@@ -94,12 +94,15 @@
 	                '0': {
 	                    gestaltId: '0',
 	                    text: 'hack with jacob!',
-	                    relatedIds: []
+	                    relatedIds: ['blah', 'bleh', 'bluh']
 	                }
 	            }
 	        };
 	        return _this;
 	    }
+	    ListView.prototype.componentDidMount = function () {
+	        // real way to focus search add box
+	    };
 	    ListView.prototype.addGestaltAndClearTextBox = function (text) {
 	        console.log('add');
 	        var uid = Util.getGUID();
@@ -125,7 +128,7 @@
 	                }, onChange: function (e) {
 	                    var target = e.target;
 	                    _this.setState(__assign({}, _this.state, { searchAddBox: target.value }));
-	                }, ref: "filter", tabIndex: 2, cols: 10, value: this.state.searchAddBox }),
+	                }, ref: function (searchAddBox) { return searchAddBox.focus(); } /* #hack */, tabIndex: 2, cols: 20, value: this.state.searchAddBox }),
 	            React.createElement(GestaltList_1.GestaltList, { gestalts: this.state.gestalts })));
 	    };
 	    return ListView;
@@ -152,7 +155,7 @@
 	    }
 	    GestaltList.prototype.render = function () {
 	        var _this = this;
-	        return (React.createElement("ul", null, Object.keys(this.props.gestalts).map(function (id) {
+	        return (React.createElement("ul", null, Object.keys(this.props.gestalts).reverse().map(function (id) {
 	            return React.createElement(GestaltComponent_1.GestaltComponent, { key: id, gestalt: _this.props.gestalts[id] });
 	        })));
 	    };
@@ -178,7 +181,11 @@
 	        return _super.call(this, props) || this;
 	    }
 	    GestaltComponent.prototype.render = function () {
-	        return (React.createElement("li", null, this.props.gestalt.text));
+	        return (React.createElement("li", null,
+	            this.props.gestalt.text,
+	            React.createElement("ul", { style: { display: 'inline' } }, this.props.gestalt.relatedIds.map(function (id) {
+	                return (React.createElement("li", { style: { display: 'inline-block', border: '1px solid gray', margin: '4px', padding: '2px' } }, id));
+	            }))));
 	    };
 	    return GestaltComponent;
 	}(React.Component));

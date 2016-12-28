@@ -27,10 +27,14 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 '0': {
                     gestaltId: '0',
                     text: 'hack with jacob!',
-                    relatedIds: []
+                    relatedIds: ['blah', 'bleh', 'bluh']
                 }
             }
         };
+    }
+
+    componentDidMount() {
+        // real way to focus search add box
     }
 
     addGestaltAndClearTextBox(text: string): void {
@@ -79,7 +83,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         this.setState({ ...this.state, searchAddBox: target.value })
                     }
                     }
-                    ref="filter" tabIndex={2} cols={10} value={this.state.searchAddBox}>
+                    ref={(searchAddBox) => searchAddBox.focus() /* #hack */ } tabIndex={2} cols={20} value={this.state.searchAddBox}>
 
                 </textarea>
                 <GestaltList
