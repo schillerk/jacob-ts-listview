@@ -36,10 +36,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     componentDidMount() {
         this.searchAddBox.focus();
+        for (let i = 0; i < 2000; i++) {
+            this.addGestalt(String(Math.random()))
+        }
     }
 
     addGestalt(text: string): void {
-        console.log('add')
         let uid: string = Util.getGUID()
         let newGestalt: Gestalt = {
             gestaltId: uid,
@@ -48,12 +50,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         }
 
 
-        let newGestalts = this.state.gestalts
-        newGestalts[uid] = newGestalt
+        let gestalts = this.state.gestalts
+        gestalts[uid] = newGestalt
         // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
         // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
-        // newGestalts[Object.keys(newGestalts)[0]].relatedIds[0]="ooo"
-
+        gestalts[Object.keys(gestalts)[0]].relatedIds[0]="ooo"
+        // console.log(this.state.gestalts === gestalts, "hi")
 
         // // newGestalts[uid]= newGestalt 
         // // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
@@ -67,7 +69,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         //     ...this.state.gestalts,
         //     [uid]: newGestalt
         // }
-        this.setState({ gestalts: newGestalts })
+        this.setState({ gestalts: gestalts })
     }
 
     render() {
@@ -88,7 +90,6 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 <textarea
                     placeholder="Search/add gestalts: "
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
-                        console.log(e.keyCode)
                         if (e.keyCode === 13) {
                             e.preventDefault() // prevents onChange
                             this.addGestalt(e.currentTarget.value)
@@ -97,11 +98,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     }
                     }
                     onChange={(e: React.FormEvent<HTMLTextAreaElement>): void => {
-                        this.setState({ searchAddBox: e.currentTarget.value })
+                        this.setState({ searchAddBox: e.currentTarget.value }) //#slow
+                        
                     }
                     }
                     ref={(e: HTMLTextAreaElement) => { this.searchAddBox = e; }}
-                    tabIndex={2} cols={20} value={this.state.searchAddBox}>
+                    tabIndex={2} cols={20} value={this.state.searchAddBox}> {/* #slow */}
+{/*                 tabIndex={2} cols={20}> */}
 
                 </textarea>
                 <GestaltList
