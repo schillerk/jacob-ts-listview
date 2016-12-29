@@ -5,8 +5,9 @@ import { ListView } from "./components/ListView";
 import { ListViewSlow1 } from "./components/ListViewSlow1";
 
 ReactDOM.render(
-   <ListView />,
-    // <ListViewSlow1 />,
+    //<ListView />,
+
+    <ListViewSlow1 />,
 
     document.getElementById("app-container")
 );

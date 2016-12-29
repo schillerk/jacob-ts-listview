@@ -20,15 +20,22 @@ export class GestaltList extends React.Component<GestaltListProps, GestaltListSt
     constructor(props: GestaltListProps) {
         super(props);
     }
+    
+
+    shouldComponentUpdate(nextProps: GestaltListProps) {
+        return this.props.gestalts !== nextProps.gestalts
+    }
 
     render() {
         return (
             <ul>
                 {Object.keys(this.props.gestalts).reverse().map(id => {
-                    return <GestaltComponent
-                        key={id}
-                        gestalt={this.props.gestalts[id]}
+                    return (
+                        <GestaltComponent
+                            key={id}
+                            gestalt={this.props.gestalts[id]}
                         />
+                    )
                 })}
             </ul>
         )

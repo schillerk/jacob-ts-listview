@@ -6,9 +6,12 @@ import { GestaltList } from './GestaltList'
 import { Gestalt, GestaltInstance, createGestaltInstance } from '../domain';
 import * as Util from '../util';
 
+export interface Gestalts {
+    [id: string]: Gestalt
+}
 export interface ListViewSlow1State {
     searchAddBox?: string
-    gestalts?: { [id: string]: Gestalt }
+    gestalts?: Gestalts
 }
 
 export interface ListViewSlow1Props extends React.Props<ListViewSlow1> {
@@ -36,25 +39,32 @@ export class ListViewSlow1 extends React.Component<ListViewSlow1Props, ListViewS
 
     componentDidMount() {
         this.searchAddBox.focus();
+        let newGestalts: Gestalts = {}
+        
         for (let i = 0; i < 5000; i++) {
-            this.addGestalt(String(Math.random()))
+            const newGestalt = this.makeNewGestalt(Math.random() + '')
+            newGestalts[newGestalt.gestaltId] = newGestalt
         }
+
+        this.setState({gestalts: {...this.state.gestalts, ...newGestalts}})
     }
 
-    addGestalt(text: string): void {
-        let uid: string = Util.getGUID()
-        let newGestalt: Gestalt = {
-            gestaltId: uid,
+    makeNewGestalt = (text: string = '') => {
+        const uid: string = Util.getGUID()
+        const newGestalt: Gestalt = {
             text: text,
+            gestaltId: uid,
             relatedIds: []
         }
 
+        return newGestalt
+    }
 
-        let gestalts = this.state.gestalts
-        gestalts[uid] = newGestalt
+    addGestalt(text: string): void {
+        const newGestalt = this.makeNewGestalt(text)
         // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
         // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
-        gestalts[Object.keys(gestalts)[0]].relatedIds[0]="ooo"
+        //gestalts[Object.keys(gestalts)[0]].relatedIds[0]="ooo"
         // console.log(this.state.gestalts === gestalts, "hi")
 
         // // newGestalts[uid]= newGestalt 
@@ -69,7 +79,7 @@ export class ListViewSlow1 extends React.Component<ListViewSlow1Props, ListViewS
         //     ...this.state.gestalts,
         //     [uid]: newGestalt
         // }
-        this.setState({ gestalts: gestalts })
+        this.setState({gestalts: {...this.state.gestalts, [newGestalt.gestaltId]: newGestalt}})
     }
 
     render() {

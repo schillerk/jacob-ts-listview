@@ -6,7 +6,7 @@ import { Gestalt, GestaltInstance, createGestaltInstance } from '../domain';
 import * as Util from '../util';
 
 export interface GestaltComponentState {
-
+    editable:boolean
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
@@ -18,7 +18,12 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
     constructor(props: GestaltComponentProps) {
-        super(props);
+        super(props)
+        this.state={editable:false}
+    }
+
+    shouldComponentUpdate(nextProps: GestaltComponentProps) {
+        return this.props.gestalt !== nextProps.gestalt
     }
 
     render() {
@@ -29,7 +34,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     {this.props.gestalt.relatedIds.map(id => {
                         return (
                             <li key={id} style={{display: 'inline-block', border: '1px solid gray', margin: '4px', padding: '2px'}}>
-                                {id}
+                                <span onChange={()=> this.setState({editable:true}) } contentEditable>{id}</span>
                             </li>
                         )
                     })}
