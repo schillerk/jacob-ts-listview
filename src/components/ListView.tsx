@@ -17,7 +17,7 @@ export interface ListViewProps extends React.Props<ListView> {
 
 
 export class ListView extends React.Component<ListViewProps, ListViewState> {
-    // searchAddBox : HTMLTextAreaElement;
+    searchAddBox : SearchAddBox;
 
     constructor(props: ListViewProps) {
         super(props);
@@ -34,9 +34,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     componentDidMount() {
-        // this.searchAddBox.focus();
-        for (let i = 0; i < 1; i++) {
-            //this.addGestalt(String(Math.random()))
+        this.searchAddBox.focus();
+        for (let i = 0; i < 5; i++) {
+            this.addGestalt(String(Math.random()))
         }
     }
 
@@ -50,7 +50,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
         let gestalts: { [id: string]: Gestalt } = this.state.gestalts
-        //gestalts[uid] = newGestalt
+        gestalts[uid] = newGestalt
         // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
         // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
         //gestalts[Object.keys(gestalts)[0]].relatedIds[0]="ooo"
@@ -110,10 +110,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
             {/*    </textarea>*/}
 
-            <SearchAddBox addGestalt={this.addGestalt} />
-                <GestaltList
-                    gestalts={this.state.gestalts}
-                    />
+            <SearchAddBox 
+                addGestalt={this.addGestalt} 
+                ref={(instance: SearchAddBox) => this.searchAddBox = instance}
+            />
+            <GestaltList
+                gestalts={this.state.gestalts}
+                />
 
             </div>
         )

@@ -15,12 +15,14 @@ export interface SearchAddBoxProps extends React.Props<SearchAddBox> {
 
 
 export class SearchAddBox extends React.Component<SearchAddBoxProps, SearchAddBoxState> {
-
+    textarea: HTMLTextAreaElement
 
     constructor(props: SearchAddBoxProps) {
         super(props);
         this.state={searchAddBox:""}
     }
+
+    focus = () => { this.textarea && this.textarea.focus() }
 
     render() {
         return (
@@ -36,10 +38,9 @@ export class SearchAddBox extends React.Component<SearchAddBoxProps, SearchAddBo
                     }
                     onChange={(e: React.FormEvent<HTMLTextAreaElement>): void => {
                         this.setState({ searchAddBox: e.currentTarget.value }) //#slow
-                        
                     }
                     }
-                    ref={(e: HTMLTextAreaElement) => { /* this.searchAddBox = e; */ }}
+                    ref={(e: HTMLTextAreaElement) => this.textarea=e }
                     tabIndex={2} cols={20} value={this.state.searchAddBox}> {/* #slow */}
 {/*                 tabIndex={2} cols={20}> */}
 
