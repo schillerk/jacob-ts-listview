@@ -6,9 +6,9 @@ import { ListViewSlow1 } from "./components/ListViewSlow1";
 import { ListViewUncontrolled } from "./components/ListViewUncontrolled";
 
 ReactDOM.render(
-    //<ListView />,
+    <ListView />,
 
-    <ListViewUncontrolled />,
+    //<ListViewUncontrolled />,
     // <ListViewSlow1 />,
 
     document.getElementById("app-container")

@@ -35,7 +35,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     componentDidMount() {
         this.searchAddBox.focus();
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 10000; i++) {
             this.addGestalt(String(Math.random()))
         }
     }
