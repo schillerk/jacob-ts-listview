@@ -2,27 +2,28 @@ import * as React from "react";
 import * as ReactDOM from "react-dom"
 
 import { GestaltList } from './GestaltList'
-import { SearchAddBox } from './SearchAddBox'
 
 import { Gestalt, GestaltInstance, createGestaltInstance } from '../domain';
 import * as Util from '../util';
 
-export interface ListViewState {
+export interface ListViewSlow1State {
+    searchAddBox?: string
     gestalts?: { [id: string]: Gestalt }
 }
 
-export interface ListViewProps extends React.Props<ListView> {
+export interface ListViewSlow1Props extends React.Props<ListViewSlow1> {
 
 }
 
 
-export class ListView extends React.Component<ListViewProps, ListViewState> {
-    // searchAddBox : HTMLTextAreaElement;
+export class ListViewSlow1 extends React.Component<ListViewSlow1Props, ListViewSlow1State> {
+    searchAddBox : HTMLTextAreaElement;
 
-    constructor(props: ListViewProps) {
+    constructor(props: ListViewSlow1Props) {
         super(props);
 
         this.state = {
+            searchAddBox: "",
             gestalts: {
                 '0': {
                     gestaltId: '0',
@@ -34,13 +35,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     componentDidMount() {
-        // this.searchAddBox.focus();
+        this.searchAddBox.focus();
         for (let i = 0; i < 5000; i++) {
             this.addGestalt(String(Math.random()))
         }
     }
 
-    addGestalt = (text: string): void =>     {
+    addGestalt(text: string): void {
         let uid: string = Util.getGUID()
         let newGestalt: Gestalt = {
             gestaltId: uid,
@@ -86,8 +87,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     ref="filter" tabIndex={2} size={150} />
                 */}
 
-                {/* 
-                    <textarea
+                <textarea
                     placeholder="Search/add gestalts: "
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
                         if (e.keyCode === 13) {
@@ -103,14 +103,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     }
                     }
                     ref={(e: HTMLTextAreaElement) => { this.searchAddBox = e; }}
-                    tabIndex={2} cols={20} value={this.state.searchAddBox}> */} 
-                {/* #slow */}
-
+                    tabIndex={2} cols={20} value={this.state.searchAddBox}> {/* #slow */}
 {/*                 tabIndex={2} cols={20}> */}
 
-            {/*    </textarea>*/}
-
-            <SearchAddBox addGestalt={this.addGestalt} />
+                </textarea>
                 <GestaltList
                     gestalts={this.state.gestalts}
                     />
