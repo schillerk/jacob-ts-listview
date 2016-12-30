@@ -7,6 +7,7 @@ import { GestaltList } from './GestaltList';
 import * as Util from '../util';
 
 export interface GestaltComponentState {
+    expandedChildren: Gestalts // order comes out randomly, needs to be an OrderedMap #TODO
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
@@ -14,7 +15,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     onChange: (newText: string) => void
 
     updateGestalt?: (id: string, newText: string) => void
-    allGestalts: Gestalts
+    allGestalts?: Gestalts
 
 }
 
@@ -24,10 +25,14 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     constructor(props: GestaltComponentProps) {
         super(props)
+        this.state = {expandedChildren: {}}
     }
 
-    shouldComponentUpdate(nextProps: GestaltComponentProps) {
-        return this.props.gestalt.text !== nextProps.gestalt.text
+    shouldComponentUpdate(nextProps: GestaltComponentProps, nextState: GestaltComponentState) {
+        return (
+            this.props.gestalt.text !== nextProps.gestalt.text
+            || JSON.stringify(this.state.expandedChildren) === JSON.stringify(nextState.expandedChildren)
+        )
     }
 
     render(): JSX.Element {
@@ -79,7 +84,19 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 <ul style={{ display: 'inline' }}>
                     {this.props.gestalt.relatedIds.map(id => {
                         return (
-                            <li key={id} style={{ display: 'inline-block', border: '1px solid gray', margin: '4px', padding: '2px' }}>
+                            <li key={id}
+                                style={{ display: 'inline-block', border: '1px solid gray', margin: '4px', padding: '2px' }}
+                                onClick={() => {
+                                    const expandedChildren = this.state.expandedChildren
+                                    if (id in expandedChildren) {
+                                        delete expandedChildren[id];
+                                    } else {
+                                        expandedChildren[id] = this.props.allGestalts[id]
+                                    }
+                                    this.setState({ expandedChildren: expandedChildren })
+                                }
+                                }
+                                >
                                 {
                                     (id in this.props.allGestalts) ? this.props.allGestalts[id].text
                                         : (console.error('Invalid id', id, this.props.allGestalts) || "")
@@ -90,7 +107,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 </ul>
 
                 <GestaltList
-                    gestalts={{}}
+                    gestalts={this.state.expandedChildren}
                     allGestalts={this.props.allGestalts}
                     updateGestalt={this.props.updateGestalt}
                     />

@@ -13,7 +13,7 @@ export interface GestaltListProps extends React.Props<GestaltList> {
     gestalts: { [id: string]: Gestalt }
     updateGestalt?: (id: string, newText: string) => void
 
-    allGestalts: { [id: string]: Gestalt }    
+    allGestalts?: { [id: string]: Gestalt }    
 }
 
 
