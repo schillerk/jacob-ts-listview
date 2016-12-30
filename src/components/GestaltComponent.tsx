@@ -11,15 +11,20 @@ export interface GestaltComponentState {
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     gestalt: Gestalt
+    onChange: (newText: string) => void
 }
 
 
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
-
+    nodeSpan: HTMLSpanElement
 
     constructor(props: GestaltComponentProps) {
         super(props)
         this.state = { editable: false }
+    }
+
+    componentDidMount() {
+        this.nodeSpan && this.nodeSpan.focus()
     }
 
     shouldComponentUpdate(nextProps: GestaltComponentProps) {
@@ -27,13 +32,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         //return this.props.gestalt !== nextProps.gestalt
     }
 
-
     render() {
         {/*  onBlur={() => { console.log("blur"); this.setState({ editable: false })  }}
                             ref={(e) => e && e.focus()} */}
         return (
             <li >
                 {/* gestalt body */}
+                {/*
                 {
                     this.state.editable ? (
                         <textarea
@@ -60,6 +65,20 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                             <span onClick={() => { console.log("click"); this.setState({ editable: true }) } }>{this.props.gestalt.text}</span>
                         )
                 }
+                */ }
+                {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
+                <span
+
+                    ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
+                    onChange={() => this.props.onChange(this.nodeSpan.innerText)}
+                    dangerouslySetInnerHTML={{ __html: this.props.gestalt.text }}
+                    onClick={(e) => {
+                        console.log("click")
+                        e.currentTarget.setAttribute('contentEditable', "true")
+                        e.currentTarget.focus()
+                    }
+                    }
+                    />
 
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>

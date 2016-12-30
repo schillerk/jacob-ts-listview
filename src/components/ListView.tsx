@@ -4,7 +4,7 @@ import * as ReactDOM from "react-dom"
 import { GestaltList } from './GestaltList'
 import { SearchAddBox } from './SearchAddBox'
 
-import { Gestalt, GestaltInstance, createGestaltInstance } from '../domain';
+import { Gestalt, Gestalts, GestaltInstance, createGestaltInstance } from '../domain';
 import * as Util from '../util';
 
 export interface ListViewState {
@@ -33,24 +33,36 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         };
     }
 
+    
     componentDidMount() {
         this.searchAddBox.focus();
-        for (let i = 0; i < 10000; i++) {
-            this.addGestalt(String(Math.random()))
+        let newGestalts: Gestalts = {}
+        
+        for (let i = 0; i < 5000; i++) {
+            const newGestalt = this.makeNewGestalt(Math.random() + '')
+            newGestalts[newGestalt.gestaltId] = newGestalt
         }
+
+        this.setState({gestalts: {...this.state.gestalts, ...newGestalts}})
     }
 
-    addGestalt = (text: string): void =>     {
-        let uid: string = Util.getGUID()
-        let newGestalt: Gestalt = {
-            gestaltId: uid,
+    makeNewGestalt = (text: string = '') => {
+        const uid: string = Util.getGUID()
+        const newGestalt: Gestalt = {
             text: text,
+            gestaltId: uid,
             relatedIds: []
         }
 
+        return newGestalt
+    }
+
+    addGestalt(text: string): void {
+        const newGestalt = this.makeNewGestalt(text)
+
 
         let gestalts: { [id: string]: Gestalt } = this.state.gestalts
-        gestalts[uid] = newGestalt
+        gestalts[newGestalt.gestaltId] = newGestalt
         // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
         // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
         //gestalts[Object.keys(gestalts)[0]].relatedIds[0]="ooo"
@@ -116,7 +128,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             />
             <GestaltList
                 gestalts={this.state.gestalts}
-                />
+                updateGestalt={(id, newText) => {
+                    const gestalts = this.state.gestalts
+                    gestalts[id].text = newText
+                    this.setState({gestalts: gestalts})
+                }}
+            />
 
             </div>
         )
