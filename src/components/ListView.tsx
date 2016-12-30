@@ -48,7 +48,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.searchAddBox.focus();
         let newGestalts: Gestalts = {}
         
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 500; i++) {
             const newGestalt = this.makeNewGestalt(Math.random() + '')
             newGestalts[newGestalt.gestaltId] = newGestalt
         }

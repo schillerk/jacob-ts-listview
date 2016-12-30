@@ -28,10 +28,12 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         this.state = {expandedChildren: {}}
     }
 
-    shouldComponentUpdate(nextProps: GestaltComponentProps, nextState: GestaltComponentState) {
+    shouldComponentUpdate(nextProps: GestaltComponentProps) {
         return (
             this.props.gestalt.text !== nextProps.gestalt.text
-            || JSON.stringify(this.state.expandedChildren) === JSON.stringify(nextState.expandedChildren)
+            || 
+            Object.keys(nextProps.gestalt.relatedIds).length>0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
+            JSON.stringify(this.props.gestalt.relatedIds) === JSON.stringify(nextProps.gestalt.relatedIds)
         )
     }
 
