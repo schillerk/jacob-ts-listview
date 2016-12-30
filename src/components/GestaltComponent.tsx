@@ -6,7 +6,6 @@ import { Gestalt, GestaltInstance, createGestaltInstance } from '../domain';
 import * as Util from '../util';
 
 export interface GestaltComponentState {
-    editable: boolean
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
@@ -20,16 +19,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     constructor(props: GestaltComponentProps) {
         super(props)
-        this.state = { editable: false }
-    }
-
-    componentDidMount() {
-        this.nodeSpan && this.nodeSpan.focus()
     }
 
     shouldComponentUpdate(nextProps: GestaltComponentProps) {
-        return true
-        //return this.props.gestalt !== nextProps.gestalt
+        return this.props.gestalt.text !== nextProps.gestalt.text
     }
 
     render() {
@@ -66,19 +59,14 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                         )
                 }
                 */ }
+
                 {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
                 <span
-
+                    contentEditable
                     ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
-                    onChange={() => this.props.onChange(this.nodeSpan.innerText)}
+                    onInput={() => this.props.onChange(this.nodeSpan.innerText)}
                     dangerouslySetInnerHTML={{ __html: this.props.gestalt.text }}
-                    onClick={(e) => {
-                        console.log("click")
-                        e.currentTarget.setAttribute('contentEditable', "true")
-                        e.currentTarget.focus()
-                    }
-                    }
-                    />
+                />
 
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>

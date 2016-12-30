@@ -25,7 +25,6 @@ export class GestaltList extends React.Component<GestaltListProps, GestaltListSt
 
     shouldComponentUpdate(nextProps: GestaltListProps) {
         return true
-    //    return this.props.gestalts !== nextProps.gestalts
     }
 
     render() {
