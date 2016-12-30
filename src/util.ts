@@ -1,7 +1,7 @@
 
 var count = 0;
 
-export function getGUID(){
+export function genGUID(){
     count++;
     return "UNIQUE_ID_" + count.toString();
 }

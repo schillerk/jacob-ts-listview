@@ -20,7 +20,7 @@ export interface GestaltInstance {
 
 export function createGestaltInstance(gestalt: Gestalt){
     var newInstance : GestaltInstance = {
-        instanceId: Util.getGUID(),
+        instanceId: Util.genGUID(),
         childInstances: [],
         expanded: true,
         gestaltId: gestalt.gestaltId

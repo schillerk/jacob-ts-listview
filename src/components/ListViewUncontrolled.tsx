@@ -41,7 +41,7 @@ export class ListViewUncontrolled extends React.Component<ListViewUncontrolledPr
     }
 
     addGestalt = (text: string): void => {
-        let uid: string = Util.getGUID()
+        let uid: string = Util.genGUID()
         let newGestalt: Gestalt = {
             gestaltId: uid,
             text: text,

@@ -57,7 +57,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     makeNewGestalt = (text: string = '') => {
-        const uid: string = Util.getGUID()
+        const uid: string = Util.genGUID()
         const newGestalt: Gestalt = {
             text: text,
             gestaltId: uid,
@@ -67,7 +67,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return newGestalt
     }
 
-    addGestalt(text: string): void {
+    addGestalt = (text: string): void => {
         const newGestalt = this.makeNewGestalt(text)
 
 

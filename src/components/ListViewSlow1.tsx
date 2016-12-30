@@ -50,7 +50,7 @@ export class ListViewSlow1 extends React.Component<ListViewSlow1Props, ListViewS
     }
 
     makeNewGestalt = (text: string = '') => {
-        const uid: string = Util.getGUID()
+        const uid: string = Util.genGUID()
         const newGestalt: Gestalt = {
             text: text,
             gestaltId: uid,
