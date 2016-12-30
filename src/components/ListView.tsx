@@ -27,8 +27,18 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 '0': {
                     gestaltId: '0',
                     text: 'hack with jacob!',
-                    relatedIds: ['blah', 'bleh', 'bluh']
-                }
+                    relatedIds: [],
+                },
+                '1': {
+                    gestaltId: '1',
+                    text: 'build ideaflow!',
+                    relatedIds: ['2', '0'],
+                },
+                '2': {
+                    gestaltId: '2',
+                    text: 'bring peace to world!',
+                    relatedIds: ['1'],
+                },
             }
         };
     }
@@ -38,7 +48,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.searchAddBox.focus();
         let newGestalts: Gestalts = {}
         
-        for (let i = 0; i < 10000; i++) {
+        for (let i = 0; i < 3; i++) {
             const newGestalt = this.makeNewGestalt(Math.random() + '')
             newGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -128,6 +138,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             />
             <GestaltList
                 gestalts={this.state.gestalts}
+                allGestalts={this.state.gestalts}
                 updateGestalt={(id, newText) => {
                     const gestalts = this.state.gestalts
                     gestalts[id].text = newText

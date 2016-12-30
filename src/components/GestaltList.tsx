@@ -12,6 +12,8 @@ export interface GestaltListState {
 export interface GestaltListProps extends React.Props<GestaltList> {
     gestalts: { [id: string]: Gestalt }
     updateGestalt?: (id: string, newText: string) => void
+
+    allGestalts: { [id: string]: Gestalt }    
 }
 
 
@@ -36,6 +38,9 @@ export class GestaltList extends React.Component<GestaltListProps, GestaltListSt
                             key={id}
                             gestalt={this.props.gestalts[id]}
                             onChange={(newText: string) => this.props.updateGestalt(id, newText)}
+
+                            updateGestalt={this.props.updateGestalt}
+                            allGestalts={this.props.allGestalts}
                         />
                     )
                 })}
