@@ -83,9 +83,17 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>
                     {this.props.gestalt.relatedIds.map(id => {
+
+                        const MAX_NUB_LENGTH = 20
+                        let nubText = this.props.allGestalts[id].text
+                        if(nubText.length>MAX_NUB_LENGTH) {
+                            nubText=nubText.slice(0,MAX_NUB_LENGTH)
+                            nubText+="..."
+                        }
+
                         return (
                             <li key={id}
-                                style={{ display: 'inline-block', border: '1px solid gray', margin: '4px', padding: '2px' }}
+                                style={{ display: 'inline-block', color: (id in this.state.expandedChildren) ? "gray" : "blue", cursor:"pointer", border: '1px solid lightGray', margin: '4px', padding: '2px' }}
                                 onClick={() => {
                                     const expandedChildren = this.state.expandedChildren
                                     if (id in expandedChildren) {
@@ -97,8 +105,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                 }
                                 }
                                 >
+                                
                                 {
-                                    (id in this.props.allGestalts) ? this.props.allGestalts[id].text
+                                    (id in this.props.allGestalts) ? nubText
                                         : (console.error('Invalid id', id, this.props.allGestalts) || "")
                                 }
                             </li>
