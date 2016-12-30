@@ -29,7 +29,7 @@ export class SearchAddBox extends React.Component<SearchAddBoxProps, SearchAddBo
             <textarea
                     placeholder="Search/add gestalts: "
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
-                        if (e.keyCode === 13) {
+                        if (e.keyCode === Util.KEY_CODES.ENTER) {
                             e.preventDefault() // prevents onChange
                             this.props.addGestalt(e.currentTarget.value)
                             this.setState({ searchAddBox: "" })

@@ -9,6 +9,7 @@ import * as Util from '../util';
 
 export interface ListViewState {
     gestalts?: { [id: string]: Gestalt }
+    expandedGestaltInstances?: { [id: string]: boolean }
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -17,12 +18,13 @@ export interface ListViewProps extends React.Props<ListView> {
 
 
 export class ListView extends React.Component<ListViewProps, ListViewState> {
-    searchAddBox : SearchAddBox;
+    searchAddBox: SearchAddBox;
 
     constructor(props: ListViewProps) {
         super(props);
 
         this.state = {
+            expandedGestaltInstances: {},
             gestalts: {
                 '0': {
                     gestaltId: '0',
@@ -43,17 +45,17 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         };
     }
 
-    
+
     componentDidMount() {
         this.searchAddBox.focus();
         let newGestalts: Gestalts = {}
-        
-        for (let i = 0; i < 500; i++) {
+
+        for (let i = 0; i < 10; i++) {
             const newGestalt = this.makeNewGestalt(Math.random() + '')
             newGestalts[newGestalt.gestaltId] = newGestalt
         }
 
-        this.setState({gestalts: {...this.state.gestalts, ...newGestalts}})
+        this.setState({ gestalts: { ...this.state.gestalts, ...newGestalts } })
     }
 
     makeNewGestalt = (text: string = '') => {
@@ -125,26 +127,26 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     }
                     }
                     ref={(e: HTMLTextAreaElement) => { this.searchAddBox = e; }}
-                    tabIndex={2} cols={20} value={this.state.searchAddBox}> */} 
+                    tabIndex={2} cols={20} value={this.state.searchAddBox}> */}
                 {/* #slow */}
 
-{/*                 tabIndex={2} cols={20}> */}
+                {/*                 tabIndex={2} cols={20}> */}
 
-            {/*    </textarea>*/}
+                {/*    </textarea>*/}
 
-            <SearchAddBox 
-                addGestalt={this.addGestalt} 
-                ref={(instance: SearchAddBox) => this.searchAddBox = instance}
-            />
-            <GestaltList
-                gestalts={this.state.gestalts}
-                allGestalts={this.state.gestalts}
-                updateGestalt={(id, newText) => {
-                    const gestalts = this.state.gestalts
-                    gestalts[id].text = newText
-                    this.setState({gestalts: gestalts})
-                }}
-            />
+                <SearchAddBox
+                    addGestalt={this.addGestalt}
+                    ref={(instance: SearchAddBox) => this.searchAddBox = instance}
+                    />
+                <GestaltList
+                    gestalts={this.state.gestalts}
+                    allGestalts={this.state.gestalts}
+                    updateGestalt={(id, newText) => {
+                        const gestalts = this.state.gestalts
+                        gestalts[id].text = newText
+                        this.setState({ gestalts: gestalts })
+                    } }
+                    />
 
             </div>
         )

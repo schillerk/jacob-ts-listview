@@ -25,19 +25,20 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     constructor(props: GestaltComponentProps) {
         super(props)
-        this.state = {expandedChildren: {}}
+        this.state = { expandedChildren: {} }
     }
 
     shouldComponentUpdate(nextProps: GestaltComponentProps) {
         return (
             this.props.gestalt.text !== nextProps.gestalt.text
-            || 
-            Object.keys(nextProps.gestalt.relatedIds).length>0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
+            ||
+            Object.keys(nextProps.gestalt.relatedIds).length > 0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
             JSON.stringify(this.props.gestalt.relatedIds) === JSON.stringify(nextProps.gestalt.relatedIds)
         )
     }
 
     render(): JSX.Element {
+
         {/*  onBlur={() => { console.log("blur"); this.setState({ editable: false })  }}
                             ref={(e) => e && e.focus()} */}
         return (
@@ -76,6 +77,24 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 <span
                     contentEditable
                     ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
+                    onKeyDown={(e) => {
+                        switch (e.keyCode) {
+                            case Util.KEY_CODES.ENTER:
+                                e.preventDefault()
+                                //this.props.addGestalt("e.currentTarget.value")
+                                //#todo
+                                break;
+                            case Util.KEY_CODES.DOWN:
+                                e.preventDefault()
+                                //#todo
+                                break;
+                            case Util.KEY_CODES.UP:
+                                e.preventDefault()
+                                //#todo
+                                break;
+                        }
+
+                    } }
                     onInput={() => {
                         this.props.onChange(this.nodeSpan.innerText)
                     } }
@@ -88,14 +107,14 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                         const MAX_NUB_LENGTH = 20
                         let nubText = this.props.allGestalts[id].text
-                        if(nubText.length>MAX_NUB_LENGTH) {
-                            nubText=nubText.slice(0,MAX_NUB_LENGTH)
-                            nubText+="..."
+                        if (nubText.length > MAX_NUB_LENGTH) {
+                            nubText = nubText.slice(0, MAX_NUB_LENGTH)
+                            nubText += "..."
                         }
 
                         return (
-                            <li key={id}
-                                style={{ display: 'inline-block', color: (id in this.state.expandedChildren) ? "gray" : "blue", cursor:"pointer", border: '1px solid lightGray', margin: '4px', padding: '2px' }}
+                            <li key={this.props.key+"-"+id}
+                                style={{ display: 'inline-block', color: (id in this.state.expandedChildren) ? "gray" : "blue", cursor: "pointer", border: '1px solid lightGray', margin: '4px', padding: '2px' }}
                                 onClick={() => {
                                     const expandedChildren = this.state.expandedChildren
                                     if (id in expandedChildren) {
@@ -107,9 +126,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                 }
                                 }
                                 >
-                                
+
                                 {
-                                    (id in this.props.allGestalts) ? nubText
+                                    (id in this.props.allGestalts) ?
+                                        nubText || Util.SPECIAL_CHARS_JS.NBSP
                                         : (console.error('Invalid id', id, this.props.allGestalts) || "")
                                 }
                             </li>
