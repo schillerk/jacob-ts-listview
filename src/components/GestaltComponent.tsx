@@ -127,7 +127,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                         const nubKey: string = this.props.gestaltKey + "-" + id
 
-                        
+
                         if (nubKey in this.props.expandedGestaltInstanceIds) {
                             expandedChildren[nubKey] = this.props.allGestalts[id]
                         }
@@ -135,9 +135,15 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                         return (
                             <li key={nubKey}
                                 className='nub'
-                                style={{
-                                    background: (nubKey in this.props.expandedGestaltInstanceIds) ? "gray" : "white",
-                                }}
+                                style={
+                                    (nubKey in this.props.expandedGestaltInstanceIds) ?
+                                        {
+                                            background: "lightgray",
+                                            borderColor: "darkblue",
+                                        }
+                                        :
+                                        { background: "white" }
+                                }
                                 onClick={() => this.props.toggleExpandGestaltNub(nubKey)}
                                 >
 
