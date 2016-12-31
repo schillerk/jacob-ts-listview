@@ -7,7 +7,6 @@ import { GestaltListComponent } from './GestaltListComponent';
 import * as Util from '../util';
 
 export interface GestaltComponentState {
-    expandedGestaltInstances: GestaltCollection // order comes out randomly, needs to be an OrderedMap #TODO
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
@@ -22,13 +21,12 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 
 }
 
-
+// #TODO: order comes out randomly, needs to be an OrderedMap
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
     nodeSpan: HTMLSpanElement
 
     constructor(props: GestaltComponentProps) {
         super(props)
-        this.state = { expandedGestaltInstances: {} }
     }
 
     shouldComponentUpdate(nextProps: GestaltComponentProps) {
