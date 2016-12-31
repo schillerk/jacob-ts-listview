@@ -134,7 +134,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                         return (
                             <li key={nubKey}
-                                style={{ display: 'inline-block', color: (id in this.props.expandedGestaltInstanceIds) ? "gray" : "blue", cursor: "pointer", border: '1px solid lightGray', margin: '4px', padding: '2px' }}
+                                className='nub'
+                                style={{
+                                    background: (nubKey in this.props.expandedGestaltInstanceIds) ? "gray" : "white",
+                                }}
                                 onClick={() => this.props.toggleExpandGestaltNub(nubKey)}
                                 >
 
