@@ -129,7 +129,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                         
                         if (nubKey in this.props.expandedGestaltInstanceIds) {
-                            expandedChildren[nubKey] = this.props.allGestalts[nubKey]
+                            expandedChildren[nubKey] = this.props.allGestalts[id]
                         }
 
                         return (
