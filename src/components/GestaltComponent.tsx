@@ -1,5 +1,5 @@
 import * as React from "react";
-
+import underscore from "underscore";
 import { LinkedList, Stack } from "../LinkedList"
 
 import { Gestalt, GestaltCollection, GestaltInstance, createGestaltInstance } from '../domain';
@@ -24,15 +24,30 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 // #TODO: order comes out randomly, needs to be an OrderedMap
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
     nodeSpan: HTMLSpanElement
+    expandedChildren: { [id: string]: Gestalt } = {}
 
     constructor(props: GestaltComponentProps) {
         super(props)
     }
 
     shouldComponentUpdate(nextProps: GestaltComponentProps) {
-        return true
-        // return (
-        //     this.props.gestalt.text !== nextProps.gestalt.text
+        // return true
+
+        const nextExpandedChildren: { [id: string]: Gestalt } = {}
+
+        this.props.gestalt.relatedIds.forEach(id => {
+            const nubKey: string = this.props.gestaltKey + "-" + id
+
+            if (nubKey in this.props.expandedGestaltInstanceIds) {
+                nextExpandedChildren[id] = this.props.allGestalts[id]
+            }
+        })
+
+        return (
+            this.props.gestalt.text !== nextProps.gestalt.text
+            || Object.keys(this.expandedChildren) != Object.keys(nextExpandedChildren)
+        )
+
         //     ||
         //     Object.keys(nextProps.gestalt.relatedIds).length > 0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
         //     JSON.stringify(this.props.gestalt.relatedIds) === JSON.stringify(nextProps.gestalt.relatedIds)
@@ -50,7 +65,6 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         {/*  onBlur={() => { console.log("blur"); this.setState({ editable: false })  }}
                             ref={(e) => e && e.focus()} */}
 
-        const expandedChildren: { [id: string]: Gestalt } = {}
 
         return (
             <li>
@@ -115,7 +129,6 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>
                     {this.props.gestalt.relatedIds.map(id => {
-
                         const MAX_NUB_LENGTH = 20
                         let nubText = this.props.allGestalts[id].text
                         if (nubText.length > MAX_NUB_LENGTH) {
@@ -127,7 +140,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
                         if (nubKey in this.props.expandedGestaltInstanceIds) {
-                            expandedChildren[id] = this.props.allGestalts[id]
+                            this.expandedChildren[id] = this.props.allGestalts[id]
                         }
 
                         return (
@@ -158,7 +171,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                 <GestaltListComponent
                     parentGestaltKey={this.props.gestaltKey}
-                    gestalts={expandedChildren}
+                    gestalts={this.expandedChildren}
                     allGestalts={this.props.allGestalts}
                     updateGestalt={this.props.updateGestalt}
                     expandedGestaltInstanceIds={this.props.expandedGestaltInstanceIds}
