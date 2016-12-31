@@ -31,23 +31,23 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     shouldComponentUpdate(nextProps: GestaltComponentProps) {
-        // return true
+        // const nextExpandedChildren: { [id: string]: Gestalt } = {}
 
-        const nextExpandedChildren: { [id: string]: Gestalt } = {}
+        // this.props.gestalt.relatedIds.forEach(id => {
+        //     const nubKey: string = this.props.gestaltKey + "-" + id
 
-        this.props.gestalt.relatedIds.forEach(id => {
-            const nubKey: string = this.props.gestaltKey + "-" + id
+        //     if (nubKey in this.props.expandedGestaltInstanceIds) {
+        //         nextExpandedChildren[id] = this.props.allGestalts[id]
+        //     }
+        // })
 
-            if (nubKey in this.props.expandedGestaltInstanceIds) {
-                nextExpandedChildren[id] = this.props.allGestalts[id]
-            }
-        })
+        // console.log(nextExpandedChildren, this.expandedChildren,!_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren)))
 
         return (
-            this.props.gestalt.text !== nextProps.gestalt.text
-            || Object.keys(this.expandedChildren) != Object.keys(nextExpandedChildren)
+            true
+            // this.props.gestalt.text !== nextProps.gestalt.text
+            // || !_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren))
         )
-
         //     ||
         //     Object.keys(nextProps.gestalt.relatedIds).length > 0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
         //     JSON.stringify(this.props.gestalt.relatedIds) === JSON.stringify(nextProps.gestalt.relatedIds)
