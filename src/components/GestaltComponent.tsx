@@ -65,6 +65,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         {/*  onBlur={() => { console.log("blur"); this.setState({ editable: false })  }}
                             ref={(e) => e && e.focus()} */}
 
+        this.expandedChildren = {}
+
 
         return (
             <li>
