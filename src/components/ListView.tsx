@@ -1,15 +1,15 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom"
 
-import { GestaltList } from './GestaltList'
+import { GestaltListComponent } from './GestaltListComponent'
 import { SearchAddBox } from './SearchAddBox'
 
-import { Gestalt, Gestalts, GestaltInstance, createGestaltInstance } from '../domain';
+import { Gestalt, GestaltCollection, GestaltInstance, createGestaltInstance } from '../domain';
 import * as Util from '../util';
 
 export interface ListViewState {
     gestalts?: { [id: string]: Gestalt }
-    expandedGestaltInstances?: { [id: string]: boolean }
+    expandedGestaltInstanceIds?: { [id: string]: boolean }
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -24,7 +24,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         super(props);
 
         this.state = {
-            expandedGestaltInstances: {},
+            expandedGestaltInstanceIds: {},
             gestalts: {
                 '0': {
                     gestaltId: '0',
@@ -48,7 +48,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     componentDidMount() {
         this.searchAddBox.focus();
-        let newGestalts: Gestalts = {}
+        let newGestalts: GestaltCollection = {}
 
         for (let i = 0; i < 10; i++) {
             const newGestalt = this.makeNewGestalt(Math.random() + '')
@@ -95,6 +95,17 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.setState({ gestalts: gestalts })
     }
 
+    toggleExpandGestaltNub = (gestaltInstanceId: string) => {
+        const expandedGestaltInstanceIds = this.state.expandedGestaltInstanceIds
+        if (gestaltInstanceId in expandedGestaltInstanceIds) {
+            delete expandedGestaltInstanceIds[gestaltInstanceId];
+        } else {
+            expandedGestaltInstanceIds[gestaltInstanceId] = true
+        }
+        this.setState({ expandedGestaltInstanceIds: expandedGestaltInstanceIds })
+    }
+
+
     render() {
         return (
             <div>
@@ -138,7 +149,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     addGestalt={this.addGestalt}
                     ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                     />
-                <GestaltList
+                <GestaltListComponent
                     gestalts={this.state.gestalts}
                     allGestalts={this.state.gestalts}
                     updateGestalt={(id, newText) => {
@@ -146,6 +157,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         gestalts[id].text = newText
                         this.setState({ gestalts: gestalts })
                     } }
+                    toggleExpandGestaltNub={this.toggleExpandGestaltNub}
+                    expandedGestaltInstanceIds={this.state.expandedGestaltInstanceIds}
+                    parentGestaltKey=""
                     />
 
             </div>

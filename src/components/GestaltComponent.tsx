@@ -2,20 +2,23 @@ import * as React from "react";
 
 import { LinkedList, Stack } from "../LinkedList"
 
-import { Gestalt, Gestalts, GestaltInstance, createGestaltInstance } from '../domain';
-import { GestaltList } from './GestaltList';
+import { Gestalt, GestaltCollection, GestaltInstance, createGestaltInstance } from '../domain';
+import { GestaltListComponent } from './GestaltListComponent';
 import * as Util from '../util';
 
 export interface GestaltComponentState {
-    expandedChildren: Gestalts // order comes out randomly, needs to be an OrderedMap #TODO
+    expandedGestaltInstances: GestaltCollection // order comes out randomly, needs to be an OrderedMap #TODO
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
+    gestaltKey: string
     gestalt: Gestalt
     onChange: (newText: string) => void
 
-    updateGestalt?: (id: string, newText: string) => void
-    allGestalts?: Gestalts
+    updateGestalt: (id: string, newText: string) => void
+    allGestalts: GestaltCollection
+    expandedGestaltInstanceIds: { [id: string]: boolean }
+    toggleExpandGestaltNub: (gestaltInstanceId: string) => void
 
 }
 
@@ -25,22 +28,32 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     constructor(props: GestaltComponentProps) {
         super(props)
-        this.state = { expandedChildren: {} }
+        this.state = { expandedGestaltInstances: {} }
     }
 
     shouldComponentUpdate(nextProps: GestaltComponentProps) {
-        return (
-            this.props.gestalt.text !== nextProps.gestalt.text
-            ||
-            Object.keys(nextProps.gestalt.relatedIds).length > 0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
-            JSON.stringify(this.props.gestalt.relatedIds) === JSON.stringify(nextProps.gestalt.relatedIds)
-        )
+        return true
+        // return (
+        //     this.props.gestalt.text !== nextProps.gestalt.text
+        //     ||
+        //     Object.keys(nextProps.gestalt.relatedIds).length > 0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
+        //     JSON.stringify(this.props.gestalt.relatedIds) === JSON.stringify(nextProps.gestalt.relatedIds)
+        // )
     }
+
+    // expandedGestaltInstanceIdsToGestaltCollection = (expandedGestaltInstanceIds: { [id: string]: boolean }): GestaltCollection => {
+
+    //     return expandedGestaltInstanceIds
+    // }
 
     render(): JSX.Element {
 
+
         {/*  onBlur={() => { console.log("blur"); this.setState({ editable: false })  }}
                             ref={(e) => e && e.focus()} */}
+
+        const expandedChildren: { [id: string]: Gestalt } = {}
+
         return (
             <li>
                 {/* gestalt body */}
@@ -112,19 +125,17 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                             nubText += "..."
                         }
 
+                        const nubKey: string = this.props.gestaltKey + "-" + id
+
+                        
+                        if (nubKey in this.props.expandedGestaltInstanceIds) {
+                            expandedChildren[nubKey] = this.props.allGestalts[nubKey]
+                        }
+
                         return (
-                            <li key={this.props.key+"-"+id}
-                                style={{ display: 'inline-block', color: (id in this.state.expandedChildren) ? "gray" : "blue", cursor: "pointer", border: '1px solid lightGray', margin: '4px', padding: '2px' }}
-                                onClick={() => {
-                                    const expandedChildren = this.state.expandedChildren
-                                    if (id in expandedChildren) {
-                                        delete expandedChildren[id];
-                                    } else {
-                                        expandedChildren[id] = this.props.allGestalts[id]
-                                    }
-                                    this.setState({ expandedChildren: expandedChildren })
-                                }
-                                }
+                            <li key={nubKey}
+                                style={{ display: 'inline-block', color: (id in this.props.expandedGestaltInstanceIds) ? "gray" : "blue", cursor: "pointer", border: '1px solid lightGray', margin: '4px', padding: '2px' }}
+                                onClick={() => this.props.toggleExpandGestaltNub(nubKey)}
                                 >
 
                                 {
@@ -137,11 +148,16 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     })}
                 </ul>
 
-                <GestaltList
-                    gestalts={this.state.expandedChildren}
+
+                <GestaltListComponent
+                    parentGestaltKey={this.props.gestaltKey}
+                    gestalts={expandedChildren}
                     allGestalts={this.props.allGestalts}
                     updateGestalt={this.props.updateGestalt}
+                    expandedGestaltInstanceIds={this.props.expandedGestaltInstanceIds}
+                    toggleExpandGestaltNub={this.props.toggleExpandGestaltNub}
                     />
+
             </li>
         )
     }

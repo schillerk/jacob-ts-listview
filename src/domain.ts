@@ -7,7 +7,7 @@ export interface Gestalt {
     relatedIds: string[];
 }
 
-export interface Gestalts {
+export interface GestaltCollection {
     [id: string]: Gestalt
 }
 
