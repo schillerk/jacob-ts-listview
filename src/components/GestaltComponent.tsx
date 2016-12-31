@@ -1,5 +1,5 @@
 import * as React from "react";
-import underscore from "underscore";
+import * as _ from "lodash";
 import { LinkedList, Stack } from "../LinkedList"
 
 import { Gestalt, GestaltCollection, GestaltInstance, createGestaltInstance } from '../domain';
