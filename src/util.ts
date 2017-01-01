@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 
 var count = 0;
 
@@ -23,4 +24,12 @@ export enum KEY_CODES {
 
 export const SPECIAL_CHARS_JS = {
     NBSP: "\xa0"
+}
+
+export function average (arr:number[])
+{
+	return _.reduce(arr, function(memo, num)
+	{
+		return memo + num;
+	}, 0) / arr.length;
 }

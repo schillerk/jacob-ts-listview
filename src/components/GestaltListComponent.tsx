@@ -10,14 +10,17 @@ export interface GestaltListState {
 }
 
 export interface GestaltListProps extends React.Props<GestaltListComponent> {
-    parentGestaltKey: string
+    parentGestaltInstanceId: string
 
     gestalts: { [id: string]: Gestalt }
-    updateGestalt: (id: string, newText: string) => void
+    updateGestalt: (id: string, newText: string, instanceId: string) => void
 
     allGestalts: { [id: string]: Gestalt }
-    expandedGestaltInstanceIds: { [id: string]: boolean }
-    toggleExpandGestaltNub: (gestaltInstanceId: string) => void
+    expandedGestaltInstanceIds?: {
+        [gestaltInstanceId: string]: { expanded: boolean, parentGestaltInstanceId: string, shouldUpdate: boolean }
+    }
+    toggleExpandGestaltNub: (gestaltInstanceId: string, parentGestaltInstanceId: string) => void
+
 
 }
 
@@ -38,14 +41,13 @@ export class GestaltListComponent extends React.Component<GestaltListProps, Gest
         return (
             <ul>
                 {Object.keys(this.props.gestalts).reverse().map(id => {
-                    const gestaltKey: string = this.props.parentGestaltKey + "-" + id
-
+                    const gestaltInstanceId: string = this.props.parentGestaltInstanceId + "-" + id
                     return (
                         <GestaltComponent
-                            key={gestaltKey}
-                            gestaltKey={gestaltKey}
+                            key={gestaltInstanceId}
+                            gestaltInstanceKey={gestaltInstanceId}
                             gestalt={this.props.gestalts[id]}
-                            onChange={(newText: string) => this.props.updateGestalt(id, newText)}
+                            onChange={(newText: string) => this.props.updateGestalt(id, newText, gestaltInstanceId)}
 
                             updateGestalt={this.props.updateGestalt}
                             allGestalts={this.props.allGestalts}

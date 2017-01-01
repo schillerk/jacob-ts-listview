@@ -8,8 +8,10 @@ import { Gestalt, GestaltCollection, GestaltInstance, createGestaltInstance } fr
 import * as Util from '../util';
 
 export interface ListViewState {
-    gestalts?: { [id: string]: Gestalt }
-    expandedGestaltInstanceIds?: { [id: string]: boolean }
+    allGestalts?: { [id: string]: Gestalt }
+    expandedGestaltInstanceIds?: {
+        [gestaltInstanceId: string]: { expanded: boolean, parentGestaltInstanceId: string, shouldUpdate: boolean }
+    }
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -19,13 +21,14 @@ export interface ListViewProps extends React.Props<ListView> {
 
 export class ListView extends React.Component<ListViewProps, ListViewState> {
     searchAddBox: SearchAddBox;
+    updateTimes: number[] = []
 
     constructor(props: ListViewProps) {
         super(props);
 
-        this.state = {
+        const initState: ListViewState = {
             expandedGestaltInstanceIds: {},
-            gestalts: {
+            allGestalts: {
                 '0': {
                     gestaltId: '0',
                     text: 'hack with jacob!',
@@ -42,20 +45,35 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     relatedIds: ['1'],
                 },
             }
+
         };
+
+        let newGestalts: GestaltCollection = {}
+        const newExpandedGestaltInstanceIds: {
+            [gestaltInstanceId: string]: { expanded: boolean, parentGestaltInstanceId: string, shouldUpdate: boolean }
+        } = {}
+
+        for (let i = 0; i < 1000; i++) {
+            const newGestalt = this.makeNewGestalt(Math.random() + '')
+            newGestalts[newGestalt.gestaltId] = newGestalt
+
+            const newGestaltInstanceKey: string = "-" + newGestalt.gestaltId
+            newExpandedGestaltInstanceIds[newGestaltInstanceKey] = { expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
+        }
+        Object.keys(initState.allGestalts).forEach(id => {
+            newExpandedGestaltInstanceIds["-" + id] = { expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
+        })
+
+        this.state = { allGestalts: { ...initState.allGestalts, ...newGestalts }, expandedGestaltInstanceIds: newExpandedGestaltInstanceIds }
+
     }
 
 
     componentDidMount() {
         this.searchAddBox.focus();
-        let newGestalts: GestaltCollection = {}
 
-        for (let i = 0; i < 1000; i++) {
-            const newGestalt = this.makeNewGestalt(Math.random() + '')
-            newGestalts[newGestalt.gestaltId] = newGestalt
-        }
 
-        this.setState({ gestalts: { ...this.state.gestalts, ...newGestalts } })
+
     }
 
     makeNewGestalt = (text: string = '') => {
@@ -73,8 +91,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const newGestalt = this.makeNewGestalt(text)
 
 
-        let gestalts: { [id: string]: Gestalt } = this.state.gestalts
+        let gestalts: { [id: string]: Gestalt } = this.state.allGestalts
         gestalts[newGestalt.gestaltId] = newGestalt
+
+        const expandedGestaltInstanceIds = this.state.expandedGestaltInstanceIds
+        expandedGestaltInstanceIds["-" + newGestalt.gestaltId] = { expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
         // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
         // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
         //gestalts[Object.keys(gestalts)[0]].relatedIds[0]="ooo"
@@ -92,17 +113,42 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         //     ...this.state.gestalts,
         //     [uid]: newGestalt
         // }
-        this.setState({ gestalts: gestalts })
+        this.setState({ allGestalts: gestalts, expandedGestaltInstanceIds: expandedGestaltInstanceIds })
     }
 
-    toggleExpandGestaltNub = (gestaltInstanceId: string) => {
+    toggleExpandGestaltNub = (nubGestaltInstanceId: string, parentGestaltInstanceId: string) => {
         const expandedGestaltInstanceIds = this.state.expandedGestaltInstanceIds
-        if (gestaltInstanceId in expandedGestaltInstanceIds) {
-            delete expandedGestaltInstanceIds[gestaltInstanceId];
+        if (nubGestaltInstanceId in expandedGestaltInstanceIds) {
+            delete expandedGestaltInstanceIds[nubGestaltInstanceId];
         } else {
-            expandedGestaltInstanceIds[gestaltInstanceId] = true
+            expandedGestaltInstanceIds[nubGestaltInstanceId] = { expanded: true, parentGestaltInstanceId: parentGestaltInstanceId, shouldUpdate: true }
         }
+        //|| expandedGestaltInstanceIds[pGIId]!==null 
+        //(typeof expandedGestaltInstanceIds[pGIId] !== "undefined" && console.log("undef pGIId", pGIId) ) ||
+        this.setGestaltAndParentsShouldUpdate(parentGestaltInstanceId)
+
         this.setState({ expandedGestaltInstanceIds: expandedGestaltInstanceIds })
+    }
+
+    setGestaltAndParentsShouldUpdate = (gestaltInstanceId: string) => {
+        const expandedGestaltInstanceIds = this.state.expandedGestaltInstanceIds
+
+        for (let pGIId: string = gestaltInstanceId; pGIId !== null; pGIId = expandedGestaltInstanceIds[pGIId].parentGestaltInstanceId) {
+            console.assert(typeof expandedGestaltInstanceIds[pGIId] !== "undefined", "data structure error", pGIId)
+            expandedGestaltInstanceIds[pGIId].shouldUpdate = true;
+        }
+    }
+
+    updateGestalt = (id: string, newText: string, instanceId: string) => {
+        const timeInd=this.updateTimes.push(Date.now()) - 1
+
+        const gestalts = this.state.allGestalts
+        gestalts[id].text = newText
+        this.setGestaltAndParentsShouldUpdate(instanceId)
+        this.setState({ allGestalts: gestalts }, () => {
+            this.updateTimes[timeInd]=Date.now()-this.updateTimes[timeInd]
+            if(this.updateTimes.length%10==0) console.log("updateGestalt FPS", 1000/Util.average(this.updateTimes))
+        })
     }
 
 
@@ -150,16 +196,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                     />
                 <GestaltListComponent
-                    gestalts={this.state.gestalts}
-                    allGestalts={this.state.gestalts}
-                    updateGestalt={(id, newText) => {
-                        const gestalts = this.state.gestalts
-                        gestalts[id].text = newText
-                        this.setState({ gestalts: gestalts })
-                    } }
+                    gestalts={this.state.allGestalts}
+                    allGestalts={this.state.allGestalts}
+                    updateGestalt={this.updateGestalt}
                     toggleExpandGestaltNub={this.toggleExpandGestaltNub}
                     expandedGestaltInstanceIds={this.state.expandedGestaltInstanceIds}
-                    parentGestaltKey=""
+                    parentGestaltInstanceId=""
                     />
 
             </div>
