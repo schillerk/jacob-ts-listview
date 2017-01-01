@@ -24,6 +24,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 // #TODO: order comes out randomly, needs to be an OrderedMap
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
     nodeSpan: HTMLSpanElement
+    expandedChildren: { [nubGestaltId: string]: Gestalt } = {}
 
 
     constructor(props: GestaltComponentProps) {
@@ -31,6 +32,14 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     shouldComponentUpdate(nextProps: GestaltComponentProps) {
+        const nextExpandedChildren: { [nubGestaltId: string]: Gestalt } = {}
+
+        // populate expandedChildren
+        Object.keys(this.props.whichNubsAreExpanded[this.props.gestaltInstanceKey] || {})
+            .forEach(nubGestaltId => {
+                nextExpandedChildren[nubGestaltId] = this.props.allGestalts[nubGestaltId]
+            })
+            
         // const nextExpandedChildren: { [id: string]: Gestalt } = {}
 
         // this.props.gestalt.relatedIds.forEach(id => {
@@ -41,12 +50,14 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         //     }
         // })
 
-        // console.log(nextExpandedChildren, this.expandedChildren,!_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren)))
-
+        const expandedChildrenChanged = !_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren))
+        if (expandedChildrenChanged) {
+            this.expandedChildren = nextExpandedChildren
+        }
+        
         return (
-            true
-            // this.props.gestalt.text !== nextProps.gestalt.text
-            // || !_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren))
+           true // this.props.gestalt.text !== nextProps.gestalt.text
+            // || expandedChildrenChanged
         )
         //     ||
         //     Object.keys(nextProps.gestalt.relatedIds).length > 0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
@@ -64,14 +75,6 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
         {/*  onBlur={() => { console.log("blur"); this.setState({ editable: false })  }}
                             ref={(e) => e && e.focus()} */}
-
-
-        const expandedChildren: { [nubGestaltId: string]: Gestalt } = {}
-
-        Object.keys(this.props.whichNubsAreExpanded[this.props.gestaltInstanceKey] || {})
-            .forEach(nubGestaltId => {
-                expandedChildren[nubGestaltId] = this.props.allGestalts[nubGestaltId]
-            })
 
         return (
             <li>
@@ -152,7 +155,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                             <li key={nubGestaltInstanceKey}
                                 className='nub'
                                 style={
-                                    (relatedGestalt.gestaltId in expandedChildren) ?
+                                    (relatedGestalt.gestaltId in this.expandedChildren) ?
                                         {
                                             background: "lightgray",
                                             borderColor: "darkblue",
@@ -176,7 +179,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                 <GestaltListComponent
                     parentGestaltInstanceKey={this.props.gestaltInstanceKey}
-                    gestalts={expandedChildren}
+                    gestalts={this.expandedChildren}
                     allGestalts={this.props.allGestalts}
                     updateGestalt={this.props.updateGestalt}
                     whichNubsAreExpanded={this.props.whichNubsAreExpanded}
