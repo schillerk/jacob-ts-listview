@@ -1,6 +1,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom"
 
+import * as _ from "lodash";
+
 import { GestaltListComponent } from './GestaltListComponent'
 import { SearchAddBox } from './SearchAddBox'
 
@@ -8,8 +10,9 @@ import { Gestalt, GestaltCollection, GestaltInstance, createGestaltInstance } fr
 import * as Util from '../util';
 
 export interface ListViewState {
-    gestalts?: { [id: string]: Gestalt }
-    expandedGestaltInstanceIds?: { [id: string]: boolean }
+    allGestalts?: { [gestaltId: string]: Gestalt }
+    whichNubsAreExpanded?: { [parentGestaltInstanceId: string]: { [nubGestaltId: string]: boolean } }
+    // x['-' + id1 + '-' + id2][id3] = true
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -24,8 +27,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         super(props);
 
         this.state = {
-            expandedGestaltInstanceIds: {},
-            gestalts: {
+            whichNubsAreExpanded: {},
+            allGestalts: {
                 '0': {
                     gestaltId: '0',
                     text: 'hack with jacob!',
@@ -50,12 +53,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.searchAddBox.focus();
         let newGestalts: GestaltCollection = {}
 
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 100; i++) {
             const newGestalt = this.makeNewGestalt(Math.random() + '')
             newGestalts[newGestalt.gestaltId] = newGestalt
         }
 
-        this.setState({ gestalts: { ...this.state.gestalts, ...newGestalts } })
+        this.setState({ allGestalts: { ...this.state.allGestalts, ...newGestalts } })
     }
 
     makeNewGestalt = (text: string = '') => {
@@ -73,7 +76,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const newGestalt = this.makeNewGestalt(text)
 
 
-        let gestalts: { [id: string]: Gestalt } = this.state.gestalts
+        let gestalts: { [id: string]: Gestalt } = this.state.allGestalts
         gestalts[newGestalt.gestaltId] = newGestalt
         // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
         // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
@@ -92,17 +95,28 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         //     ...this.state.gestalts,
         //     [uid]: newGestalt
         // }
-        this.setState({ gestalts: gestalts })
+        this.setState({ allGestalts: gestalts })
     }
 
-    toggleExpandGestaltNub = (gestaltInstanceId: string) => {
-        const expandedGestaltInstanceIds = this.state.expandedGestaltInstanceIds
-        if (gestaltInstanceId in expandedGestaltInstanceIds) {
-            delete expandedGestaltInstanceIds[gestaltInstanceId];
+    toggleExpandGestaltNub = (nubGestaltId: string, parentGestaltInstanceId: string): void => {
+
+        if (parentGestaltInstanceId in this.state.whichNubsAreExpanded) {
+            // a dict of expandedChildren of this parent parentGestaltInstanceId
+            const expandedChildren: { [id: string]: boolean } = this.state.whichNubsAreExpanded[parentGestaltInstanceId]
+
+            if (nubGestaltId in expandedChildren) {
+                // case: collapse
+                delete expandedChildren[nubGestaltId]
+            } else {
+                // case: expand
+                expandedChildren[nubGestaltId] = true
+            }
         } else {
-            expandedGestaltInstanceIds[gestaltInstanceId] = true
+            // case: expand
+            this.state.whichNubsAreExpanded[parentGestaltInstanceId] = { [nubGestaltId]: true }
         }
-        this.setState({ expandedGestaltInstanceIds: expandedGestaltInstanceIds })
+
+        this.setState({whichNubsAreExpanded:this.state.whichNubsAreExpanded}) //mutated subtree
     }
 
 
@@ -149,17 +163,19 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     addGestalt={this.addGestalt}
                     ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                     />
+
                 <GestaltListComponent
-                    gestalts={this.state.gestalts}
-                    allGestalts={this.state.gestalts}
+                    gestalts={this.state.allGestalts}
+                    allGestalts={this.state.allGestalts}
                     updateGestalt={(id, newText) => {
-                        const gestalts = this.state.gestalts
+                        const gestalts = this.state.allGestalts
                         gestalts[id].text = newText
-                        this.setState({ gestalts: gestalts })
+                        this.setState({ allGestalts: gestalts })
                     } }
+
                     toggleExpandGestaltNub={this.toggleExpandGestaltNub}
-                    expandedGestaltInstanceIds={this.state.expandedGestaltInstanceIds}
-                    parentGestaltKey=""
+                    whichNubsAreExpanded={this.state.whichNubsAreExpanded}
+                    parentGestaltInstanceKey=""
                     />
 
             </div>

@@ -2,6 +2,9 @@ import * as React from "react";
 
 import { GestaltComponent } from './GestaltComponent'
 
+import * as _ from "lodash";
+
+
 import { Gestalt, GestaltInstance, createGestaltInstance } from '../domain';
 import * as Util from '../util';
 
@@ -10,14 +13,18 @@ export interface GestaltListState {
 }
 
 export interface GestaltListProps extends React.Props<GestaltListComponent> {
-    parentGestaltKey: string
+    parentGestaltInstanceKey: string
 
-    gestalts: { [id: string]: Gestalt }
+    gestalts: { [gestaltId: string]: Gestalt } 
+
     updateGestalt: (id: string, newText: string) => void
 
     allGestalts: { [id: string]: Gestalt }
-    expandedGestaltInstanceIds: { [id: string]: boolean }
-    toggleExpandGestaltNub: (gestaltInstanceId: string) => void
+    whichNubsAreExpanded: { [instanceId: string]: { [id: string]: boolean } }
+    
+    toggleExpandGestaltNub: (gestaltInstanceIdToToggle: string, parentGestaltInstanceId: string) => void
+
+
 
 }
 
@@ -37,20 +44,20 @@ export class GestaltListComponent extends React.Component<GestaltListProps, Gest
     render() {
         return (
             <ul>
-                {Object.keys(this.props.gestalts).reverse().map(id => {
-                    const gestaltKey: string = this.props.parentGestaltKey + "-" + id
+                {_.values(this.props.gestalts).reverse().map(g => {
+                    const gestaltInstanceKey: string = this.props.parentGestaltInstanceKey + "-" + g.gestaltId
 
                     return (
                         <GestaltComponent
-                            key={gestaltKey}
-                            gestaltKey={gestaltKey}
-                            gestalt={this.props.gestalts[id]}
-                            onChange={(newText: string) => this.props.updateGestalt(id, newText)}
+                            key={gestaltInstanceKey}
+                            gestaltInstanceKey={gestaltInstanceKey}
+                            gestalt={g}
+                            onChange={(newText: string) => this.props.updateGestalt(g.gestaltId, newText)}
 
                             updateGestalt={this.props.updateGestalt}
                             allGestalts={this.props.allGestalts}
                             toggleExpandGestaltNub={this.props.toggleExpandGestaltNub}
-                            expandedGestaltInstanceIds={this.props.expandedGestaltInstanceIds}
+                            whichNubsAreExpanded={this.props.whichNubsAreExpanded}
                             />
                     )
                 })}
