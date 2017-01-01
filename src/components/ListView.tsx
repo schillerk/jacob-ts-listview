@@ -9,7 +9,7 @@ import * as Util from '../util';
 
 export interface ListViewState {
     allGestalts?: { [id: string]: Gestalt }
-    expandedGestaltInstanceIds?: {
+    expandedGestaltInstances?: {
         [gestaltInstanceId: string]: GestaltInstance
     }
 
@@ -29,26 +29,26 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         super(props);
 
         const initState: ListViewState = {
-            expandedGestaltInstanceIds: {},
+            expandedGestaltInstances: {},
             allGestalts: {
                 '0': {
                     gestaltId: '0',
                     text: 'hack with jacob!',
                     relatedIds: [],
-                    instances: {}
+                    instanceIds: {}
                 },
                 '1': {
                     gestaltId: '1',
                     text: 'build ideaflow!',
                     relatedIds: ['2', '0'],
-                    instances: {}
+                    instanceIds: {}
 
                 },
                 '2': {
                     gestaltId: '2',
                     text: 'bring peace to world!',
                     relatedIds: ['1'],
-                    instances: {}
+                    instanceIds: {}
 
                 },
             }
@@ -56,25 +56,25 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         };
 
         let newGestalts: GestaltCollection = {}
-        const newExpandedGestaltInstanceIds: {
+        const newExpandedGestaltInstances: {
             [gestaltInstanceId: string]: GestaltInstance
         } = {}
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 500; i++) {
             const newGestalt = this.makeNewGestalt(Math.random() + '')
             newGestalts[newGestalt.gestaltId] = newGestalt
 
             const instanceId: string = "-" + newGestalt.gestaltId
-            newExpandedGestaltInstanceIds[instanceId] = { instanceId: instanceId, gestaltId: newGestalt.gestaltId, expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
+            newExpandedGestaltInstances[instanceId] = { instanceId: instanceId, gestaltId: newGestalt.gestaltId, expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
         }
 
         Object.keys(initState.allGestalts).forEach(id => {
             const instanceId = "-" + id
-            newExpandedGestaltInstanceIds["-" + id] = { instanceId: instanceId, gestaltId: id, expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
-            initState.allGestalts[id].instances[instanceId] = true
+            newExpandedGestaltInstances["-" + id] = { instanceId: instanceId, gestaltId: id, expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
+            initState.allGestalts[id].instanceIds[instanceId] = true
         })
 
-        this.state = { allGestalts: { ...initState.allGestalts, ...newGestalts }, expandedGestaltInstanceIds: newExpandedGestaltInstanceIds }
+        this.state = { allGestalts: { ...initState.allGestalts, ...newGestalts }, expandedGestaltInstances: newExpandedGestaltInstances }
 
     }
 
@@ -92,7 +92,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             text: text,
             gestaltId: uid,
             relatedIds: [],
-            instances: {}
+            instanceIds: {}
         }
 
         return newGestalt
@@ -105,10 +105,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         let gestalts: { [id: string]: Gestalt } = this.state.allGestalts
         gestalts[newGestalt.gestaltId] = newGestalt
 
-        const expandedGestaltInstanceIds = this.state.expandedGestaltInstanceIds
+        const expandedGestaltInstances = this.state.expandedGestaltInstances
         const instanceId = "-" + newGestalt.gestaltId
-        expandedGestaltInstanceIds[instanceId] = { instanceId: instanceId, gestaltId: newGestalt.gestaltId, expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
-        gestalts[newGestalt.gestaltId].instances[instanceId] = true
+        expandedGestaltInstances[instanceId] = { instanceId: instanceId, gestaltId: newGestalt.gestaltId, expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
+        gestalts[newGestalt.gestaltId].instanceIds[instanceId] = true
 
         // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
         // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
@@ -127,33 +127,34 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         //     ...this.state.gestalts,
         //     [uid]: newGestalt
         // }
-        this.setState({ allGestalts: gestalts, expandedGestaltInstanceIds: expandedGestaltInstanceIds })
+        this.setState({ allGestalts: gestalts, expandedGestaltInstances: expandedGestaltInstances })
     }
 
     toggleExpandGestaltNub = (nubGestaltInstanceId: string, nubGestaltId: string, parentGestaltInstanceId: string) => {
-        const expandedGestaltInstanceIds = this.state.expandedGestaltInstanceIds
+        const expandedGestaltInstances = this.state.expandedGestaltInstances
         const allGestalts = this.state.allGestalts
-        if (nubGestaltInstanceId in expandedGestaltInstanceIds) {
-            delete expandedGestaltInstanceIds[nubGestaltInstanceId];
-            delete allGestalts[nubGestaltId].instances[nubGestaltInstanceId]
+
+        if (nubGestaltInstanceId in expandedGestaltInstances) {
+            delete expandedGestaltInstances[nubGestaltInstanceId];
+            delete allGestalts[nubGestaltId].instanceIds[nubGestaltInstanceId]
 
         } else {
-            expandedGestaltInstanceIds[nubGestaltInstanceId] = { instanceId: nubGestaltInstanceId, gestaltId: nubGestaltId, expanded: true, parentGestaltInstanceId: parentGestaltInstanceId, shouldUpdate: true }
-            allGestalts[nubGestaltId].instances[nubGestaltInstanceId] = true
+            expandedGestaltInstances[nubGestaltInstanceId] = { instanceId: nubGestaltInstanceId, gestaltId: nubGestaltId, expanded: true, parentGestaltInstanceId: parentGestaltInstanceId, shouldUpdate: true }
+            allGestalts[nubGestaltId].instanceIds[nubGestaltInstanceId] = true
         }
         //|| expandedGestaltInstanceIds[pGIId]!==null 
         //(typeof expandedGestaltInstanceIds[pGIId] !== "undefined" && console.log("undef pGIId", pGIId) ) ||
         this.setGestaltAndParentsShouldUpdate(parentGestaltInstanceId)
 
-        this.setState({ expandedGestaltInstanceIds: expandedGestaltInstanceIds })
+        this.setState({ expandedGestaltInstances: expandedGestaltInstances })
     }
 
     setGestaltAndParentsShouldUpdate = (gestaltInstanceId: string) => {
-        const expandedGestaltInstanceIds = this.state.expandedGestaltInstanceIds
+        const expandedGestaltInstances = this.state.expandedGestaltInstances
 
-        for (let pGIId: string = gestaltInstanceId; pGIId !== null; pGIId = expandedGestaltInstanceIds[pGIId].parentGestaltInstanceId) {
-            console.assert(typeof expandedGestaltInstanceIds[pGIId] !== "undefined", "data structure error", pGIId)
-            expandedGestaltInstanceIds[pGIId].shouldUpdate = true;
+        for (let gIId: string = gestaltInstanceId; gIId !== null; gIId = expandedGestaltInstances[gIId].parentGestaltInstanceId) {
+            console.assert(typeof expandedGestaltInstances[gIId] !== "undefined", "data structure error", gIId)
+            expandedGestaltInstances[gIId].shouldUpdate = true;
         }
     }
 
@@ -163,7 +164,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const gestalts = this.state.allGestalts
         gestalts[id].text = newText
 
-        Object.keys(gestalts[id].instances).forEach(currInstanceId => {
+        Object.keys(gestalts[id].instanceIds).forEach(currInstanceId => {
             this.setGestaltAndParentsShouldUpdate(currInstanceId)
         })
 
@@ -222,7 +223,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     allGestalts={this.state.allGestalts}
                     updateGestalt={this.updateGestalt}
                     toggleExpandGestaltNub={this.toggleExpandGestaltNub}
-                    expandedGestaltInstanceIds={this.state.expandedGestaltInstanceIds}
+                    expandedGestaltInstances={this.state.expandedGestaltInstances}
                     parentGestaltInstanceId=""
                     />
 

@@ -5,7 +5,7 @@ export interface Gestalt {
     gestaltId: string;
     text: string;
     relatedIds: string[];
-    instances:{[instanceId:string]: boolean}
+    instanceIds:{[instanceId:string]: boolean}
 }
 
 export interface GestaltCollection {

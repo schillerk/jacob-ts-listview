@@ -16,8 +16,8 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 
     updateGestalt: (id: string, newText: string, instanceId:string) => void
     allGestalts: GestaltCollection
-    expandedGestaltInstanceIds?: {
-        [gestaltInstanceId: string]: { expanded: boolean, parentGestaltInstanceId: string, shouldUpdate: boolean }
+    expandedGestaltInstances?: {
+        [gestaltInstanceId: string]: GestaltInstance
     }
     toggleExpandGestaltNub: (nubGestaltInstanceId: string, nubGestaltId: string, parentGestaltInstanceId: string) => void
 
@@ -49,16 +49,16 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
         //console.error(this.props.gestaltInstanceKey,this.props.expandedGestaltInstanceIds)
 
-        if (this.props.expandedGestaltInstanceIds[this.props.gestaltInstanceKey]) {
-            shouldUpdate = this.props.expandedGestaltInstanceIds[this.props.gestaltInstanceKey].shouldUpdate
+        if (this.props.expandedGestaltInstances[this.props.gestaltInstanceKey]) {
+            shouldUpdate = this.props.expandedGestaltInstances[this.props.gestaltInstanceKey].shouldUpdate
 
             if (this.props.gestalt.text !== nextProps.gestalt.text)
-                this.props.expandedGestaltInstanceIds[this.props.gestaltInstanceKey].shouldUpdate = true
+                this.props.expandedGestaltInstances[this.props.gestaltInstanceKey].shouldUpdate = true
             else
-                this.props.expandedGestaltInstanceIds[this.props.gestaltInstanceKey].shouldUpdate = false
+                this.props.expandedGestaltInstances[this.props.gestaltInstanceKey].shouldUpdate = false
         }
         else {
-            console.error("mounting", this.props.gestaltInstanceKey, this.props.expandedGestaltInstanceIds)
+            console.error("mounting", this.props.gestaltInstanceKey, this.props.expandedGestaltInstances)
         }
 
         return (
@@ -159,7 +159,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                         const nubKey: string = this.props.gestaltInstanceKey + "-" + id
 
 
-                        if (nubKey in this.props.expandedGestaltInstanceIds) {
+                        if (nubKey in this.props.expandedGestaltInstances) {
                             this.expandedChildren[id] = this.props.allGestalts[id]
                         }
 
@@ -167,7 +167,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                             <li key={nubKey}
                                 className='nub'
                                 style={
-                                    (nubKey in this.props.expandedGestaltInstanceIds) ?
+                                    (nubKey in this.props.expandedGestaltInstances) ?
                                         {
                                             background: "lightgray",
                                             borderColor: "darkblue",
@@ -194,7 +194,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     gestalts={this.expandedChildren}
                     allGestalts={this.props.allGestalts}
                     updateGestalt={this.props.updateGestalt}
-                    expandedGestaltInstanceIds={this.props.expandedGestaltInstanceIds}
+                    expandedGestaltInstances={this.props.expandedGestaltInstances}
                     toggleExpandGestaltNub={this.props.toggleExpandGestaltNub}
                     />
 
