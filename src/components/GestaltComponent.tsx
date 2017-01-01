@@ -19,7 +19,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     expandedGestaltInstanceIds?: {
         [gestaltInstanceId: string]: { expanded: boolean, parentGestaltInstanceId: string, shouldUpdate: boolean }
     }
-    toggleExpandGestaltNub: (gestaltInstanceId: string, parentGestaltInstanceId: string) => void
+    toggleExpandGestaltNub: (nubGestaltInstanceId: string, nubGestaltId: string, parentGestaltInstanceId: string) => void
 
 }
 
@@ -175,7 +175,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         :
                                         { background: "white" }
                                 }
-                                onClick={() => this.props.toggleExpandGestaltNub(nubKey, this.props.gestaltInstanceKey)}
+                                onClick={() => this.props.toggleExpandGestaltNub(nubKey, id, this.props.gestaltInstanceKey)}
                                 >
 
                                 {

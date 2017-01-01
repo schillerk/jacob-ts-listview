@@ -10,8 +10,10 @@ import * as Util from '../util';
 export interface ListViewState {
     allGestalts?: { [id: string]: Gestalt }
     expandedGestaltInstanceIds?: {
-        [gestaltInstanceId: string]: { expanded: boolean, parentGestaltInstanceId: string, shouldUpdate: boolean }
+        [gestaltInstanceId: string]: GestaltInstance
     }
+
+
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -33,16 +35,21 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     gestaltId: '0',
                     text: 'hack with jacob!',
                     relatedIds: [],
+                    instances: {}
                 },
                 '1': {
                     gestaltId: '1',
                     text: 'build ideaflow!',
                     relatedIds: ['2', '0'],
+                    instances: {}
+
                 },
                 '2': {
                     gestaltId: '2',
                     text: 'bring peace to world!',
                     relatedIds: ['1'],
+                    instances: {}
+
                 },
             }
 
@@ -50,18 +57,21 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         let newGestalts: GestaltCollection = {}
         const newExpandedGestaltInstanceIds: {
-            [gestaltInstanceId: string]: { expanded: boolean, parentGestaltInstanceId: string, shouldUpdate: boolean }
+            [gestaltInstanceId: string]: GestaltInstance
         } = {}
 
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 10; i++) {
             const newGestalt = this.makeNewGestalt(Math.random() + '')
             newGestalts[newGestalt.gestaltId] = newGestalt
 
-            const newGestaltInstanceKey: string = "-" + newGestalt.gestaltId
-            newExpandedGestaltInstanceIds[newGestaltInstanceKey] = { expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
+            const instanceId: string = "-" + newGestalt.gestaltId
+            newExpandedGestaltInstanceIds[instanceId] = { instanceId: instanceId, gestaltId: newGestalt.gestaltId, expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
         }
+
         Object.keys(initState.allGestalts).forEach(id => {
-            newExpandedGestaltInstanceIds["-" + id] = { expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
+            const instanceId = "-" + id
+            newExpandedGestaltInstanceIds["-" + id] = { instanceId: instanceId, gestaltId: id, expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
+            initState.allGestalts[id].instances[instanceId] = true
         })
 
         this.state = { allGestalts: { ...initState.allGestalts, ...newGestalts }, expandedGestaltInstanceIds: newExpandedGestaltInstanceIds }
@@ -81,7 +91,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const newGestalt: Gestalt = {
             text: text,
             gestaltId: uid,
-            relatedIds: []
+            relatedIds: [],
+            instances: {}
         }
 
         return newGestalt
@@ -95,7 +106,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         gestalts[newGestalt.gestaltId] = newGestalt
 
         const expandedGestaltInstanceIds = this.state.expandedGestaltInstanceIds
-        expandedGestaltInstanceIds["-" + newGestalt.gestaltId] = { expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
+        const instanceId = "-" + newGestalt.gestaltId
+        expandedGestaltInstanceIds[instanceId] = { instanceId: instanceId, gestaltId: newGestalt.gestaltId, expanded: true, parentGestaltInstanceId: null, shouldUpdate: false }
+        gestalts[newGestalt.gestaltId].instances[instanceId] = true
+
         // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
         // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
         //gestalts[Object.keys(gestalts)[0]].relatedIds[0]="ooo"
@@ -116,12 +130,16 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.setState({ allGestalts: gestalts, expandedGestaltInstanceIds: expandedGestaltInstanceIds })
     }
 
-    toggleExpandGestaltNub = (nubGestaltInstanceId: string, parentGestaltInstanceId: string) => {
+    toggleExpandGestaltNub = (nubGestaltInstanceId: string, nubGestaltId: string, parentGestaltInstanceId: string) => {
         const expandedGestaltInstanceIds = this.state.expandedGestaltInstanceIds
+        const allGestalts = this.state.allGestalts
         if (nubGestaltInstanceId in expandedGestaltInstanceIds) {
             delete expandedGestaltInstanceIds[nubGestaltInstanceId];
+            delete allGestalts[nubGestaltId].instances[nubGestaltInstanceId]
+
         } else {
-            expandedGestaltInstanceIds[nubGestaltInstanceId] = { expanded: true, parentGestaltInstanceId: parentGestaltInstanceId, shouldUpdate: true }
+            expandedGestaltInstanceIds[nubGestaltInstanceId] = { instanceId: nubGestaltInstanceId, gestaltId: nubGestaltId, expanded: true, parentGestaltInstanceId: parentGestaltInstanceId, shouldUpdate: true }
+            allGestalts[nubGestaltId].instances[nubGestaltInstanceId] = true
         }
         //|| expandedGestaltInstanceIds[pGIId]!==null 
         //(typeof expandedGestaltInstanceIds[pGIId] !== "undefined" && console.log("undef pGIId", pGIId) ) ||
@@ -140,14 +158,18 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     updateGestalt = (id: string, newText: string, instanceId: string) => {
-        const timeInd=this.updateTimes.push(Date.now()) - 1
+        const timeInd = this.updateTimes.push(Date.now()) - 1
 
         const gestalts = this.state.allGestalts
         gestalts[id].text = newText
-        this.setGestaltAndParentsShouldUpdate(instanceId)
+
+        Object.keys(gestalts[id].instances).forEach(currInstanceId => {
+            this.setGestaltAndParentsShouldUpdate(currInstanceId)
+        })
+
         this.setState({ allGestalts: gestalts }, () => {
-            this.updateTimes[timeInd]=Date.now()-this.updateTimes[timeInd]
-            if(this.updateTimes.length%10==0) console.log("updateGestalt FPS", 1000/Util.average(this.updateTimes))
+            this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
+            if (this.updateTimes.length % 10 == 0) console.log("updateGestalt FPS", 1000 / Util.average(this.updateTimes))
         })
     }
 

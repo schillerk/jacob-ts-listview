@@ -19,7 +19,7 @@ export interface GestaltListProps extends React.Props<GestaltListComponent> {
     expandedGestaltInstanceIds?: {
         [gestaltInstanceId: string]: { expanded: boolean, parentGestaltInstanceId: string, shouldUpdate: boolean }
     }
-    toggleExpandGestaltNub: (gestaltInstanceId: string, parentGestaltInstanceId: string) => void
+    toggleExpandGestaltNub: (nubGestaltInstanceId: string, nubGestaltId: string, parentGestaltInstanceId: string) => void
 
 
 }
