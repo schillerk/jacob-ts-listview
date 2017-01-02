@@ -17,18 +17,10 @@ declare module "react" {
 
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
-    gestaltInstanceKey: string
-    gestalt: Gestalt
-    onChange: (newText: string) => void
-
-    updateGestaltText: (id: string, newText: string) => void
+    updateGestaltText: (gestaltId: string, newText: string) => void
     allGestalts: GestaltCollection
-    expandedGestaltInstances?: {
-        [gestaltInstanceId: string]: GestaltInstance
-    }
-    toggleExpandGestaltNub: (nubGestaltInstanceId: string, nubGestaltId: string, parentGestaltInstanceId: string) => void
-    setInstanceShouldUpdate: (instanceId: string, shouldUpdate: boolean) => void
-
+    gestaltInstance: GestaltInstance
+    toggleExpand: (nubGestaltId: string, parentGestaltInstanceId: string) => void
 }
 
 // #TODO: order comes out randomly, needs to be an OrderedMap
@@ -207,7 +199,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         :
                                         { background: "white" }
                                 }
-                                onClick={() => this.props.toggleExpandGestaltNub(nubKey, id, this.props.gestaltInstanceKey)}
+                                onClick={() => this.props.toggleExpand(nubKey, id, this.props.gestaltInstanceKey)}
                                 >
 
                                 {
@@ -227,7 +219,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     allGestalts={this.props.allGestalts}
                     updateGestaltText={this.props.updateGestaltText}
                     expandedGestaltInstances={this.props.expandedGestaltInstances}
-                    toggleExpandGestaltNub={this.props.toggleExpandGestaltNub}
+                    toggleExpandGestaltNub={this.props.toggleExpand}
                     setInstanceShouldUpdate={this.props.setInstanceShouldUpdate}
                     />
 
