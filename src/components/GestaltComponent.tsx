@@ -14,12 +14,13 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     gestalt: Gestalt
     onChange: (newText: string) => void
 
-    updateGestalt: (id: string, newText: string, instanceId:string) => void
+    updateGestaltText: (id: string, newText: string) => void
     allGestalts: GestaltCollection
     expandedGestaltInstances?: {
         [gestaltInstanceId: string]: GestaltInstance
     }
     toggleExpandGestaltNub: (nubGestaltInstanceId: string, nubGestaltId: string, parentGestaltInstanceId: string) => void
+    setInstanceShouldUpdate: (instanceId: string, shouldUpdate: boolean) => void
 
 }
 
@@ -45,27 +46,47 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
         // console.log(nextExpandedChildren, this.expandedChildren,!_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren)))
 
-        let shouldUpdate = true
 
+        let shouldUpdate = true
+        let gestaltInstance = this.props.expandedGestaltInstances[this.props.gestaltInstanceKey]
         //console.error(this.props.gestaltInstanceKey,this.props.expandedGestaltInstanceIds)
 
-        if (this.props.expandedGestaltInstances[this.props.gestaltInstanceKey]) {
-            shouldUpdate = this.props.expandedGestaltInstances[this.props.gestaltInstanceKey].shouldUpdate
+        if (gestaltInstance) {
+            shouldUpdate = gestaltInstance.shouldUpdate
 
-            if (this.props.gestalt.text !== nextProps.gestalt.text)
-                this.props.expandedGestaltInstances[this.props.gestaltInstanceKey].shouldUpdate = true
-            else
-                this.props.expandedGestaltInstances[this.props.gestaltInstanceKey].shouldUpdate = false
+            // if (this.props.gestalt.text !== nextProps.gestalt.text)
+            //     gestaltInstance.shouldUpdate = true
+            // else
+                // gestaltInstance.shouldUpdate = false
+                this.props.setInstanceShouldUpdate(this.props.gestaltInstanceKey, false)
         }
         else {
             console.error("mounting", this.props.gestaltInstanceKey, this.props.expandedGestaltInstances)
         }
 
-        return (
-            shouldUpdate
-            // true
-            // || !_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren))
-        )
+        return shouldUpdate
+
+
+        // let gestaltInstance = this.props.expandedGestaltInstances[this.props.gestaltInstanceKey]
+        // //console.error(this.props.gestaltInstanceKey,this.props.expandedGestaltInstanceIds)
+
+        // if (gestaltInstance) {
+        //     const textChanged : boolean = this.props.gestalt.text !== nextProps.gestalt.text
+        //     const retVal = gestaltInstance.shouldUpdate
+        //     gestaltInstance.shouldUpdate = textChanged
+        //     // this.props.setInstanceShouldUpdate(this.props.gestaltInstanceKey, textChanged)
+        //     return retVal
+        // }
+        // else {
+        //     console.error("mounting", this.props.gestaltInstanceKey, this.props.expandedGestaltInstances)
+        //     return true
+        // }
+
+        // return (
+        // shouldUpdate
+        // true
+        // || !_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren))
+        // )
         //     ||
         //     Object.keys(nextProps.gestalt.relatedIds).length > 0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
         //     JSON.stringify(this.props.gestalt.relatedIds) === JSON.stringify(nextProps.gestalt.relatedIds)
@@ -193,9 +214,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     parentGestaltInstanceId={this.props.gestaltInstanceKey}
                     gestalts={this.expandedChildren}
                     allGestalts={this.props.allGestalts}
-                    updateGestalt={this.props.updateGestalt}
+                    updateGestaltText={this.props.updateGestaltText}
                     expandedGestaltInstances={this.props.expandedGestaltInstances}
                     toggleExpandGestaltNub={this.props.toggleExpandGestaltNub}
+                    setInstanceShouldUpdate={this.props.setInstanceShouldUpdate}
                     />
 
             </li>
