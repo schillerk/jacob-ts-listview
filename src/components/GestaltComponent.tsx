@@ -9,6 +9,13 @@ import * as Util from '../util';
 export interface GestaltComponentState {
 }
 
+declare module "react" {
+    interface HTMLProps<T> {
+        suppressContentEditableWarning?: boolean
+    }
+}
+
+
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     gestaltInstanceKey: string
     gestalt: Gestalt
@@ -26,6 +33,8 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 
 // #TODO: order comes out randomly, needs to be an OrderedMap
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
+
+
     nodeSpan: HTMLSpanElement
     expandedChildren: { [id: string]: Gestalt } = {}
 
@@ -57,8 +66,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             // if (this.props.gestalt.text !== nextProps.gestalt.text)
             //     gestaltInstance.shouldUpdate = true
             // else
-                // gestaltInstance.shouldUpdate = false
-                this.props.setInstanceShouldUpdate(this.props.gestaltInstanceKey, false)
+            // gestaltInstance.shouldUpdate = false
+            this.props.setInstanceShouldUpdate(this.props.gestaltInstanceKey, false)
         }
         else {
             console.error("mounting", this.props.gestaltInstanceKey, this.props.expandedGestaltInstances)
@@ -142,6 +151,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
                 <span
                     contentEditable
+                    suppressContentEditableWarning
                     ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
                     onKeyDown={(e) => {
                         switch (e.keyCode) {
@@ -164,9 +174,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     onInput={() => {
                         this.props.onChange(this.nodeSpan.innerText)
                     } }
-                    dangerouslySetInnerHTML={{ __html: this.props.gestalt.text }}
-                    />
-
+                    >
+                    {this.props.gestalt.text}
+                </span>
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>
                     {this.props.gestalt.relatedIds.map(id => {
