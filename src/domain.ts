@@ -2,25 +2,38 @@
 import * as Util from './util';
 
 /*
-Example of GestaltInstances:
+Example of the state object:
 
-[
-  {
-    instanceId,
-    gestaltId,
-    expandedChildren: [
-      {
-        instanceId,
-        gestaltId,
-        expandedChildren: [
+{
+  gestaltInstances: [
+    {
+      instanceId,
+      gestaltId,
+      expandedChildren: [
+        {
           instanceId,
           gestaltId,
-          expandedChildren: [...]
-        ]
-      }
-    ]
+          expandedChildren: [
+            instanceId,
+            gestaltId,
+            expandedChildren: [...]
+          ]
+        }
+      ]
+    }
+  ],
+  gestalts: {
+    id,
+    text,
+    relatedIds: []
+  },
+  gestaltInstanceLookupMap: {
+    instanceId1: { instanceId, gestaltId, expandedChildren: [...] },
+    instanceId2: { ...},
+    ...
   }
-]
+}
+
 */
 
 
