@@ -65,12 +65,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             const instanceId: string = "-" + newGestalt.gestaltId
             initState.expandedGestaltInstances[instanceId] =
                 this.createGestaltInstance(instanceId, newGestalt.gestaltId, null, false)
-            // this.createAndExpandGestaltInstance(initState, {
-            //     gestaltInstanceId: instanceId,
-            //     gestaltId: newGestalt.gestaltId,
-            //     parentGestaltInstanceId: null,
-            //     shouldUpdate: false,
-            // })
+
         }
 
         Object.keys(initState.allGestalts).forEach(id => {
@@ -81,7 +76,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 gestaltId: id,
                 parentGestaltInstanceId: null,
                 shouldUpdate: false,
-            })
+            }, true)
 
             // initState.expandedGestaltInstances["-" + id] = this.createGestaltInstance(instanceId, id, null, false)
             // initState.allGestalts[id].instanceAndVisibleNubIds[instanceId] = true
@@ -94,7 +89,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     gestaltId: relatedId,
                     parentGestaltInstanceId: instanceId,
                     shouldUpdate: false,
-                })
+                }, true)
             })
         })
 
@@ -102,12 +97,16 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     }
 
-    createAndExpandGestaltInstance = (theState: ListViewState, gIP: { gestaltInstanceId: string, gestaltId: string, parentGestaltInstanceId: string, shouldUpdate: boolean }) => {
-        theState.expandedGestaltInstances[gIP.gestaltInstanceId] =
-            this.createGestaltInstance(gIP.gestaltInstanceId, gIP.gestaltId, gIP.parentGestaltInstanceId, gIP.shouldUpdate)
+    createAndExpandGestaltInstance = (theState: ListViewState, gIP: { gestaltInstanceId: string, gestaltId: string, parentGestaltInstanceId: string, shouldUpdate: boolean }, expand: boolean) => {
+        if (expand) {
+            theState.expandedGestaltInstances[gIP.gestaltInstanceId] =
+                this.createGestaltInstance(gIP.gestaltInstanceId, gIP.gestaltId, gIP.parentGestaltInstanceId, gIP.shouldUpdate)
 
-        theState.allGestalts[gIP.gestaltId].instanceAndVisibleNubIds[gIP.gestaltInstanceId] = true
-
+            theState.allGestalts[gIP.gestaltId].instanceAndVisibleNubIds[gIP.gestaltInstanceId] = true
+        } else {
+            delete theState.expandedGestaltInstances[gIP.gestaltInstanceId]
+            delete theState.allGestalts[gIP.gestaltId].instanceAndVisibleNubIds[gIP.gestaltInstanceId]
+        }
     }
 
     setInstanceShouldUpdate = (instanceId: string, shouldUpdate: boolean) => {
@@ -146,7 +145,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             gestaltId: newGestalt.gestaltId,
             parentGestaltInstanceId: null,
             shouldUpdate: false,
-        })
+        }, true)
         // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
         // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
         //gestalts[Object.keys(gestalts)[0]].relatedIds[0]="ooo"
@@ -184,13 +183,23 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const allGestalts = this.state.allGestalts
 
         if (nubGestaltInstanceId in expandedGestaltInstances) {
-            delete expandedGestaltInstances[nubGestaltInstanceId];
-            delete allGestalts[nubGestaltId].instanceAndVisibleNubIds[nubGestaltInstanceId]
+            this.createAndExpandGestaltInstance(this.state, {
+                gestaltInstanceId: nubGestaltInstanceId,
+                gestaltId: nubGestaltId,
+                parentGestaltInstanceId: parentGestaltInstanceId,
+                shouldUpdate: true,
+            }, false)
 
         } else {
-            expandedGestaltInstances[nubGestaltInstanceId] =
-                this.createGestaltInstance(nubGestaltInstanceId, nubGestaltId, parentGestaltInstanceId, true)
-            allGestalts[nubGestaltId].instanceAndVisibleNubIds[nubGestaltInstanceId] = true
+            this.createAndExpandGestaltInstance(this.state, {
+                gestaltInstanceId: nubGestaltInstanceId,
+                gestaltId: nubGestaltId,
+                parentGestaltInstanceId: parentGestaltInstanceId,
+                shouldUpdate: true,
+            }, true)
+            // expandedGestaltInstances[nubGestaltInstanceId] =
+            //     this.createGestaltInstance(nubGestaltInstanceId, nubGestaltId, parentGestaltInstanceId, true)
+            // allGestalts[nubGestaltId].instanceAndVisibleNubIds[nubGestaltInstanceId] = true
         }
         //|| expandedGestaltInstanceIds[pGIId]!==null 
         //(typeof expandedGestaltInstanceIds[pGIId] !== "undefined" && console.log("undef pGIId", pGIId) ) ||
