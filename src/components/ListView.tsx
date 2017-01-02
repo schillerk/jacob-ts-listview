@@ -80,7 +80,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
     componentDidMount() {
-        this.searchAddBox.focus();
+        // this.searchAddBox.focus();
 
 
 
@@ -215,6 +215,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 {/*    </textarea>*/}
 
                 <SearchAddBox
+                    autoFocus
                     addGestalt={this.addGestalt}
                     ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                     />

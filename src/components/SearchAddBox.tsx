@@ -10,7 +10,8 @@ export interface SearchAddBoxState {
 }
 
 export interface SearchAddBoxProps extends React.Props<SearchAddBox> {
-    addGestalt: (text: string) => void 
+    addGestalt: (text: string) => void
+    autoFocus: boolean
 }
 
 
@@ -27,6 +28,8 @@ export class SearchAddBox extends React.Component<SearchAddBoxProps, SearchAddBo
     render() {
         return (
             <textarea
+
+                    autoFocus={this.props.autoFocus}
                     placeholder="Search/add gestalts: "
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
                         if (e.keyCode === Util.KEY_CODES.ENTER) {
