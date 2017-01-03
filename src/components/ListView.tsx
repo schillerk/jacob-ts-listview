@@ -294,8 +294,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                     />
                 <GestaltListComponent
-                    gestaltInstances={this.state.gestaltInstances.map(gi => {
-                        return Util.hydrateGestaltInstanceTree(gi, this.state.allGestalts)
+                    gestaltInstances={this.state.gestaltInstances.map(gis => {
+                        return Util.hydrateGestaltInstanceTree(gis, this.state.allGestalts)
                     })
                     }
                     allGestalts={this.state.allGestalts}
