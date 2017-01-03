@@ -2,7 +2,7 @@ import * as React from "react";
 import * as _ from "lodash";
 import { LinkedList, Stack } from "../LinkedList"
 
-import { Gestalt, GestaltCollection, createGestaltInstance, HydratedGestaltHierarchicalViewItemContents } from '../domain';
+import { Gestalt, GestaltCollection, createGestaltInstance, GestaltHierarchicalViewItemContents, HydratedGestaltHierarchicalViewItemContents } from '../domain';
 import { GestaltListComponent } from './GestaltListComponent';
 import * as Util from '../util';
 
@@ -16,9 +16,10 @@ export interface GestaltComponentState {
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
-    updateGestaltText: (gestaltId: string, newText: string) => void
     gestaltInstance: HydratedGestaltHierarchicalViewItemContents
-    toggleExpand: (nubGestaltId: string, parentGestaltInstanceId: string) => void
+
+    updateGestaltText: (gestaltId: string, newText: string) => void
+    toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltHierarchicalViewItemContents) => void
 }
 
 // #TODO: order comes out randomly, needs to be an OrderedMap
@@ -40,9 +41,6 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     render(): JSX.Element {
-
-
-
         return (
             <li>
                 {/* gestalt body */}
@@ -99,7 +97,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         :
                                         { background: "white" }
                                 }
-                                onClick={() => this.props.toggleExpand(nubGestaltInstance.gestaltId, this.props.gestaltInstance.instanceId)}
+                                onClick={() => this.props.toggleExpand(nubGestaltInstance.gestaltId, this.props.gestaltInstance)}
                                 >
 
                                 { //assert nubId in this.props.allGestalts

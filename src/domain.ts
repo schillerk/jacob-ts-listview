@@ -48,7 +48,8 @@ export interface Gestalt {
 }
 
 export interface GestaltHierarchicalViewItemContents {
-  instanceId: string //1.0.2.1
+  instanceId: string // uuid
+  path: number[] // [1, 0, 2, 1]
   gestaltId: string
   children: GestaltHierarchicalViewItemContents[]
   expanded: boolean

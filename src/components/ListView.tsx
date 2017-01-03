@@ -9,8 +9,6 @@ import { SearchAddBox } from './SearchAddBox'
 import { Gestalt, GestaltCollection, GestaltHierarchicalViewItemContents, GestaltInstanceLookupMap, createGestaltInstance, HydratedGestaltHierarchicalViewItemContents } from '../domain';
 import * as Util from '../util';
 
-export const INSTANCE_ID_DELIMITER = '.'
-
 export interface ListViewState {
     allGestalts?: { [id: string]: Gestalt }
     gestaltInstances?: GestaltHierarchicalViewItemContents[]
@@ -150,18 +148,19 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         })
     }
 
-    createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstanceId?: string, expanded: boolean = true, allGestalts: { [id: string]: Gestalt } = this.state.allGestalts): GestaltHierarchicalViewItemContents => {
-
-
-        let newInstanceId = String(index)
-        if (typeof parentGestaltInstanceId !== 'undefined') {
-            const parentInstanceId = parentGestaltInstanceId
-
-            newInstanceId = parentInstanceId + INSTANCE_ID_DELIMITER + newInstanceId
+    createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstance?: GestaltHierarchicalViewItemContents, expanded: boolean = true, allGestalts: { [id: string]: Gestalt } = this.state.allGestalts): GestaltHierarchicalViewItemContents => {
+        const newInstanceId = Util.genGUID()
+    
+        let newPath: number[] = []
+        if (parentGestaltInstance) {
+            newPath = [...parentGestaltInstance.path]
         }
+
+        newPath.push(index)
 
         let newGestaltInstance = {
             instanceId: newInstanceId,
+            path: newPath,
             gestaltId: gestaltId,
             children: null as GestaltHierarchicalViewItemContents[],
             expanded: false
@@ -182,7 +181,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         if (giOut.children === null)
             giOut.children = allGestalts[giOut.gestaltId].relatedIds
                 .map((gId: string, i: number) => {
-                    return this.createGestaltInstance(gId, i, giOut.instanceId, false, allGestalts)
+                    return this.createGestaltInstance(gId, i, giOut, false, allGestalts)
                 })
 
         giOut.expanded = true;
@@ -201,7 +200,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     // In-place, recursive operation on gestaltInstance[]
     // NOTE: This could definitely be optimized more
-    deepFixGestaltInstanceIds = (instances: GestaltHierarchicalViewItemContents[], prefix?: string): void => {
+    deepFixGestaltInstanceIds = (instances: GestaltHierarchicalViewItemContents[], prefix: number[] = []): void => {
         if (typeof instances === "undefined") {
             throw new Error('Instances is undefined')
         }
@@ -209,48 +208,38 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             return
         }
 
-        if (typeof prefix !== "undefined") {
-            prefix = prefix + INSTANCE_ID_DELIMITER
-        }
-        else {
-            if (instances.length > 0) {
-                //#hack to infer prefix
-                prefix = instances[0].instanceId.split(INSTANCE_ID_DELIMITER).slice(0, -1).join(INSTANCE_ID_DELIMITER)
-                console.assert(typeof prefix === "string")
-                if (prefix !== "")
-                    prefix += INSTANCE_ID_DELIMITER
-            }
+        if (instances.length > 0) {
+            //#hack to infer prefix
+            prefix = instances[0].path.slice(0, -1)
         }
 
         instances.forEach((instance, index) => {
-            let correctId = prefix + String(index)
-            console.assert(correctId.length > 0, "correctId" + [prefix, index])
-            if (instance.instanceId != correctId) {
-                instance.instanceId = correctId
-            }
-            this.deepFixGestaltInstanceIds(instance.children, instance.instanceId + INSTANCE_ID_DELIMITER)
+            let correctPath = [...prefix, index]
+            console.assert(correctPath.length > 0, "correctId" + [prefix, index])
+            
+            // Update the path in case it has changed
+            instance.path = correctPath
+            
+            this.deepFixGestaltInstanceIds(instance.children, correctPath)
         })
     }
 
-    findGestaltInstance = (instanceId: string): GestaltHierarchicalViewItemContents => {
-        let idParts = instanceId.split(INSTANCE_ID_DELIMITER)
+/*
+    findGestaltInstance = (path: number[]): GestaltHierarchicalViewItemContents => {
         let instances = this.state.gestaltInstances
         let instance: GestaltHierarchicalViewItemContents
-        idParts.forEach(part => {
-            instance = instances[parseInt(part)]
-            console.assert(typeof instance !== "undefined", "instanceId: " + instanceId + ", part: " + part)
+        path.forEach(index => {
+            instance = instances[index]
+            console.assert(typeof instance !== "undefined", "instanceId: " + path + ", part: " + index)
 
             instances = instance.children
         })
         return instance
     }
-
-    toggleExpand = (gestaltToExpandId: string, parentGestaltInstanceId: string) => {
+*/
+    toggleExpand = (gestaltToExpandId: string, parentGestaltInstance: GestaltHierarchicalViewItemContents): void => {
         // NOTE: need to deal with recursive copying of the gestaltInstances object
         //  ^^ should work similarly to findGestaltInstance
-        console.assert(!!parentGestaltInstanceId, "parentGestaltInstanceId: " + parentGestaltInstanceId)
-
-        const parentGestaltInstance = this.findGestaltInstance(parentGestaltInstanceId)
 
         const existingChildIndex = _.findIndex(parentGestaltInstance.children,
             child => child.gestaltId == gestaltToExpandId)
@@ -305,8 +294,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 <GestaltListComponent
                     gestaltInstances={this.state.gestaltInstances.map(gis => {
                         return Util.hydrateGestaltInstanceAndChildren(gis, this.state.allGestalts)
-                    })
-                    }
+                    })}
                     updateGestaltText={this.updateGestaltText}
                     toggleExpand={this.toggleExpand}
                     />
