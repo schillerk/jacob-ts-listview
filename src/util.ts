@@ -33,20 +33,16 @@ export function average(arr: number[]) {
     }, 0) / arr.length;
 }
 
-export function hydrateGestaltInstanceTree(gestaltInstance: GestaltInstance, allGestalts: { [id: string]: Gestalt }):HydratedGestaltInstance {
-    const currGestalt : Gestalt = allGestalts[gestaltInstance.gestaltId];
-    console.assert(typeof currGestalt !== "undefined",gestaltInstance.gestaltId + " not in allGestalts")
-    const hydratedGestaltInstanceTree: HydratedGestaltInstance = {
+export function hydrateGestaltInstance(gestaltInstance: GestaltInstance, allGestalts: { [id: string]: Gestalt }): HydratedGestaltInstance {
+    const currGestalt: Gestalt = allGestalts[gestaltInstance.gestaltId];
+    console.assert(typeof currGestalt !== "undefined", gestaltInstance.gestaltId + " not in allGestalts")
+    const hydratedGestaltInstance: HydratedGestaltInstance = {
         ...gestaltInstance,
         gestalt: currGestalt,
-        relatedGestalts: currGestalt.relatedIds.map((id) => {
-            return allGestalts[id];
+        hydratedChildren: gestaltInstance.children.map((gi) => {
+            return this.hydrateGestaltInstance(gi, allGestalts);
         })
     };
 
-    gestaltInstance.children.filter(c => c.expanded).map((childGestaltInstance) => {
-        this.hydrateGestaltInstanceTree(childGestaltInstance, allGestalts)
-    });
-
-    return hydratedGestaltInstanceTree
+    return hydratedGestaltInstance
 }

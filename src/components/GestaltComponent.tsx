@@ -35,8 +35,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         //         this.props.gestaltInstance, nextProps.gestaltInstance);
         // }
 
-        return true;
-        // return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance))
+        // return true;
+        return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance))
 
 
         // return !(_.isEqual(this.props.gestaltInstance, nextProps.gestaltInstance))
@@ -119,29 +119,19 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>
-                    {myGestalt.relatedIds.map((nubGestaltId: string) => {
+                    {this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltInstance) => {
                         const MAX_NUB_LENGTH = 20
-                        let nubText = this.props.allGestalts[nubGestaltId].text
+                        let nubText = nubGestaltInstance.gestalt.text
                         if (nubText.length > MAX_NUB_LENGTH) {
                             nubText = nubText.slice(0, MAX_NUB_LENGTH)
                             nubText += "..."
                         }
 
-
-                        let nubIsExpanded = false //nubKey in this.props.expandedGestaltInstances && this.props.expandedGestaltInstances[nubKey].expanded === true
-                        const existingChildIndex = _.findIndex(this.props.gestaltInstance.children,
-                            child => child.gestaltId == nubGestaltId)
-                        if (existingChildIndex !== -1) {
-                            const existingChild = this.props.gestaltInstance.children[existingChildIndex]
-                            if (existingChild.expanded) //present and expanded
-                                nubIsExpanded = true
-                        }
-
                         return (
-                            <li key={nubGestaltId}
+                            <li key={nubGestaltInstance.gestaltId}
                                 className='nub'
                                 style={
-                                    (nubIsExpanded) ?
+                                    (nubGestaltInstance.expanded) ?
                                         {
                                             background: "lightgray",
                                             borderColor: "darkblue",
@@ -149,13 +139,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         :
                                         { background: "white" }
                                 }
-                                onClick={() => this.props.toggleExpand(nubGestaltId, this.props.gestaltInstance.instanceId)}
+                                onClick={() => this.props.toggleExpand(nubGestaltInstance.gestaltId, this.props.gestaltInstance.instanceId)}
                                 >
 
                                 { //assert nubId in this.props.allGestalts
-                                    (nubGestaltId in this.props.allGestalts) ?
+                                    (nubGestaltInstance.gestaltId in this.props.allGestalts) ?
                                         nubText || Util.SPECIAL_CHARS_JS.NBSP
-                                        : (console.error('Invalid id', nubGestaltId, this.props.allGestalts) || "")
+                                        : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
                                 }
                             </li>
                         )
@@ -163,7 +153,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 </ul>
                 <GestaltListComponent
                     gestaltInstances={this.props.gestaltInstance.children.map(gi => {
-                        return Util.hydrateGestaltInstanceTree(gi, this.props.allGestalts)
+                        return Util.hydrateGestaltInstance(gi, this.props.allGestalts)
                     })
                     }
                     allGestalts={this.props.allGestalts}

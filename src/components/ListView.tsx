@@ -55,7 +55,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         let newGestalts: GestaltCollection = {}
 
         //finish populating allGestalts
-        for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < 1000; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -317,7 +317,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     />
                 <GestaltListComponent
                     gestaltInstances={this.state.gestaltInstances.map(gis => {
-                        return Util.hydrateGestaltInstanceTree(gis, this.state.allGestalts)
+                        return Util.hydrateGestaltInstance(gis, this.state.allGestalts)
                     })
                     }
                     allGestalts={this.state.allGestalts}
