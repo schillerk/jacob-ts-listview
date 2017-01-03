@@ -1,5 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom"
+import * as _ from "lodash";
+
 
 import { GestaltListComponent } from './GestaltListComponent'
 import { SearchAddBox } from './SearchAddBox'
@@ -29,19 +31,19 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const initState: ListViewState = {
             gestaltInstances: [],
             allGestalts: {
-                '0': {
-                    gestaltId: '0',
+                '0id': {
+                    gestaltId: '0id',
                     text: 'hack with jacob!',
                     relatedIds: [],
                 },
-                '1': {
-                    gestaltId: '1',
+                '1id': {
+                    gestaltId: '1id',
                     text: 'build ideaflow!',
                     relatedIds: ['2', '0'],
 
                 },
-                '2': {
-                    gestaltId: '2',
+                '2id': {
+                    gestaltId: '2id',
                     text: 'bring peace to world!',
                     relatedIds: ['1'],
 
@@ -61,19 +63,19 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
 
-        Object.keys(initState.allGestalts).forEach(id => {
+        Object.keys(initState.allGestalts).forEach( (id,i) => {
 
-initState.gestaltInstances.push(
-                this.createGestaltInstance(newGestalt.gestaltId, i))
+            initState.gestaltInstances.push(
+                this.createGestaltInstance(id, i))
 
-        //     const instanceId = "-" + id
+            //     const instanceId = "-" + id
 
-        //     this.createAndExpandGestaltInstance(initState, {
-        //         gestaltInstanceId: instanceId,
-        //         gestaltId: id,
-        //         parentGestaltInstanceId: null,
-        //         shouldUpdate: false,
-        //     }, true)
+            //     this.createAndExpandGestaltInstance(initState, {
+            //         gestaltInstanceId: instanceId,
+            //         gestaltId: id,
+            //         parentGestaltInstanceId: null,
+            //         shouldUpdate: false,
+            //     }, true)
 
             // initState.expandedGestaltInstances["-" + id] = this.createGestaltInstance(instanceId, id, null, false)
             // initState.allGestalts[id].instanceAndVisibleNubIds[instanceId] = true
@@ -81,40 +83,42 @@ initState.gestaltInstances.push(
 
         })
 
-        this.state = { allGestalts: { ...initState.allGestalts, ...newGestalts }, 
-        gestaltInstances: initState.gestaltInstances }
-
-    }
-
-    createAndExpandGestaltInstance = (theState: ListViewState, gIP: { gestaltInstanceId: string, gestaltId: string, parentGestaltInstanceId: string, shouldUpdate: boolean }, expand: boolean) => {
-        if (expand) {
-            theState.gestaltInstances[gIP.gestaltInstanceId] =
-                this.createGestaltInstance(gIP.gestaltInstanceId, gIP.gestaltId, true, gIP.parentGestaltInstanceId, gIP.shouldUpdate)
-
-            theState.allGestalts[gIP.gestaltId].instanceAndVisibleNubIds[gIP.gestaltInstanceId] = true
-
-            theState.allGestalts[gIP.gestaltId].relatedIds.map((relatedId) => {
-                const nubInstanceId = gIP.gestaltInstanceId + '-' + relatedId;
-                // initState.allGestalts[id].instanceAndVisibleNubIds[nubInstanceId] = true
-                // this.createAndExpandGestaltInstance(initState, {
-                //     gestaltInstanceId: nubInstanceId,
-                //     gestaltId: relatedId,
-                //     parentGestaltInstanceId: instanceId,
-                //     shouldUpdate: false,
-                // }, true)
-
-                theState.gestaltInstances[nubInstanceId] =
-                    this.createGestaltInstance(nubInstanceId, relatedId, false, gIP.gestaltInstanceId, false)
-
-                theState.allGestalts[relatedId].instanceAndVisibleNubIds[nubInstanceId] = false
-
-            })
-        } else {
-            theState.gestaltInstances[gIP.gestaltInstanceId].expanded = false
-            // delete theState.expandedGestaltInstances[gIP.gestaltInstanceId]
-            // delete theState.allGestalts[gIP.gestaltId].instanceAndVisibleNubIds[gIP.gestaltInstanceId]
+        this.state = {
+            allGestalts: { ...initState.allGestalts, ...newGestalts },
+            gestaltInstances: initState.gestaltInstances
         }
+
     }
+
+    // createAndExpandGestaltInstance = (theState: ListViewState, gIP: { gestaltInstanceId: string, gestaltId: string, parentGestaltInstanceId: string, shouldUpdate: boolean }, expand: boolean) => {
+    //     if (expand) {
+    //         theState.gestaltInstances[gIP.gestaltInstanceId] =
+    //             this.createGestaltInstance(gIP.gestaltInstanceId, gIP.gestaltId, true, gIP.parentGestaltInstanceId, gIP.shouldUpdate)
+
+    //         theState.allGestalts[gIP.gestaltId].instanceAndVisibleNubIds[gIP.gestaltInstanceId] = true
+
+    //         theState.allGestalts[gIP.gestaltId].relatedIds.map((relatedId) => {
+    //             const nubInstanceId = gIP.gestaltInstanceId + '-' + relatedId;
+    //             // initState.allGestalts[id].instanceAndVisibleNubIds[nubInstanceId] = true
+    //             // this.createAndExpandGestaltInstance(initState, {
+    //             //     gestaltInstanceId: nubInstanceId,
+    //             //     gestaltId: relatedId,
+    //             //     parentGestaltInstanceId: instanceId,
+    //             //     shouldUpdate: false,
+    //             // }, true)
+
+    //             theState.gestaltInstances[nubInstanceId] =
+    //                 this.createGestaltInstance(nubInstanceId, relatedId, false, gIP.gestaltInstanceId, false)
+
+    //             theState.allGestalts[relatedId].instanceAndVisibleNubIds[nubInstanceId] = false
+
+    //         })
+    //     } else {
+    //         theState.gestaltInstances[gIP.gestaltInstanceId].expanded = false
+    //         // delete theState.expandedGestaltInstances[gIP.gestaltInstanceId]
+    //         // delete theState.allGestalts[gIP.gestaltId].instanceAndVisibleNubIds[gIP.gestaltInstanceId]
+    //     }
+    // }
 
     createGestalt = (text: string = '') => {
         const uid: string = Util.genGUID()
@@ -127,15 +131,19 @@ initState.gestaltInstances.push(
         return newGestalt
     }
 
-    addGestalt = (text: string, offset: number): void => {
+    addGestalt = (text: string, offset?: number): void => {
+        if(typeof offset === "undefined")
+            offset=0
+            //#hack #temp
+
         const newGestalt = this.createGestalt(text)
 
-        let gestalts: { [id: string]: Gestalt } = {
+        const gestalts: { [id: string]: Gestalt } = {
             ...this.state.allGestalts,
             [newGestalt.gestaltId]: newGestalt
         }
 
-        let instance = this.createGestaltInstance(newGestalt.gestaltId, offset)
+        const instance = this.createGestaltInstance(newGestalt.gestaltId, offset)
 
         this.setState({
             gestaltInstances: this.insertGestaltInstance(this.state.gestaltInstances, instance, offset),
@@ -195,49 +203,49 @@ initState.gestaltInstances.push(
         //  ^^ should work similarly to findGestaltInstance
         // let parentGestaltInstance = this.findGestaltInstance(parentGestaltInstanceId)
 
-        let idParts = parentGestaltInstanceId.split(INSTANCE_ID_DELIMITER)
-        let instances: GestaltInstance[]
-        let allInstances = instances = this.state.gestaltInstances
-        let instance: GestaltInstance
-        idParts.forEach(part => {
-            instance = { ...instances[parseInt(part)] }
-            instances = instance.expandedChildren
-        })
+        // let idParts = parentGestaltInstanceId.split(INSTANCE_ID_DELIMITER)
+        // let instances: GestaltInstance[]
+        // let allInstances = instances = this.state.gestaltInstances
+        // let instance: GestaltInstance
+        // idParts.forEach(part => {
+        //     instance = { ...instances[parseInt(part)] }
+        //     instances = instance.expandedChildren
+        // })
 
-        let existingExpandedChild = _.find(parentGestaltInstance.expandedChildren,
-            child => child.gestaltId == gestaltId)
+        // let existingExpandedChild = _.find(parentGestaltInstance.expandedChildren,
+        //     child => child.gestaltId == gestaltId)
 
-        if (existingExpandedChild) {
+        // if (existingExpandedChild) {
 
-        }
+        // }
 
-        const expandedGestaltInstances = this.state.gestaltInstances
-        const allGestalts = this.state.allGestalts
+        // const expandedGestaltInstances = this.state.gestaltInstances
+        // const allGestalts = this.state.allGestalts
 
-        if (nubGestaltInstanceId in expandedGestaltInstances && expandedGestaltInstances[nubGestaltInstanceId].expanded === true) {
-            this.createAndExpandGestaltInstance(this.state, {
-                gestaltInstanceId: nubGestaltInstanceId,
-                gestaltId: nubGestaltId,
-                parentGestaltInstanceId: parentGestaltInstanceId,
-                shouldUpdate: true,
-            }, false)
+        // if (nubGestaltInstanceId in expandedGestaltInstances && expandedGestaltInstances[nubGestaltInstanceId].expanded === true) {
+        //     this.createAndExpandGestaltInstance(this.state, {
+        //         gestaltInstanceId: nubGestaltInstanceId,
+        //         gestaltId: nubGestaltId,
+        //         parentGestaltInstanceId: parentGestaltInstanceId,
+        //         shouldUpdate: true,
+        //     }, false)
 
-        } else {
-            this.createAndExpandGestaltInstance(this.state, {
-                gestaltInstanceId: nubGestaltInstanceId,
-                gestaltId: nubGestaltId,
-                parentGestaltInstanceId: parentGestaltInstanceId,
-                shouldUpdate: true,
-            }, true)
-            // expandedGestaltInstances[nubGestaltInstanceId] =
-            //     this.createGestaltInstance(nubGestaltInstanceId, nubGestaltId, parentGestaltInstanceId, true)
-            // allGestalts[nubGestaltId].instanceAndVisibleNubIds[nubGestaltInstanceId] = true
-        }
-        //|| expandedGestaltInstanceIds[pGIId]!==null 
-        //(typeof expandedGestaltInstanceIds[pGIId] !== "undefined" && console.log("undef pGIId", pGIId) ) ||
-        this.setGestaltAndParentsShouldUpdate(parentGestaltInstanceId)
+        // } else {
+        //     this.createAndExpandGestaltInstance(this.state, {
+        //         gestaltInstanceId: nubGestaltInstanceId,
+        //         gestaltId: nubGestaltId,
+        //         parentGestaltInstanceId: parentGestaltInstanceId,
+        //         shouldUpdate: true,
+        //     }, true)
+        //     // expandedGestaltInstances[nubGestaltInstanceId] =
+        //     //     this.createGestaltInstance(nubGestaltInstanceId, nubGestaltId, parentGestaltInstanceId, true)
+        //     // allGestalts[nubGestaltId].instanceAndVisibleNubIds[nubGestaltInstanceId] = true
+        // }
+        // //|| expandedGestaltInstanceIds[pGIId]!==null 
+        // //(typeof expandedGestaltInstanceIds[pGIId] !== "undefined" && console.log("undef pGIId", pGIId) ) ||
+        // this.setGestaltAndParentsShouldUpdate(parentGestaltInstanceId)
 
-        this.setState({ gestaltInstances: expandedGestaltInstances })
+        // this.setState({ gestaltInstances: expandedGestaltInstances })
     }
 
     updateGestaltText = (id: string, newText: string) => {

@@ -12,6 +12,7 @@ export interface SearchAddBoxState {
 export interface SearchAddBoxProps extends React.Props<SearchAddBox> {
     onAddGestalt: (text: string) => void
     autoFocus: boolean
+    
 }
 
 

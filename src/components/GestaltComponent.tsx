@@ -27,7 +27,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
 
     nodeSpan: HTMLSpanElement
-    expandedChildren: { [id: string]: Gestalt } = {}
+    // expandedChildren: { [id: string]: Gestalt } = {}
 
     // shouldComponentUpdate(nextProps: GestaltComponentProps) {
     //     // const nextExpandedChildren: { [id: string]: Gestalt } = {}
@@ -100,8 +100,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         {/*  onBlur={() => { console.log("blur"); this.setState({ editable: false })  }}
                             ref={(e) => e && e.focus()} */}
 
-        this.expandedChildren = {}
+        // this.expandedChildren = {}
 
+        const myGestalt: Gestalt = this.props.allGestalts[this.props.gestaltInstance.gestaltId];
 
         return (
             <li>
@@ -159,14 +160,15 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                     } }
                     onInput={() => {
-                        this.props.onChange(this.nodeSpan.innerText)
+                        this.props.updateGestaltText(this.props.gestaltInstance.gestaltId, this.nodeSpan.innerText)
                     } }
                     >
-                    {this.props.gestalt.text}
+                    {myGestalt.text}
                 </span>
+
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>
-                    {this.props.gestalt.relatedIds.map(id => {
+                    {/*myGestalt.relatedIds.map(id => {
                         const MAX_NUB_LENGTH = 20
                         let nubText = this.props.allGestalts[id].text
                         if (nubText.length > MAX_NUB_LENGTH) {
@@ -204,10 +206,18 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                 }
                             </li>
                         )
-                    })}
+                    })*/}
                 </ul>
+{/*
+                <GestaltComponent
+                    key={instance.instanceId}
+                    gestaltInstance={instance}
+                    // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
 
-
+                    updateGestaltText={this.props.updateGestaltText}
+                    allGestalts={this.props.allGestalts}
+                    toggleExpand={this.props.toggleExpand}
+                    />
                 <GestaltListComponent
                     parentGestaltInstanceId={this.props.gestaltInstanceKey}
                     gestalts={this.expandedChildren}
@@ -217,7 +227,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     toggleExpandGestaltNub={this.props.toggleExpand}
                     setInstanceShouldUpdate={this.props.setInstanceShouldUpdate}
                     />
-
+*/}
             </li>
         )
     }
