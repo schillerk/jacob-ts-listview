@@ -44,7 +44,7 @@ export function hydrateGestaltInstanceTree(gestaltInstance: GestaltInstance, all
         })
     };
 
-    gestaltInstance.expandedChildren.map((childGestaltInstance) => {
+    gestaltInstance.children.map((childGestaltInstance) => {
         this.hydrateGestaltInstanceTree(childGestaltInstance, allGestalts)
     });
 

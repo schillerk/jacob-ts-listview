@@ -45,7 +45,8 @@ export interface GestaltCollection {
 export interface GestaltInstance {
     instanceId: string
     gestaltId: string
-    expandedChildren: GestaltInstance[]
+    children: GestaltInstance[]
+    expanded: boolean
 }
 
 export interface HydratedGestaltInstance extends GestaltInstance { 

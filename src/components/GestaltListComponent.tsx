@@ -23,7 +23,7 @@ export class GestaltListComponent extends React.Component<GestaltListProps, Gest
     render() {
         return (
             <ul>
-                {this.props.gestaltInstances.map(instance => {
+                {this.props.gestaltInstances.filter(instance => instance.expanded).map(instance => {
                     // const gestaltInstanceId: string = instance.id + "-" + id
                     return (
                         <GestaltComponent

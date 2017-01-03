@@ -164,7 +164,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return {
             instanceId: newInstanceId,
             gestaltId: gestaltId,
-            expandedChildren: []
+            children: [],
+            expanded: true
         }
     }
 
@@ -182,8 +183,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     collapseGestaltInstance = (gestaltInstances: GestaltInstance[], index: number): GestaltInstance[] => {
         //TODO: if we're going to persist expansion state of subtree we can't delete instances that are collapsed
         
-        // gestaltInstances = gestaltInstances.slice()
-        // gestaltInstances.splice(index, 1)
+        gestaltInstances = gestaltInstances.slice()
+        gestaltInstances[index].expanded=false;
         // this.deepFixGestaltInstanceIds(gestaltInstances)
         return gestaltInstances
     }
@@ -208,7 +209,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             if (instance.instanceId != correctId) {
                 instance.instanceId = correctId
             }
-            this.deepFixGestaltInstanceIds(instance.expandedChildren, instance.instanceId + INSTANCE_ID_DELIMITER)
+            this.deepFixGestaltInstanceIds(instance.children, instance.instanceId + INSTANCE_ID_DELIMITER)
         })
     }
 
@@ -220,7 +221,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             instance = instances[parseInt(part)]
             console.assert(typeof instance !== "undefined", "instanceId: " + instanceId + ", part: " + part)
 
-            instances = instance.expandedChildren
+            instances = instance.children
         })
         return instance
     }
@@ -245,18 +246,24 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         //     currInstances = currInstance.expandedChildren
         // })
 
-        const existingExpandedChildIndex = _.findIndex(parentGestaltInstance.expandedChildren,
+        const existingChildIndex = _.findIndex(parentGestaltInstance.children,
             child => child.gestaltId == gestaltToExpandId)
 
+        const existingChild=parentGestaltInstance.children[existingChildIndex]
 
-        if (existingExpandedChildIndex !== -1) {
-            this.collapseGestaltInstance(parentGestaltInstance.expandedChildren,existingExpandedChildIndex)
-        } else {
+
+        if (existingChildIndex !== -1) {
+            if(existingChild.expanded) //present and expanded
+                this.collapseGestaltInstance(parentGestaltInstance.children,existingChildIndex)
+            else //present and collapsed
+                existingChild.expanded=true
+        } else { //not yet added
             const newlyExpandedGestaltInstance: GestaltInstance =
                 this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance)
             console.log(newlyExpandedGestaltInstance)
             // parentGestaltInstance.expandedChildren.push(newlyExpandedGestaltInstance)
-            parentGestaltInstance.expandedChildren = this.insertGestaltInstance(parentGestaltInstance.expandedChildren, newlyExpandedGestaltInstance, 0);
+            parentGestaltInstance.children = 
+                this.insertGestaltInstance(parentGestaltInstance.children, newlyExpandedGestaltInstance, 0);
         }
 
         this.setState({})

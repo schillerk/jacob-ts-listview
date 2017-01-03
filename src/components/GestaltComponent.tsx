@@ -37,8 +37,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
         return true;
         // return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance))
-        
-        
+
+
         // return !(_.isEqual(this.props.gestaltInstance, nextProps.gestaltInstance))
 
         // slower by 8fps!
@@ -119,7 +119,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>
-                    {myGestalt.relatedIds.map( (nubGestaltId:string) => {
+                    {myGestalt.relatedIds.map((nubGestaltId: string) => {
                         const MAX_NUB_LENGTH = 20
                         let nubText = this.props.allGestalts[nubGestaltId].text
                         if (nubText.length > MAX_NUB_LENGTH) {
@@ -128,8 +128,14 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                         }
 
 
-                        const nubIsExpanded = false //nubKey in this.props.expandedGestaltInstances && this.props.expandedGestaltInstances[nubKey].expanded === true
-
+                        let nubIsExpanded = false //nubKey in this.props.expandedGestaltInstances && this.props.expandedGestaltInstances[nubKey].expanded === true
+                        const existingChildIndex = _.findIndex(this.props.gestaltInstance.children,
+                            child => child.gestaltId == nubGestaltId)
+                        const existingChild = this.props.gestaltInstance.children[existingChildIndex]
+                        if (existingChildIndex !== -1) {
+                            if (existingChild.expanded) //present and expanded
+                                nubIsExpanded=true
+                        }
 
                         return (
                             <li key={nubGestaltId}
@@ -156,7 +162,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     })}
                 </ul>
                 <GestaltListComponent
-                    gestaltInstances={this.props.gestaltInstance.expandedChildren.map(gi => {
+                    gestaltInstances={this.props.gestaltInstance.children.map(gi => {
                         return Util.hydrateGestaltInstanceTree(gi, this.props.allGestalts)
                     })
                     }
