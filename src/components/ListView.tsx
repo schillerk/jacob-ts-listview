@@ -55,7 +55,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         let newGestalts: GestaltCollection = {}
 
         //finish populating allGestalts
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 1; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -155,7 +155,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         let newInstanceId = String(index)
         if (typeof parentGestaltInstance != 'undefined') {
-            let parentInstanceId = parentGestaltInstance.instanceId
+            const parentInstanceId = parentGestaltInstance.instanceId
             newInstanceId = parentInstanceId + INSTANCE_ID_DELIMITER + newInstanceId
         }
 
@@ -193,59 +193,52 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         let instance: GestaltInstance
         idParts.forEach(part => {
             instance = instances[parseInt(part)]
+            console.assert(typeof instance !== "undefined", "instanceId: " + instanceId + ", part: " + part)
+
             instances = instance.expandedChildren
         })
         return instance
     }
 
-    toggleExpand = (parentGestaltInstanceId: string, gestaltId: string) => {
+    toggleExpand = (gestaltToExpandId: string, parentGestaltInstanceId: string) => {
         // NOTE: need to deal with recursive copying of the gestaltInstances object
         //  ^^ should work similarly to findGestaltInstance
-        // let parentGestaltInstance = this.findGestaltInstance(parentGestaltInstanceId)
+        console.assert(!!parentGestaltInstanceId, "parentGestaltInstanceId: " + parentGestaltInstanceId)
 
-        // let idParts = parentGestaltInstanceId.split(INSTANCE_ID_DELIMITER)
-        // let instances: GestaltInstance[]
-        // let allInstances = instances = this.state.gestaltInstances
-        // let instance: GestaltInstance
-        // idParts.forEach(part => {
-        //     instance = { ...instances[parseInt(part)] }
-        //     instances = instance.expandedChildren
+        const parentGestaltInstance = this.findGestaltInstance(parentGestaltInstanceId)
+
+        //array of int indices
+        // const pathToParentGestaltInstance: number[] = parentGestaltInstanceId.split(INSTANCE_ID_DELIMITER)
+        //     .map((idPart: string) => parseInt(idPart))
+
+        // let currInstances: GestaltInstance[]
+        // const rootInstances = currInstances = this.state.gestaltInstances
+
+        // let currInstance: GestaltInstance
+        // pathToParentGestaltInstance.forEach(index => {
+        //     currInstance = { ...currInstances[index] }
+        //     currInstances = currInstance.expandedChildren
         // })
 
-        // let existingExpandedChild = _.find(parentGestaltInstance.expandedChildren,
-        //     child => child.gestaltId == gestaltId)
+        const existingExpandedChildIndex = _.findIndex(parentGestaltInstance.expandedChildren,
+            child => child.gestaltId == gestaltToExpandId)
 
-        // if (existingExpandedChild) {
 
-        // }
+        if (existingExpandedChildIndex !== -1) {
 
-        // const expandedGestaltInstances = this.state.gestaltInstances
-        // const allGestalts = this.state.allGestalts
+        } else {
+            const newlyExpandedGestaltInstance: GestaltInstance =
+                this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance)
+            console.log(newlyExpandedGestaltInstance)
+            // parentGestaltInstance.expandedChildren.push(newlyExpandedGestaltInstance)
+            this.insertGestaltInstance(parentGestaltInstance.expandedChildren, newlyExpandedGestaltInstance, 0);
+        }
 
-        // if (nubGestaltInstanceId in expandedGestaltInstances && expandedGestaltInstances[nubGestaltInstanceId].expanded === true) {
-        //     this.createAndExpandGestaltInstance(this.state, {
-        //         gestaltInstanceId: nubGestaltInstanceId,
-        //         gestaltId: nubGestaltId,
-        //         parentGestaltInstanceId: parentGestaltInstanceId,
-        //         shouldUpdate: true,
-        //     }, false)
+        this.setState({
+        })
+        // gestaltInstances: this.insertGestaltInstance(parentGestaltInstance.expandedChildren, instance, 0),
 
-        // } else {
-        //     this.createAndExpandGestaltInstance(this.state, {
-        //         gestaltInstanceId: nubGestaltInstanceId,
-        //         gestaltId: nubGestaltId,
-        //         parentGestaltInstanceId: parentGestaltInstanceId,
-        //         shouldUpdate: true,
-        //     }, true)
-        //     // expandedGestaltInstances[nubGestaltInstanceId] =
-        //     //     this.createGestaltInstance(nubGestaltInstanceId, nubGestaltId, parentGestaltInstanceId, true)
-        //     // allGestalts[nubGestaltId].instanceAndVisibleNubIds[nubGestaltInstanceId] = true
-        // }
-        // //|| expandedGestaltInstanceIds[pGIId]!==null 
-        // //(typeof expandedGestaltInstanceIds[pGIId] !== "undefined" && console.log("undef pGIId", pGIId) ) ||
-        // this.setGestaltAndParentsShouldUpdate(parentGestaltInstanceId)
 
-        // this.setState({ gestaltInstances: expandedGestaltInstances })
     }
 
     updateGestaltText = (id: string, newText: string) => {

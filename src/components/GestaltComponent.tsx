@@ -40,69 +40,6 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         // slower by 8fps!
         //   return !(JSON.stringify(this.props.gestaltInstance) === JSON.stringify(nextProps.gestaltInstance) )
     }
-    //     // const nextExpandedChildren: { [id: string]: Gestalt } = {}
-
-    //     // this.props.gestalt.relatedIds.forEach(id => {
-    //     //     const nubKey: string = this.props.gestaltKey + "-" + id
-
-    //     //     if (nubKey in this.props.expandedGestaltInstanceIds) {
-    //     //         nextExpandedChildren[id] = this.props.allGestalts[id]
-    //     //     }
-    //     // })
-
-    //     // console.log(nextExpandedChildren, this.expandedChildren,!_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren)))
-
-
-    //     let shouldUpdate = true
-    //     let gestaltInstance = this.props.expandedGestaltInstances[this.props.gestaltInstanceKey]
-    //     //console.error(this.props.gestaltInstanceKey,this.props.expandedGestaltInstanceIds)
-
-    //     if (gestaltInstance) {
-    //         shouldUpdate = gestaltInstance.shouldUpdate
-
-    //         // if (this.props.gestalt.text !== nextProps.gestalt.text)
-    //         //     gestaltInstance.shouldUpdate = true
-    //         // else
-    //         // gestaltInstance.shouldUpdate = false
-    //         this.props.setInstanceShouldUpdate(this.props.gestaltInstanceKey, false)
-    //     }
-    //     else {
-    //         console.error("mounting", this.props.gestaltInstanceKey, this.props.expandedGestaltInstances)
-    //     }
-
-    //     return shouldUpdate
-
-
-    //     // let gestaltInstance = this.props.expandedGestaltInstances[this.props.gestaltInstanceKey]
-    //     // //console.error(this.props.gestaltInstanceKey,this.props.expandedGestaltInstanceIds)
-
-    //     // if (gestaltInstance) {
-    //     //     const textChanged : boolean = this.props.gestalt.text !== nextProps.gestalt.text
-    //     //     const retVal = gestaltInstance.shouldUpdate
-    //     //     gestaltInstance.shouldUpdate = textChanged
-    //     //     // this.props.setInstanceShouldUpdate(this.props.gestaltInstanceKey, textChanged)
-    //     //     return retVal
-    //     // }
-    //     // else {
-    //     //     console.error("mounting", this.props.gestaltInstanceKey, this.props.expandedGestaltInstances)
-    //     //     return true
-    //     // }
-
-    //     // return (
-    //     // shouldUpdate
-    //     // true
-    //     // || !_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren))
-    //     // )
-    //     //     ||
-    //     //     Object.keys(nextProps.gestalt.relatedIds).length > 0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
-    //     //     JSON.stringify(this.props.gestalt.relatedIds) === JSON.stringify(nextProps.gestalt.relatedIds)
-    //     // )
-    // }
-
-    // expandedGestaltInstanceIdsToGestaltCollection = (expandedGestaltInstanceIds: { [id: string]: boolean }): GestaltCollection => {
-
-    //     return expandedGestaltInstanceIds
-    // }
 
     render(): JSX.Element {
 
@@ -178,7 +115,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>
-                    {myGestalt.relatedIds.map(nubGestaltId => {
+                    {myGestalt.relatedIds.map( (nubGestaltId:string) => {
                         const MAX_NUB_LENGTH = 20
                         let nubText = this.props.allGestalts[nubGestaltId].text
                         if (nubText.length > MAX_NUB_LENGTH) {
@@ -223,26 +160,6 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     updateGestaltText={this.props.updateGestaltText}
                     toggleExpand={this.props.toggleExpand}
                     />
-                {/*
-                <GestaltComponent
-                    key={instance.instanceId}
-                    gestaltInstance={instance}
-                    // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
-
-                    updateGestaltText={this.props.updateGestaltText}
-                    allGestalts={this.props.allGestalts}
-                    toggleExpand={this.props.toggleExpand}
-                    />
-                <GestaltListComponent
-                    parentGestaltInstanceId={this.props.gestaltInstanceKey}
-                    gestalts={this.expandedChildren}
-                    allGestalts={this.props.allGestalts}
-                    updateGestaltText={this.props.updateGestaltText}
-                    expandedGestaltInstances={this.props.expandedGestaltInstances}
-                    toggleExpandGestaltNub={this.props.toggleExpand}
-                    setInstanceShouldUpdate={this.props.setInstanceShouldUpdate}
-                    />
-*/}
             </li>
         )
     }

@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { GestaltComponent } from './GestaltComponent'
 
-import { Gestalt, GestaltInstance, createGestaltInstance } from '../domain';
+import { Gestalt, GestaltInstance, createGestaltInstance, HydratedGestaltInstance } from '../domain';
 import * as Util from '../util';
 
 export interface GestaltListState {
@@ -10,7 +10,7 @@ export interface GestaltListState {
 }
 
 export interface GestaltListProps extends React.Props<GestaltListComponent> {
-    gestaltInstances: GestaltInstance[]
+    gestaltInstances: HydratedGestaltInstance[]
     allGestalts: { [id: string]: Gestalt }
 
     toggleExpand: (nubGestaltId: string, parentGestaltInstanceId: string) => void

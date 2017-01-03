@@ -35,6 +35,7 @@ export function average(arr: number[]) {
 
 export function hydrateGestaltInstanceTree(gestaltInstance: GestaltInstance, allGestalts: { [id: string]: Gestalt }):HydratedGestaltInstance {
     const gestalt : Gestalt = allGestalts[gestaltInstance.gestaltId];
+    console.assert(typeof gestalt !== "undefined",gestaltInstance.gestaltId + " not in allGestalts")
     const hydratedGestaltInstanceTree: HydratedGestaltInstance = {
         ...gestaltInstance,
         gestalt: gestalt,
