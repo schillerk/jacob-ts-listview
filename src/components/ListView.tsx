@@ -250,18 +250,18 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     updateGestaltText = (id: string, newText: string) => {
         const timeInd = this.updateTimes.push(Date.now()) - 1
-
-        let updatedGestalt = {
+        console.log("blah", newText + "str");
+        const updatedGestalt : Gestalt = {
             ...this.state.allGestalts[id],
             text: newText
         }
 
-        let gestalts = {
+        const updatedAllGestalts : {[gestaltId: string]: Gestalt} = {
             ...this.state.allGestalts,
-            updatedGestalt
+            [updatedGestalt.gestaltId]: updatedGestalt
         }
 
-        this.setState({ allGestalts: gestalts }, () => {
+        this.setState({ allGestalts: updatedAllGestalts }, () => {
             this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
             if (this.updateTimes.length % 10 == 0) console.log("updateGestalt FPS", 1000 / Util.average(this.updateTimes))
         })
