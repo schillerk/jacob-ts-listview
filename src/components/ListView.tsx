@@ -159,7 +159,6 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         let newInstanceId = String(index)
         if (typeof parentGestaltInstanceId !== 'undefined') {
             const parentInstanceId = parentGestaltInstanceId
-            console.log(parentInstanceId)
 
             newInstanceId = parentInstanceId + INSTANCE_ID_DELIMITER + newInstanceId
         }
@@ -176,11 +175,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return newGestaltInstance
     }
 
-    //#todo not a deeply immutable operation
+    //#todo. it's  not an immutable operation
     expandGestaltInstance = (gi: GestaltInstance): GestaltInstance => {
         const allGestalts=this.state.allGestalts
+
+        console.log(gi.instanceId)
         
-        const giOut: GestaltInstance = { ...gi }
+        const giOut: GestaltInstance = gi
 
         giOut.children = allGestalts[giOut.gestaltId].relatedIds
             .map((gId: string, i: number) => {
@@ -257,19 +258,6 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         const parentGestaltInstance = this.findGestaltInstance(parentGestaltInstanceId)
 
-        //array of int indices
-        // const pathToParentGestaltInstance: number[] = parentGestaltInstanceId.split(INSTANCE_ID_DELIMITER)
-        //     .map((idPart: string) => parseInt(idPart))
-
-        // let currInstances: GestaltInstance[]
-        // const rootInstances = currInstances = this.state.gestaltInstances
-
-        // let currInstance: GestaltInstance
-        // pathToParentGestaltInstance.forEach(index => {
-        //     currInstance = { ...currInstances[index] }
-        //     currInstances = currInstance.expandedChildren
-        // })
-
         const existingChildIndex = _.findIndex(parentGestaltInstance.children,
             child => child.gestaltId == gestaltToExpandId)
 
@@ -285,12 +273,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             }
         } else { //not yet added
             console.error("THIS SHOULD NEVER BE REACHED NOW")
-            const newlyExpandedGestaltInstance: GestaltInstance =
-                this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance.instanceId)
-            console.log(newlyExpandedGestaltInstance)
-            // parentGestaltInstance.expandedChildren.push(newlyExpandedGestaltInstance)
-            parentGestaltInstance.children =
-                this.insertGestaltInstance(parentGestaltInstance.children, newlyExpandedGestaltInstance, 0);
+            // const newlyExpandedGestaltInstance: GestaltInstance =
+            //     this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance.instanceId)
+            // console.log(newlyExpandedGestaltInstance)
+            // // parentGestaltInstance.expandedChildren.push(newlyExpandedGestaltInstance)
+            // parentGestaltInstance.children =
+            //     this.insertGestaltInstance(parentGestaltInstance.children, newlyExpandedGestaltInstance, 0);
         }
 
         this.setState({})
