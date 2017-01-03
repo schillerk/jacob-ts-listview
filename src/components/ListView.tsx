@@ -231,7 +231,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance)
             console.log(newlyExpandedGestaltInstance)
             // parentGestaltInstance.expandedChildren.push(newlyExpandedGestaltInstance)
-            this.insertGestaltInstance(parentGestaltInstance.expandedChildren, newlyExpandedGestaltInstance, 0);
+            parentGestaltInstance.expandedChildren=this.insertGestaltInstance(parentGestaltInstance.expandedChildren, newlyExpandedGestaltInstance, 0);
         }
 
         this.setState({
