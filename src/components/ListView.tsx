@@ -184,7 +184,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
 
-    toggleExpandGestaltNub = (nubGestaltInstanceId: string, nubGestaltId: string, parentGestaltInstanceId: string) => {
+    toggleExpand = (nubGestaltId: string, parentGestaltInstanceId: string) => {
         const expandedGestaltInstances = this.state.gestaltInstances
         const allGestalts = this.state.allGestalts
 
@@ -285,14 +285,14 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                     />
                 <GestaltListComponent
-                    gestalts={this.state.allGestalts}
+                    gestaltInstances={this.state.gestaltInstances}
                     allGestalts={this.state.allGestalts}
                     updateGestaltText={this.updateGestaltText}
-                    toggleExpandGestaltNub={this.toggleExpandGestaltNub}
-                    expandedGestaltInstances={this.state.gestaltInstances}
-                    parentGestaltInstanceId=""
-                    setInstanceShouldUpdate={this.setInstanceShouldUpdate}
+                    toggleExpand={this.toggleExpand}
                     />
+
+
+   
 
             </div>
         )

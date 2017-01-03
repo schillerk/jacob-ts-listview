@@ -26,73 +26,68 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 // #TODO: order comes out randomly, needs to be an OrderedMap
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
 
-
     nodeSpan: HTMLSpanElement
     expandedChildren: { [id: string]: Gestalt } = {}
 
-    constructor(props: GestaltComponentProps) {
-        super(props)
-    }
+    // shouldComponentUpdate(nextProps: GestaltComponentProps) {
+    //     // const nextExpandedChildren: { [id: string]: Gestalt } = {}
 
-    shouldComponentUpdate(nextProps: GestaltComponentProps) {
-        // const nextExpandedChildren: { [id: string]: Gestalt } = {}
+    //     // this.props.gestalt.relatedIds.forEach(id => {
+    //     //     const nubKey: string = this.props.gestaltKey + "-" + id
 
-        // this.props.gestalt.relatedIds.forEach(id => {
-        //     const nubKey: string = this.props.gestaltKey + "-" + id
+    //     //     if (nubKey in this.props.expandedGestaltInstanceIds) {
+    //     //         nextExpandedChildren[id] = this.props.allGestalts[id]
+    //     //     }
+    //     // })
 
-        //     if (nubKey in this.props.expandedGestaltInstanceIds) {
-        //         nextExpandedChildren[id] = this.props.allGestalts[id]
-        //     }
-        // })
-
-        // console.log(nextExpandedChildren, this.expandedChildren,!_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren)))
+    //     // console.log(nextExpandedChildren, this.expandedChildren,!_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren)))
 
 
-        let shouldUpdate = true
-        let gestaltInstance = this.props.expandedGestaltInstances[this.props.gestaltInstanceKey]
-        //console.error(this.props.gestaltInstanceKey,this.props.expandedGestaltInstanceIds)
+    //     let shouldUpdate = true
+    //     let gestaltInstance = this.props.expandedGestaltInstances[this.props.gestaltInstanceKey]
+    //     //console.error(this.props.gestaltInstanceKey,this.props.expandedGestaltInstanceIds)
 
-        if (gestaltInstance) {
-            shouldUpdate = gestaltInstance.shouldUpdate
+    //     if (gestaltInstance) {
+    //         shouldUpdate = gestaltInstance.shouldUpdate
 
-            // if (this.props.gestalt.text !== nextProps.gestalt.text)
-            //     gestaltInstance.shouldUpdate = true
-            // else
-            // gestaltInstance.shouldUpdate = false
-            this.props.setInstanceShouldUpdate(this.props.gestaltInstanceKey, false)
-        }
-        else {
-            console.error("mounting", this.props.gestaltInstanceKey, this.props.expandedGestaltInstances)
-        }
+    //         // if (this.props.gestalt.text !== nextProps.gestalt.text)
+    //         //     gestaltInstance.shouldUpdate = true
+    //         // else
+    //         // gestaltInstance.shouldUpdate = false
+    //         this.props.setInstanceShouldUpdate(this.props.gestaltInstanceKey, false)
+    //     }
+    //     else {
+    //         console.error("mounting", this.props.gestaltInstanceKey, this.props.expandedGestaltInstances)
+    //     }
 
-        return shouldUpdate
+    //     return shouldUpdate
 
 
-        // let gestaltInstance = this.props.expandedGestaltInstances[this.props.gestaltInstanceKey]
-        // //console.error(this.props.gestaltInstanceKey,this.props.expandedGestaltInstanceIds)
+    //     // let gestaltInstance = this.props.expandedGestaltInstances[this.props.gestaltInstanceKey]
+    //     // //console.error(this.props.gestaltInstanceKey,this.props.expandedGestaltInstanceIds)
 
-        // if (gestaltInstance) {
-        //     const textChanged : boolean = this.props.gestalt.text !== nextProps.gestalt.text
-        //     const retVal = gestaltInstance.shouldUpdate
-        //     gestaltInstance.shouldUpdate = textChanged
-        //     // this.props.setInstanceShouldUpdate(this.props.gestaltInstanceKey, textChanged)
-        //     return retVal
-        // }
-        // else {
-        //     console.error("mounting", this.props.gestaltInstanceKey, this.props.expandedGestaltInstances)
-        //     return true
-        // }
+    //     // if (gestaltInstance) {
+    //     //     const textChanged : boolean = this.props.gestalt.text !== nextProps.gestalt.text
+    //     //     const retVal = gestaltInstance.shouldUpdate
+    //     //     gestaltInstance.shouldUpdate = textChanged
+    //     //     // this.props.setInstanceShouldUpdate(this.props.gestaltInstanceKey, textChanged)
+    //     //     return retVal
+    //     // }
+    //     // else {
+    //     //     console.error("mounting", this.props.gestaltInstanceKey, this.props.expandedGestaltInstances)
+    //     //     return true
+    //     // }
 
-        // return (
-        // shouldUpdate
-        // true
-        // || !_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren))
-        // )
-        //     ||
-        //     Object.keys(nextProps.gestalt.relatedIds).length > 0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
-        //     JSON.stringify(this.props.gestalt.relatedIds) === JSON.stringify(nextProps.gestalt.relatedIds)
-        // )
-    }
+    //     // return (
+    //     // shouldUpdate
+    //     // true
+    //     // || !_.isEqual(Object.keys(this.expandedChildren), Object.keys(nextExpandedChildren))
+    //     // )
+    //     //     ||
+    //     //     Object.keys(nextProps.gestalt.relatedIds).length > 0 && //#hack for tiny lag on first clicks, weirdly fixes it even on those with keys
+    //     //     JSON.stringify(this.props.gestalt.relatedIds) === JSON.stringify(nextProps.gestalt.relatedIds)
+    //     // )
+    // }
 
     // expandedGestaltInstanceIdsToGestaltCollection = (expandedGestaltInstanceIds: { [id: string]: boolean }): GestaltCollection => {
 

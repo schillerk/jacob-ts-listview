@@ -10,14 +10,11 @@ export interface GestaltListState {
 }
 
 export interface GestaltListProps extends React.Props<GestaltListComponent> {
-    parentGestaltInstanceId: string
-
     gestaltInstances: GestaltInstance[]
     allGestalts: { [id: string]: Gestalt }
 
     toggleExpand: (nubGestaltId: string, parentGestaltInstanceId: string) => void
     updateGestaltText: (id: string, newText: string) => void
-
 }
 
 
