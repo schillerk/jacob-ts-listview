@@ -6,14 +6,14 @@ import * as _ from "lodash";
 import { GestaltListComponent } from './GestaltListComponent'
 import { SearchAddBox } from './SearchAddBox'
 
-import { Gestalt, GestaltCollection, GestaltInstance, GestaltInstanceLookupMap, createGestaltInstance, HydratedGestaltInstance } from '../domain';
+import { Gestalt, GestaltCollection, GestaltHierarchicalViewItemContents, GestaltInstanceLookupMap, createGestaltInstance, HydratedGestaltHierarchicalViewItemContents } from '../domain';
 import * as Util from '../util';
 
 export const INSTANCE_ID_DELIMITER = '.'
 
 export interface ListViewState {
     allGestalts?: { [id: string]: Gestalt }
-    gestaltInstances?: GestaltInstance[]
+    gestaltInstances?: GestaltHierarchicalViewItemContents[]
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -153,7 +153,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         })
     }
 
-    createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstanceId?: string, expanded: boolean = true): GestaltInstance => {
+    createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstanceId?: string, expanded: boolean = true): GestaltHierarchicalViewItemContents => {
 
         let newInstanceId = String(index)
         if (typeof parentGestaltInstanceId !== 'undefined') {
@@ -165,7 +165,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         let newGestaltInstance = {
             instanceId: newInstanceId,
             gestaltId: gestaltId,
-            children: null as GestaltInstance[],
+            children: null as GestaltHierarchicalViewItemContents[],
             expanded: false
         }
 
@@ -176,11 +176,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     //IMMUTABLE OPERATION
-    expandGestaltInstance = (gi: GestaltInstance): GestaltInstance => {
+    expandGestaltInstance = (gi: GestaltHierarchicalViewItemContents): GestaltHierarchicalViewItemContents => {
         const allGestalts = this.state.allGestalts
 
 
-        const giOut: GestaltInstance = { ...gi, expanded:true }
+        const giOut: GestaltHierarchicalViewItemContents = { ...gi, expanded:true }
 
         console.assert(typeof giOut.children !== "undefined")
         if(giOut.children===null) 
@@ -196,7 +196,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     // Takes a list of gestaltInstances rather than accessing this.state.gestaltInstances
     // to make the method more reusable (i.e. for nested items).
-    insertGestaltInstance = (gestaltInstances: GestaltInstance[], gestaltInstance: GestaltInstance, offset: number): GestaltInstance[] => {
+    insertGestaltInstance = (gestaltInstances: GestaltHierarchicalViewItemContents[], gestaltInstance: GestaltHierarchicalViewItemContents, offset: number): GestaltHierarchicalViewItemContents[] => {
         gestaltInstances = gestaltInstances.slice()
         gestaltInstances.splice(offset, 0, gestaltInstance)
         this.deepFixGestaltInstanceIds(gestaltInstances)
@@ -205,7 +205,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     // Takes a list of gestaltInstances rather than accessing this.state.gestaltInstances
     // to make the method more reusable (i.e. for nested items).
-    collapseGestaltInstance = (gestaltInstances: GestaltInstance[], index: number): GestaltInstance[] => {
+    collapseGestaltInstance = (gestaltInstances: GestaltHierarchicalViewItemContents[], index: number): GestaltHierarchicalViewItemContents[] => {
         //TODO: if we're going to persist expansion state of subtree we can't delete instances that are collapsed
 
         gestaltInstances = gestaltInstances.slice()
@@ -216,7 +216,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     // In-place, recursive operation on gestaltInstance[]
     // NOTE: This could definitely be optimized more
-    deepFixGestaltInstanceIds = (instances: GestaltInstance[], prefix?: string): void => {
+    deepFixGestaltInstanceIds = (instances: GestaltHierarchicalViewItemContents[], prefix?: string): void => {
         if (typeof prefix !== "undefined") {
             prefix = prefix + INSTANCE_ID_DELIMITER
         }
@@ -240,10 +240,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         })
     }
 
-    findGestaltInstance = (instanceId: string): GestaltInstance => {
+    findGestaltInstance = (instanceId: string): GestaltHierarchicalViewItemContents => {
         let idParts = instanceId.split(INSTANCE_ID_DELIMITER)
         let instances = this.state.gestaltInstances
-        let instance: GestaltInstance
+        let instance: GestaltHierarchicalViewItemContents
         idParts.forEach(part => {
             instance = instances[parseInt(part)]
             console.assert(typeof instance !== "undefined", "instanceId: " + instanceId + ", part: " + part)
@@ -323,7 +323,6 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         return Util.hydrateGestaltInstance(gis, this.state.allGestalts)
                     })
                     }
-                    allGestalts={this.state.allGestalts}
                     updateGestaltText={this.updateGestaltText}
                     toggleExpand={this.toggleExpand}
                     />

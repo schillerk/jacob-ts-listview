@@ -44,10 +44,10 @@ export interface Gestalt {
 export interface GestaltHierarchicalViewItemContents {
   instanceId: string //1.0.2.1
   gestaltId: string
-  children: GestaltHierarchicalViewItemContents[]
+  // children: GestaltHierarchicalViewItemContents[]
   expanded: boolean
 
-  // childInstanceIds: string[]
+  childInstanceIds: string[]
 }
 
 export interface HydratedGestaltHierarchicalViewItemContents extends GestaltHierarchicalViewItemContents {

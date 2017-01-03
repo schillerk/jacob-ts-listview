@@ -33,16 +33,19 @@ export function average(arr: number[]) {
     }, 0) / arr.length;
 }
 
-export function hydrateGestaltInstance(gestaltInstance: GestaltHierarchicalViewItemContents, allGestalts: { [id: string]: Gestalt }): HydratedGestaltHierarchicalViewItemContents {
-    const currGestalt: Gestalt = allGestalts[gestaltInstance.gestaltId];
-    console.assert(typeof currGestalt !== "undefined", gestaltInstance.gestaltId + " not in allGestalts")
+export function hydrateGestaltInstance(gestaltInstanceId: string, allGestalts: { [id: string]: Gestalt },
+    allInstances: {[instanceId: string] : GestaltHierarchicalViewItemContents}): HydratedGestaltHierarchicalViewItemContents {
+    const currGestaltInstance = allInstances[gestaltInstanceId];
+    const currGestalt: Gestalt = allGestalts[currGestaltInstance.gestaltId];
+    console.assert(typeof currGestalt !== "undefined", currGestaltInstance.gestaltId + " not in allGestalts")
     const hydratedGestaltInstance: HydratedGestaltHierarchicalViewItemContents = {
-        ...gestaltInstance,
+        ...currGestaltInstance,
+
         gestalt: currGestalt,
-        hydratedChildren: gestaltInstance.children === null ?
+        hydratedChildren: currGestaltInstance.childInstanceIds === null ?
             null
-            : gestaltInstance.children.map((gi) => {
-                return this.hydrateGestaltInstance(gi, allGestalts);
+            : currGestaltInstance.childInstanceIds.map((gi) => {
+                return hydrateGestaltInstance(gi, allGestalts, allInstances);
             })
     };
 

@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { LinkedList, Stack } from "../LinkedList"
 
-import { Gestalt, GestaltInstance, createGestaltInstance } from '../domain';
+import { Gestalt, GestaltHierarchicalViewItemContents, createGestaltInstance } from '../domain';
 import * as Util from '../util';
 
 export interface SearchAddBoxState {

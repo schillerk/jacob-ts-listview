@@ -2,16 +2,15 @@ import * as React from "react";
 
 import { GestaltComponent } from './GestaltComponent'
 
-import { Gestalt, GestaltInstance, createGestaltInstance, HydratedGestaltInstance } from '../domain';
+import { Gestalt, createGestaltInstance, HydratedGestaltHierarchicalViewItemContents } from '../domain';
 import * as Util from '../util';
 
 export interface GestaltListState {
-
+    
 }
 
 export interface GestaltListProps extends React.Props<GestaltListComponent> {
-    gestaltInstances: HydratedGestaltInstance[]
-    allGestalts: { [id: string]: Gestalt }
+    gestaltInstances: HydratedGestaltHierarchicalViewItemContents[]
 
     toggleExpand: (nubGestaltId: string, parentGestaltInstanceId: string) => void
     updateGestaltText: (id: string, newText: string) => void
@@ -32,7 +31,6 @@ export class GestaltListComponent extends React.Component<GestaltListProps, Gest
                             // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
 
                             updateGestaltText={this.props.updateGestaltText}
-                            allGestalts={this.props.allGestalts}
                             toggleExpand={this.props.toggleExpand}
                             />
                     )
