@@ -154,8 +154,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstance?: GestaltInstance): GestaltInstance => {
 
         let newInstanceId = String(index)
-        if (typeof parentGestaltInstance != 'undefined') {
+        if (typeof parentGestaltInstance !== 'undefined') {
             const parentInstanceId = parentGestaltInstance.instanceId
+        console.log(parentInstanceId)
+            
             newInstanceId = parentInstanceId + INSTANCE_ID_DELIMITER + newInstanceId
         }
 
@@ -178,8 +180,20 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     // In-place, recursive operation on gestaltInstance[]
     // NOTE: This could definitely be optimized more
     deepFixGestaltInstanceIds = (instances: GestaltInstance[], prefix?: string): void => {
+        if (typeof prefix !== "undefined")
+            prefix = prefix + INSTANCE_ID_DELIMITER
+        else {
+            if(instances.length>0) {
+                prefix = instances[0].instanceId.split(INSTANCE_ID_DELIMITER).slice(0,-1).join(INSTANCE_ID_DELIMITER)
+                console.assert(typeof prefix === "string")
+                if(prefix!=="")
+                    prefix+=INSTANCE_ID_DELIMITER
+            }
+        }
+
         instances.forEach((instance, index) => {
-            let correctId = _.filter([prefix, index]).join(INSTANCE_ID_DELIMITER)
+            let correctId = prefix+String(index)
+            console.assert(correctId.length > 0, "correctId" + [prefix, index])
             if (instance.instanceId != correctId) {
                 instance.instanceId = correctId
             }
@@ -231,7 +245,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance)
             console.log(newlyExpandedGestaltInstance)
             // parentGestaltInstance.expandedChildren.push(newlyExpandedGestaltInstance)
-            parentGestaltInstance.expandedChildren=this.insertGestaltInstance(parentGestaltInstance.expandedChildren, newlyExpandedGestaltInstance, 0);
+            parentGestaltInstance.expandedChildren = this.insertGestaltInstance(parentGestaltInstance.expandedChildren, newlyExpandedGestaltInstance, 0);
         }
 
         this.setState({

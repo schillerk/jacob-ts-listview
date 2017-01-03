@@ -34,7 +34,11 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         //     console.log(this.props.gestaltInstance.gestalt.text, nextProps.gestaltInstance.gestalt.text, "\n",
         //         this.props.gestaltInstance, nextProps.gestaltInstance);
         // }
-        return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance))
+
+        return true;
+        // return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance))
+        
+        
         // return !(_.isEqual(this.props.gestaltInstance, nextProps.gestaltInstance))
 
         // slower by 8fps!
