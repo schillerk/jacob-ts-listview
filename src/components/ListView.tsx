@@ -256,8 +256,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
             if (existingChild.expanded) //present and expanded
                 this.collapseGestaltInstance(parentGestaltInstance.children, existingChildIndex)
-            else //present and collapsed
+            else //present and collapsed 
+            {
+                //#TODO move to front of array when expanding and deepFixGestaltInstanceIds?
                 existingChild.expanded = true
+            }
         } else { //not yet added
             const newlyExpandedGestaltInstance: GestaltInstance =
                 this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance)
