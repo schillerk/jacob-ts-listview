@@ -168,9 +168,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>
-                    {myGestalt.relatedIds.map(nubId => {
+                    {myGestalt.relatedIds.map(nubGestaltId => {
                         const MAX_NUB_LENGTH = 20
-                        let nubText = myGestalt.text
+                        let nubText = this.props.allGestalts[nubGestaltId].text
                         if (nubText.length > MAX_NUB_LENGTH) {
                             nubText = nubText.slice(0, MAX_NUB_LENGTH)
                             nubText += "..."
@@ -181,7 +181,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
                         return (
-                            <li key={nubId}
+                            <li key={nubGestaltId}
                                 className='nub'
                                 style={
                                     (nubIsExpanded) ?
@@ -192,13 +192,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         :
                                         { background: "white" }
                                 }
-                                onClick={() => this.props.toggleExpand(nubId, this.props.gestaltInstance.instanceId)}
+                                onClick={() => this.props.toggleExpand(nubGestaltId, this.props.gestaltInstance.instanceId)}
                                 >
 
                                 { //assert nubId in this.props.allGestalts
-                                    (nubId in this.props.allGestalts) ?
+                                    (nubGestaltId in this.props.allGestalts) ?
                                         nubText || Util.SPECIAL_CHARS_JS.NBSP
-                                        : (console.error('Invalid id', nubId, this.props.allGestalts) || "")
+                                        : (console.error('Invalid id', nubGestaltId, this.props.allGestalts) || "")
                                 }
                             </li>
                         )
