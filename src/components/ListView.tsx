@@ -66,7 +66,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         Object.keys(initState.allGestalts).forEach((id, i) => {
 
             initState.gestaltInstances.push(
-                this.createGestaltInstance(id, i))
+                this.createGestaltInstance(id, i,undefined, false))
 
             //     const instanceId = "-" + id
 
@@ -88,6 +88,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             gestaltInstances: initState.gestaltInstances
         }
 
+    }
+    
+    componentWillMount() {
+        this.state.gestaltInstances=this.state.gestaltInstances.map(gi => this.expandGestaltInstance(gi))
     }
 
     // createAndExpandGestaltInstance = (theState: ListViewState, gIP: { gestaltInstanceId: string, gestaltId: string, parentGestaltInstanceId: string, shouldUpdate: boolean }, expand: boolean) => {
@@ -131,10 +135,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return newGestalt
     }
 
-    addGestalt = (text: string, offset?: number): void => {
-        if (typeof offset === "undefined")
-            offset = 0
-        //#hack #temp
+    addGestalt = (text: string, offset: number=0): void => {
+
 
         const newGestalt = this.createGestalt(text)
 
@@ -151,22 +153,42 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         })
     }
 
-    createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstance?: GestaltInstance): GestaltInstance => {
+    createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstanceId?: string, expanded: boolean=true): GestaltInstance => {
 
+        
         let newInstanceId = String(index)
-        if (typeof parentGestaltInstance !== 'undefined') {
-            const parentInstanceId = parentGestaltInstance.instanceId
+        if (typeof parentGestaltInstanceId !== 'undefined') {
+            const parentInstanceId = parentGestaltInstanceId
             console.log(parentInstanceId)
 
             newInstanceId = parentInstanceId + INSTANCE_ID_DELIMITER + newInstanceId
         }
 
-        return {
+        let newGestaltInstance = {
             instanceId: newInstanceId,
             gestaltId: gestaltId,
-            children: [],
-            expanded: true
+            children: [] as GestaltInstance[],
+            expanded: false
         }
+        if (expanded)
+            newGestaltInstance = this.expandGestaltInstance(newGestaltInstance)
+
+        return newGestaltInstance
+    }
+
+    //#todo not a deeply immutable operation
+    expandGestaltInstance = (gi: GestaltInstance): GestaltInstance => {
+        const allGestalts=this.state.allGestalts
+        
+        const giOut: GestaltInstance = { ...gi }
+
+        giOut.children = allGestalts[giOut.gestaltId].relatedIds
+            .map((gId: string, i: number) => {
+                return this.createGestaltInstance(gId, i, giOut.instanceId, false)
+            })
+        giOut.expanded = true;
+
+        return giOut;
     }
 
     // Takes a list of gestaltInstances rather than accessing this.state.gestaltInstances
@@ -197,7 +219,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         }
         else {
             if (instances.length > 0) {
-                //#hack to populate prefix
+                //#hack to infer prefix
                 prefix = instances[0].instanceId.split(INSTANCE_ID_DELIMITER).slice(0, -1).join(INSTANCE_ID_DELIMITER)
                 console.assert(typeof prefix === "string")
                 if (prefix !== "")
@@ -259,11 +281,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             else //present and collapsed 
             {
                 //#TODO move to front of array when expanding and deepFixGestaltInstanceIds?
-                existingChild.expanded = true
+                this.expandGestaltInstance(existingChild)
             }
         } else { //not yet added
+            console.error("THIS SHOULD NEVER BE REACHED NOW")
             const newlyExpandedGestaltInstance: GestaltInstance =
-                this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance)
+                this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance.instanceId)
             console.log(newlyExpandedGestaltInstance)
             // parentGestaltInstance.expandedChildren.push(newlyExpandedGestaltInstance)
             parentGestaltInstance.children =
