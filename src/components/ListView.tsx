@@ -192,7 +192,17 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     toggleExpand = (parentGestaltInstanceId: string, gestaltId: string) => {
         // NOTE: need to deal with recursive copying of the gestaltInstances object
         //  ^^ should work similarly to findGestaltInstance
-        let parentGestaltInstance = this.findGestaltInstance(parentGestaltInstanceId)
+        // let parentGestaltInstance = this.findGestaltInstance(parentGestaltInstanceId)
+        
+        let idParts = parentGestaltInstanceId.split(INSTANCE_ID_DELIMITER)
+        let instances : GestaltInstance[]
+        let allInstances = instances = this.state.gestaltInstances
+        let instance : GestaltInstance
+        idParts.forEach(part => {
+            instance = { ...instances[parseInt(part)] }
+            instances = instance.expandedChildren
+        })
+
         let existingExpandedChild = _.find(parentGestaltInstance.expandedChildren,
             child => child.gestaltId == gestaltId)
 
