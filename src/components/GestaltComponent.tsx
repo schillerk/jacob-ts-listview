@@ -168,24 +168,20 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>
-                    {/*myGestalt.relatedIds.map(id => {
+                    {myGestalt.relatedIds.map(nubId => {
                         const MAX_NUB_LENGTH = 20
-                        let nubText = this.props.allGestalts[id].text
+                        let nubText = myGestalt.text
                         if (nubText.length > MAX_NUB_LENGTH) {
                             nubText = nubText.slice(0, MAX_NUB_LENGTH)
                             nubText += "..."
                         }
 
-                        const nubKey: string = this.props.gestaltInstanceKey + "-" + id
 
-                        const nubIsExpanded = nubKey in this.props.expandedGestaltInstances && this.props.expandedGestaltInstances[nubKey].expanded === true
+                        const nubIsExpanded = false //nubKey in this.props.expandedGestaltInstances && this.props.expandedGestaltInstances[nubKey].expanded === true
 
-                        if (nubIsExpanded) {
-                            this.expandedChildren[id] = this.props.allGestalts[id]
-                        }
 
                         return (
-                            <li key={nubKey}
+                            <li key={nubId}
                                 className='nub'
                                 style={
                                     (nubIsExpanded) ?
@@ -196,19 +192,19 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         :
                                         { background: "white" }
                                 }
-                                onClick={() => this.props.toggleExpand(nubKey, id, this.props.gestaltInstanceKey)}
+                                onClick={() => this.props.toggleExpand(nubId, this.props.gestaltInstance.instanceId)}
                                 >
 
-                                {
-                                    (id in this.props.allGestalts) ?
+                                { //assert nubId in this.props.allGestalts
+                                    (nubId in this.props.allGestalts) ?
                                         nubText || Util.SPECIAL_CHARS_JS.NBSP
-                                        : (console.error('Invalid id', id, this.props.allGestalts) || "")
+                                        : (console.error('Invalid id', nubId, this.props.allGestalts) || "")
                                 }
                             </li>
                         )
-                    })*/}
+                    })}
                 </ul>
-{/*
+                {/*
                 <GestaltComponent
                     key={instance.instanceId}
                     gestaltInstance={instance}

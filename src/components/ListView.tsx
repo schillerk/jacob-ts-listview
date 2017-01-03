@@ -39,13 +39,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 '1id': {
                     gestaltId: '1id',
                     text: 'build ideaflow!',
-                    relatedIds: ['2', '0'],
+                    relatedIds: ['2id', '0id'],
 
                 },
                 '2id': {
                     gestaltId: '2id',
                     text: 'bring peace to world!',
-                    relatedIds: ['1'],
+                    relatedIds: ['1id'],
 
                 },
             }
