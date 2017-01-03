@@ -39,9 +39,11 @@ export function hydrateGestaltInstance(gestaltInstance: GestaltInstance, allGest
     const hydratedGestaltInstance: HydratedGestaltInstance = {
         ...gestaltInstance,
         gestalt: currGestalt,
-        hydratedChildren: gestaltInstance.children.map((gi) => {
-            return this.hydrateGestaltInstance(gi, allGestalts);
-        })
+        hydratedChildren: gestaltInstance.children === null ?
+            null
+            : gestaltInstance.children.map((gi) => {
+                return this.hydrateGestaltInstance(gi, allGestalts);
+            })
     };
 
     return hydratedGestaltInstance

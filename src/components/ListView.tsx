@@ -155,7 +155,6 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstanceId?: string, expanded: boolean = true): GestaltInstance => {
 
-
         let newInstanceId = String(index)
         if (typeof parentGestaltInstanceId !== 'undefined') {
             const parentInstanceId = parentGestaltInstanceId
@@ -166,9 +165,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         let newGestaltInstance = {
             instanceId: newInstanceId,
             gestaltId: gestaltId,
-            children: [] as GestaltInstance[],
+            children: null as GestaltInstance[],
             expanded: false
         }
+
         if (expanded)
             newGestaltInstance = this.expandGestaltInstance(newGestaltInstance)
 
@@ -180,12 +180,15 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const allGestalts = this.state.allGestalts
 
 
-        const giOut: GestaltInstance = { ...gi }
+        const giOut: GestaltInstance = { ...gi, expanded:true }
 
-        giOut.children = allGestalts[giOut.gestaltId].relatedIds
-            .map((gId: string, i: number) => {
-                return this.createGestaltInstance(gId, i, giOut.instanceId, false)
-            })
+        console.assert(typeof giOut.children !== "undefined")
+        if(giOut.children===null) 
+            giOut.children = allGestalts[giOut.gestaltId].relatedIds
+                .map((gId: string, i: number) => {
+                    return this.createGestaltInstance(gId, i, giOut.instanceId, false)
+                })
+
         giOut.expanded = true;
 
         return giOut;
@@ -272,7 +275,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 parentGestaltInstance.children[existingChildIndex] = this.expandGestaltInstance(existingChild)
             }
         } else { //not yet added
-            console.error("THIS SHOULD NEVER BE REACHED NOW")
+            console.error("child should always be found now")
             // const newlyExpandedGestaltInstance: GestaltInstance =
             //     this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance.instanceId)
             // console.log(newlyExpandedGestaltInstance)
