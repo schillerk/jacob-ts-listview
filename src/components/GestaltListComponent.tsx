@@ -26,6 +26,7 @@ export class GestaltListComponent extends React.Component<GestaltListProps, Gest
                     // const gestaltInstanceId: string = instance.id + "-" + id
                     return (
                         <GestaltComponent
+                            expanded={instance.expanded}
                             key={instance.instanceId}
                             gestaltInstance={instance}
                             // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}

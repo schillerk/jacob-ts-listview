@@ -18,6 +18,7 @@ export interface GestaltComponentState {
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     gestaltInstance: HydratedGestaltHierarchicalViewItemContents
 
+    expanded: boolean
     updateGestaltText: (gestaltId: string, newText: string) => void
     toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltHierarchicalViewItemContents) => void
 }
@@ -40,17 +41,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         //   return !(JSON.stringify(this.props.gestaltInstance) === JSON.stringify(nextProps.gestaltInstance) )
     }
 
-    render(): JSX.Element {
-        return (
-            <li>
-                {/* gestalt body */}
-
-                {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
-                <span
-                    contentEditable
-                    suppressContentEditableWarning
-                    ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
-                    onKeyDown={(e) => {
+    onKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>) => {
                         switch (e.keyCode) {
                             case Util.KEY_CODES.ENTER:
                                 e.preventDefault()
@@ -67,11 +58,25 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                 break;
                         }
 
-                    } }
-                    onInput={() => {
-                        this.props.updateGestaltText(this.props.gestaltInstance.gestaltId, this.nodeSpan.innerText)
-                    } }
-                    >
+                    } 
+    
+    onInput = () => {
+        this.props.updateGestaltText(this.props.gestaltInstance.gestaltId, this.nodeSpan.innerText)
+    } 
+
+    render(): JSX.Element {
+        return (
+            <li>
+                {/* gestalt body */}
+
+                {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
+                <span
+                    contentEditable
+                    suppressContentEditableWarning
+                    ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
+                    onKeyDown={this.onKeyDown}
+                    onInput={this.onInput}
+                >
                     {this.props.gestaltInstance.gestalt.text}
                 </span>
 
