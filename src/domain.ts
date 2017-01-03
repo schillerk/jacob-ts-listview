@@ -7,14 +7,14 @@ Example of the state object:
 {
   gestaltInstances: [
     {
-      instanceId,
+      instanceId, // 0
       gestaltId,
       expandedChildren: [
         {
-          instanceId,
+          instanceId, // 0.0
           gestaltId,
           expandedChildren: [
-            instanceId,
+            instanceId, // 0.0.0
             gestaltId,
             expandedChildren: [...]
           ]
@@ -27,11 +27,6 @@ Example of the state object:
     text,
     relatedIds: []
   },
-  gestaltInstanceLookupMap: {
-    instanceId1: { instanceId, gestaltId, expandedChildren: [...] },
-    instanceId2: { ...},
-    ...
-  }
 }
 
 */
@@ -50,7 +45,7 @@ export interface GestaltCollection {
 export interface GestaltInstance {
     instanceId: string
     gestaltId: string
-    expandedChlidren: GestaltInstance[]
+    expandedChildren: GestaltInstance[]
 }
 
 export interface GestaltInstanceLookupMap {

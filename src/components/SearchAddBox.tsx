@@ -10,7 +10,7 @@ export interface SearchAddBoxState {
 }
 
 export interface SearchAddBoxProps extends React.Props<SearchAddBox> {
-    addGestalt: (text: string) => void
+    onAddGestalt: (text: string) => void
     autoFocus: boolean
 }
 
@@ -34,7 +34,7 @@ export class SearchAddBox extends React.Component<SearchAddBoxProps, SearchAddBo
                     onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
                         if (e.keyCode === Util.KEY_CODES.ENTER) {
                             e.preventDefault() // prevents onChange
-                            this.props.addGestalt(e.currentTarget.value)
+                            this.props.onAddGestalt(e.currentTarget.value)
                             this.setState({ searchAddBox: "" })
                         }
                     }

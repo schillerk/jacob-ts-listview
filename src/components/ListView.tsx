@@ -7,10 +7,12 @@ import { SearchAddBox } from './SearchAddBox'
 import { Gestalt, GestaltCollection, GestaltInstance, GestaltInstanceLookupMap, createGestaltInstance } from '../domain';
 import * as Util from '../util';
 
+export const INSTANCE_ID_DELIMITER = '.'
+
 export interface ListViewState {
     allGestalts?: { [id: string]: Gestalt }
     gestaltInstances?: GestaltInstance[]
-    gestaltInstancesLookupMap: GestaltInstanceLookupMap
+    gestaltInstancesLookupMap?: GestaltInstanceLookupMap
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -26,7 +28,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         super(props);
 
         const initState: ListViewState = {
-            gestaltInstances: {},
+            gestaltInstances: [],
             allGestalts: {
                 '0': {
                     gestaltId: '0',
@@ -56,12 +58,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
         for (let i = 0; i < 10; i++) {
-            const newGestalt = this.makeNewGestalt(Math.random() + '')
+            const newGestalt = this.createGestalt(Math.random() + '')
             newGestalts[newGestalt.gestaltId] = newGestalt
 
-            const instanceId: string = "-" + newGestalt.gestaltId
-            initState.gestaltInstances[instanceId] =
-                this.createGestaltInstance(instanceId, newGestalt.gestaltId, true, null, false)
+            initState.gestaltInstances.push(
+                this.createGestaltInstance(newGestalt.gestaltId, i))
 
         }
 
@@ -78,7 +79,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             // initState.expandedGestaltInstances["-" + id] = this.createGestaltInstance(instanceId, id, null, false)
             // initState.allGestalts[id].instanceAndVisibleNubIds[instanceId] = true
 
-            
+
         })
 
         this.state = { allGestalts: { ...initState.allGestalts, ...newGestalts }, gestaltInstances: initState.gestaltInstances }
@@ -115,76 +116,90 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         }
     }
 
-    setInstanceShouldUpdate = (instanceId: string, shouldUpdate: boolean) => {
-
-        const expandedGestaltInstances = this.state.gestaltInstances
-        expandedGestaltInstances[instanceId].shouldUpdate = shouldUpdate
-
-        // this.setState({expandedGestaltInstances:expandedGestaltInstances})
-    }
-
-    makeNewGestalt = (text: string = '') => {
+    createGestalt = (text: string = '') => {
         const uid: string = Util.genGUID()
         const newGestalt: Gestalt = {
             text: text,
             gestaltId: uid,
             relatedIds: [],
-            instanceAndVisibleNubIds: {}
         }
 
         return newGestalt
     }
 
-    addGestalt = (text: string): void => {
-        const newGestalt = this.makeNewGestalt(text)
+    addGestalt = (text: string, offset: number): void => {
+        const newGestalt = this.createGestalt(text)
 
+        let gestalts: { [id: string]: Gestalt } = {
+            ...this.state.allGestalts,
+            [newGestalt.gestaltId]: newGestalt
+        }
 
-        let gestalts: { [id: string]: Gestalt } = this.state.allGestalts
-        gestalts[newGestalt.gestaltId] = newGestalt
+        let instance = this.createGestaltInstance(newGestalt.gestaltId, offset)
 
-        const expandedGestaltInstances = this.state.gestaltInstances
-        const instanceId = "-" + newGestalt.gestaltId
-        // expandedGestaltInstances[instanceId] = this.createGestaltInstance(instanceId, newGestalt.gestaltId, null, false)
-        // gestalts[newGestalt.gestaltId].instanceAndVisibleNubIds[instanceId] = true
-        this.createAndExpandGestaltInstance(this.state, {
-            gestaltInstanceId: instanceId,
-            gestaltId: newGestalt.gestaltId,
-            parentGestaltInstanceId: null,
-            shouldUpdate: false,
-        }, true)
-        // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
-        // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
-        //gestalts[Object.keys(gestalts)[0]].relatedIds[0]="ooo"
-        // console.log(this.state.gestalts === gestalts, "hi")
-
-        // // newGestalts[uid]= newGestalt 
-        // // newGestalts[Object.keys(newGestalts)[0]].text="vvv"
-        // // newGestalts[Object.keys(newGestalts)[0]].relatedIds.push("ooo")
-        // newGestalts[Object.keys(newGestalts)[0]].relatedIds[0]="ooo"
-
-        // newGestalts[Object.keys(newGestalts)[0]].relatedIds[0]="ooo"
-
-        //no need for an immutable copy, react pick up changes to objects in state!
-        // let newGestalts = {
-        //     ...this.state.gestalts,
-        //     [uid]: newGestalt
-        // }
-        this.setState({ allGestalts: gestalts, gestaltInstances: expandedGestaltInstances })
+        this.setState({
+            gestaltInstances: this.insertGestaltInstance(this.state.gestaltInstances, instance, offset),
+            allGestalts: gestalts
+        })
     }
 
-    createGestaltInstance = (gestaltInstanceId: string, gestaltId: string, expanded: boolean, parentGestaltInstanceId: string, shouldUpdate: boolean) => {
+    createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstance?: GestaltInstance): GestaltInstance => {
+        let newInstanceId = String(index)
+        if (typeof parentGestaltInstance != 'undefined') {
+            let parentInstanceId = parentGestaltInstance.instanceId
+            newInstanceId = parentInstanceId + INSTANCE_ID_DELIMITER + newInstanceId
+        }
 
         return {
-            instanceId: gestaltInstanceId,
+            instanceId: newInstanceId,
             gestaltId: gestaltId,
-            expanded: expanded,
-            parentGestaltInstanceId: parentGestaltInstanceId,
-            shouldUpdate: shouldUpdate,
+            expandedChildren: []
         }
     }
 
+    // Takes a list of gestaltInstances rather than accessing this.state.gestaltInstances
+    // to make the method more reusable (i.e. for nested items).
+    insertGestaltInstance = (gestaltInstances: GestaltInstance[], gestaltInstance: GestaltInstance, offset: number) : GestaltInstance[] => {
+        gestaltInstances = gestaltInstances.slice()
+        gestaltInstances.splice(offset, 0, gestaltInstance)
+        this.deepFixGestaltInstanceIds(gestaltInstances)
+        return gestaltInstances
+    }
 
-    toggleExpand = (nubGestaltId: string, parentGestaltInstanceId: string) => {
+    // In-place, recursive operation on gestaltInstance[]
+    // NOTE: This could definitely be optimized more
+    deepFixGestaltInstanceIds = (instances: GestaltInstance[], prefix?: string) : void => {
+        instances.forEach((instance, index) => {
+            let correctId = _.filter([prefix, index]).join(INSTANCE_ID_DELIMITER)
+            if (instance.instanceId != correctId) {
+                instance.instanceId = correctId
+            }
+            this.deepFixGestaltInstanceIds(instance.expandedChildren, instance.instanceId + INSTANCE_ID_DELIMITER)
+        })
+    }
+
+    findGestaltInstance = (instanceId: string) : GestaltInstance => {
+        let idParts = instanceId.split(INSTANCE_ID_DELIMITER)
+        let instances = this.state.gestaltInstances
+        let instance : GestaltInstance
+        idParts.forEach(part => {
+            instance = instances[parseInt(part)]
+            instances = instance.expandedChildren
+        })
+        return instance
+    }
+
+    toggleExpand = (parentGestaltInstanceId: string, gestaltId: string) => {
+        // NOTE: need to deal with recursive copying of the gestaltInstances object
+        //  ^^ should work similarly to findGestaltInstance
+        let parentGestaltInstance = this.findGestaltInstance(parentGestaltInstanceId)
+        let existingExpandedChild = _.find(parentGestaltInstance.expandedChildren,
+            child => child.gestaltId == gestaltId)
+
+        if (existingExpandedChild) {
+            
+        }
+
         const expandedGestaltInstances = this.state.gestaltInstances
         const allGestalts = this.state.allGestalts
 
@@ -214,24 +229,18 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.setState({ gestaltInstances: expandedGestaltInstances })
     }
 
-    setGestaltAndParentsShouldUpdate = (gestaltInstanceId: string) => {
-        const expandedGestaltInstances = this.state.gestaltInstances
-
-        for (let gIId: string = gestaltInstanceId; gIId !== null; gIId = expandedGestaltInstances[gIId].parentGestaltInstanceId) {
-            console.assert(typeof expandedGestaltInstances[gIId] !== "undefined", "data structure error", gIId)
-            expandedGestaltInstances[gIId].shouldUpdate = true;
-        }
-    }
-
     updateGestaltText = (id: string, newText: string) => {
         const timeInd = this.updateTimes.push(Date.now()) - 1
 
-        const gestalts = this.state.allGestalts
-        gestalts[id].text = newText
+        let updatedGestalt = {
+            ...this.state.allGestalts[id],
+            text: newText
+        }
 
-        Object.keys(gestalts[id].instanceAndVisibleNubIds).forEach(currInstanceId => {
-            this.setGestaltAndParentsShouldUpdate(currInstanceId)
-        })
+        let gestalts = {
+            ...this.state.allGestalts,
+            updatedGestalt
+        }
 
         this.setState({ allGestalts: gestalts }, () => {
             this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
@@ -243,45 +252,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     render() {
         return (
             <div>
-                {/*
-                    <input
-                    type="text"
-                    placeholder="Search/add gestalts: "
-                    onChange={(e) => {
-                        this.setState({ ...this.state, "searchAddBox": ((e.target) as any).value })
-                    }
-                    }
-                    value={this.state.searchAddBox}
-                    ref="filter" tabIndex={2} size={150} />
-                */}
-
-                {/* 
-                    <textarea
-                    placeholder="Search/add gestalts: "
-                    onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
-                        if (e.keyCode === 13) {
-                            e.preventDefault() // prevents onChange
-                            this.addGestalt(e.currentTarget.value)
-                            this.setState({ searchAddBox: "" })
-                        }
-                    }
-                    }
-                    onChange={(e: React.FormEvent<HTMLTextAreaElement>): void => {
-                        this.setState({ searchAddBox: e.currentTarget.value }) //#slow
-                        
-                    }
-                    }
-                    ref={(e: HTMLTextAreaElement) => { this.searchAddBox = e; }}
-                    tabIndex={2} cols={20} value={this.state.searchAddBox}> */}
-                {/* #slow */}
-
-                {/*                 tabIndex={2} cols={20}> */}
-
-                {/*    </textarea>*/}
-
                 <SearchAddBox
                     autoFocus
-                    addGestalt={this.addGestalt}
+                    onAddGestalt={this.addGestalt}
                     ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                     />
                 <GestaltListComponent
@@ -290,12 +263,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     updateGestaltText={this.updateGestaltText}
                     toggleExpand={this.toggleExpand}
                     />
-
-
-   
-
             </div>
         )
     }
-
 }
