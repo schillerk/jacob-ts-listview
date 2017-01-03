@@ -182,9 +182,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     // to make the method more reusable (i.e. for nested items).
     collapseGestaltInstance = (gestaltInstances: GestaltInstance[], index: number): GestaltInstance[] => {
         //TODO: if we're going to persist expansion state of subtree we can't delete instances that are collapsed
-        
+
         gestaltInstances = gestaltInstances.slice()
-        gestaltInstances[index].expanded=false;
+        gestaltInstances[index].expanded = false;
         // this.deepFixGestaltInstanceIds(gestaltInstances)
         return gestaltInstances
     }
@@ -192,10 +192,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     // In-place, recursive operation on gestaltInstance[]
     // NOTE: This could definitely be optimized more
     deepFixGestaltInstanceIds = (instances: GestaltInstance[], prefix?: string): void => {
-        if (typeof prefix !== "undefined")
+        if (typeof prefix !== "undefined") {
             prefix = prefix + INSTANCE_ID_DELIMITER
+        }
         else {
             if (instances.length > 0) {
+                //#hack to populate prefix
                 prefix = instances[0].instanceId.split(INSTANCE_ID_DELIMITER).slice(0, -1).join(INSTANCE_ID_DELIMITER)
                 console.assert(typeof prefix === "string")
                 if (prefix !== "")
@@ -249,20 +251,19 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const existingChildIndex = _.findIndex(parentGestaltInstance.children,
             child => child.gestaltId == gestaltToExpandId)
 
-        const existingChild=parentGestaltInstance.children[existingChildIndex]
-
-
         if (existingChildIndex !== -1) {
-            if(existingChild.expanded) //present and expanded
-                this.collapseGestaltInstance(parentGestaltInstance.children,existingChildIndex)
+            const existingChild = parentGestaltInstance.children[existingChildIndex]
+
+            if (existingChild.expanded) //present and expanded
+                this.collapseGestaltInstance(parentGestaltInstance.children, existingChildIndex)
             else //present and collapsed
-                existingChild.expanded=true
+                existingChild.expanded = true
         } else { //not yet added
             const newlyExpandedGestaltInstance: GestaltInstance =
                 this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance)
             console.log(newlyExpandedGestaltInstance)
             // parentGestaltInstance.expandedChildren.push(newlyExpandedGestaltInstance)
-            parentGestaltInstance.children = 
+            parentGestaltInstance.children =
                 this.insertGestaltInstance(parentGestaltInstance.children, newlyExpandedGestaltInstance, 0);
         }
 

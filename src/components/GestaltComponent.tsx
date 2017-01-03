@@ -131,10 +131,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                         let nubIsExpanded = false //nubKey in this.props.expandedGestaltInstances && this.props.expandedGestaltInstances[nubKey].expanded === true
                         const existingChildIndex = _.findIndex(this.props.gestaltInstance.children,
                             child => child.gestaltId == nubGestaltId)
-                        const existingChild = this.props.gestaltInstance.children[existingChildIndex]
                         if (existingChildIndex !== -1) {
+                            const existingChild = this.props.gestaltInstance.children[existingChildIndex]
                             if (existingChild.expanded) //present and expanded
-                                nubIsExpanded=true
+                                nubIsExpanded = true
                         }
 
                         return (
