@@ -2,12 +2,9 @@ import * as React from "react";
 import * as _ from "lodash";
 import { LinkedList, Stack } from "../LinkedList"
 
-import { Gestalt, GestaltCollection, GestaltInstance, createGestaltInstance } from '../domain';
+import { Gestalt, GestaltCollection, GestaltInstance, createGestaltInstance, HydratedGestaltInstance } from '../domain';
 import { GestaltListComponent } from './GestaltListComponent';
 import * as Util from '../util';
-
-export interface GestaltComponentState {
-}
 
 declare module "react" {
     interface HTMLProps<T> {
@@ -15,11 +12,13 @@ declare module "react" {
     }
 }
 
+export interface GestaltComponentState {
+}
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     updateGestaltText: (gestaltId: string, newText: string) => void
     allGestalts: GestaltCollection
-    gestaltInstance: GestaltInstance
+    gestaltInstance: HydratedGestaltInstance
     toggleExpand: (nubGestaltId: string, parentGestaltInstanceId: string) => void
 }
 
@@ -29,7 +28,18 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     nodeSpan: HTMLSpanElement
     // expandedChildren: { [id: string]: Gestalt } = {}
 
-    // shouldComponentUpdate(nextProps: GestaltComponentProps) {
+    shouldComponentUpdate(nextProps: GestaltComponentProps) {
+
+        // if (this.props.gestaltInstance.gestalt.relatedIds.length > 0) {
+        //     console.log(this.props.gestaltInstance.gestalt.text, nextProps.gestaltInstance.gestalt.text, "\n",
+        //         this.props.gestaltInstance, nextProps.gestaltInstance);
+        // }
+        return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance))
+        // return !(_.isEqual(this.props.gestaltInstance, nextProps.gestaltInstance))
+
+        // slower by 8fps!
+        //   return !(JSON.stringify(this.props.gestaltInstance) === JSON.stringify(nextProps.gestaltInstance) )
+    }
     //     // const nextExpandedChildren: { [id: string]: Gestalt } = {}
 
     //     // this.props.gestalt.relatedIds.forEach(id => {
@@ -204,6 +214,15 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                         )
                     })}
                 </ul>
+                <GestaltListComponent
+                    gestaltInstances={this.props.gestaltInstance.expandedChildren.map(gi => {
+                        return Util.hydrateGestaltInstanceTree(gi, this.props.allGestalts)
+                    })
+                    }
+                    allGestalts={this.props.allGestalts}
+                    updateGestaltText={this.props.updateGestaltText}
+                    toggleExpand={this.props.toggleExpand}
+                    />
                 {/*
                 <GestaltComponent
                     key={instance.instanceId}

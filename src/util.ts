@@ -1,4 +1,5 @@
 import * as _ from "lodash";
+import { Gestalt, GestaltCollection, GestaltInstance, createGestaltInstance, HydratedGestaltInstance } from './domain';
 
 var count = 0;
 
@@ -26,10 +27,25 @@ export const SPECIAL_CHARS_JS = {
     NBSP: "\xa0"
 }
 
-export function average (arr:number[])
-{
-	return _.reduce(arr, function(memo, num)
-	{
-		return memo + num;
-	}, 0) / arr.length;
+export function average(arr: number[]) {
+    return _.reduce(arr, function (memo, num) {
+        return memo + num;
+    }, 0) / arr.length;
+}
+
+export function hydrateGestaltInstanceTree(gestaltInstance: GestaltInstance, allGestalts: { [id: string]: Gestalt }):HydratedGestaltInstance {
+    const gestalt : Gestalt = allGestalts[gestaltInstance.gestaltId];
+    const hydratedGestaltInstanceTree: HydratedGestaltInstance = {
+        ...gestaltInstance,
+        gestalt: gestalt,
+        relatedGestalts: gestalt.relatedIds.map((id) => {
+            return allGestalts[id];
+        })
+    };
+
+    gestaltInstance.expandedChildren.map((childGestaltInstance) => {
+        this.hydrateGestaltInstanceTree(childGestaltInstance, allGestalts)
+    });
+
+    return hydratedGestaltInstanceTree
 }

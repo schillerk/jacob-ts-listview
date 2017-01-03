@@ -6,7 +6,7 @@ import * as _ from "lodash";
 import { GestaltListComponent } from './GestaltListComponent'
 import { SearchAddBox } from './SearchAddBox'
 
-import { Gestalt, GestaltCollection, GestaltInstance, GestaltInstanceLookupMap, createGestaltInstance } from '../domain';
+import { Gestalt, GestaltCollection, GestaltInstance, GestaltInstanceLookupMap, createGestaltInstance, HydratedGestaltInstance } from '../domain';
 import * as Util from '../util';
 
 export const INSTANCE_ID_DELIMITER = '.'
@@ -55,7 +55,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         let newGestalts: GestaltCollection = {}
 
         //finish populating allGestalts
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 1000; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -63,7 +63,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
 
-        Object.keys(initState.allGestalts).forEach( (id,i) => {
+        Object.keys(initState.allGestalts).forEach((id, i) => {
 
             initState.gestaltInstances.push(
                 this.createGestaltInstance(id, i))
@@ -132,9 +132,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     addGestalt = (text: string, offset?: number): void => {
-        if(typeof offset === "undefined")
-            offset=0
-            //#hack #temp
+        if (typeof offset === "undefined")
+            offset = 0
+        //#hack #temp
 
         const newGestalt = this.createGestalt(text)
 
@@ -250,13 +250,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     updateGestaltText = (id: string, newText: string) => {
         const timeInd = this.updateTimes.push(Date.now()) - 1
-        console.log("blah", newText + "str");
-        const updatedGestalt : Gestalt = {
+        const updatedGestalt: Gestalt = {
             ...this.state.allGestalts[id],
             text: newText
         }
 
-        const updatedAllGestalts : {[gestaltId: string]: Gestalt} = {
+        const updatedAllGestalts: { [gestaltId: string]: Gestalt } = {
             ...this.state.allGestalts,
             [updatedGestalt.gestaltId]: updatedGestalt
         }
@@ -268,6 +267,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
 
+
     render() {
         return (
             <div>
@@ -277,7 +277,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                     />
                 <GestaltListComponent
-                    gestaltInstances={this.state.gestaltInstances}
+                    gestaltInstances={this.state.gestaltInstances.map(gi => {
+                        return Util.hydrateGestaltInstanceTree(gi, this.state.allGestalts)
+                    })
+                    }
                     allGestalts={this.state.allGestalts}
                     updateGestaltText={this.updateGestaltText}
                     toggleExpand={this.toggleExpand}

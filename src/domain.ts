@@ -48,6 +48,11 @@ export interface GestaltInstance {
     expandedChildren: GestaltInstance[]
 }
 
+export interface HydratedGestaltInstance extends GestaltInstance { 
+  gestalt: Gestalt
+  relatedGestalts: Gestalt[]
+}
+
 export interface GestaltInstanceLookupMap {
     [instanceId: string]: GestaltInstance
 }
