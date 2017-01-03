@@ -66,7 +66,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         Object.keys(initState.allGestalts).forEach((id, i) => {
 
             initState.gestaltInstances.push(
-                this.createGestaltInstance(id, i,undefined, false))
+                this.createGestaltInstance(id, i, undefined, false))
 
             //     const instanceId = "-" + id
 
@@ -89,9 +89,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         }
 
     }
-    
+
     componentWillMount() {
-        this.state.gestaltInstances=this.state.gestaltInstances.map(gi => this.expandGestaltInstance(gi))
+        this.state.gestaltInstances = this.state.gestaltInstances.map(gi => this.expandGestaltInstance(gi))
     }
 
     // createAndExpandGestaltInstance = (theState: ListViewState, gIP: { gestaltInstanceId: string, gestaltId: string, parentGestaltInstanceId: string, shouldUpdate: boolean }, expand: boolean) => {
@@ -135,7 +135,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return newGestalt
     }
 
-    addGestalt = (text: string, offset: number=0): void => {
+    addGestalt = (text: string, offset: number = 0): void => {
 
 
         const newGestalt = this.createGestalt(text)
@@ -153,9 +153,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         })
     }
 
-    createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstanceId?: string, expanded: boolean=true): GestaltInstance => {
+    createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstanceId?: string, expanded: boolean = true): GestaltInstance => {
 
-        
+
         let newInstanceId = String(index)
         if (typeof parentGestaltInstanceId !== 'undefined') {
             const parentInstanceId = parentGestaltInstanceId
@@ -175,13 +175,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return newGestaltInstance
     }
 
-    //#todo. it's  not an immutable operation
+    //IMMUTABLE OPERATION
     expandGestaltInstance = (gi: GestaltInstance): GestaltInstance => {
-        const allGestalts=this.state.allGestalts
+        const allGestalts = this.state.allGestalts
 
-        console.log(gi.instanceId)
-        
-        const giOut: GestaltInstance = gi
+
+        const giOut: GestaltInstance = { ...gi }
 
         giOut.children = allGestalts[giOut.gestaltId].relatedIds
             .map((gId: string, i: number) => {
@@ -265,11 +264,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             const existingChild = parentGestaltInstance.children[existingChildIndex]
 
             if (existingChild.expanded) //present and expanded
-                this.collapseGestaltInstance(parentGestaltInstance.children, existingChildIndex)
+                parentGestaltInstance.children[existingChildIndex] = { ...existingChild, expanded: false }
+            // this.collapseGestaltInstance(parentGestaltInstance.children, existingChildIndex)
             else //present and collapsed 
             {
                 //#TODO move to front of array when expanding and deepFixGestaltInstanceIds?
-                this.expandGestaltInstance(existingChild)
+                parentGestaltInstance.children[existingChildIndex] = this.expandGestaltInstance(existingChild)
             }
         } else { //not yet added
             console.error("THIS SHOULD NEVER BE REACHED NOW")
