@@ -9,14 +9,17 @@ Example of the state object:
     {
       instanceId, // 0
       gestaltId,
-      expandedChildren: [
+      expanded,
+      children: [
         {
           instanceId, // 0.0
           gestaltId,
-          expandedChildren: [
+          expanded,
+          children: [
             instanceId, // 0.0.0
             gestaltId,
-            expandedChildren: [...]
+            expanded,
+            children: [...]
           ]
         }
       ]
@@ -27,6 +30,9 @@ Example of the state object:
     text,
     relatedIds: []
   },
+
+
+
 allInstances: {
     [instanceId: string]: GestaltInstance
   },
