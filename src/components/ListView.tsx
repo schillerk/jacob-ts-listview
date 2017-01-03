@@ -12,7 +12,6 @@ export const INSTANCE_ID_DELIMITER = '.'
 export interface ListViewState {
     allGestalts?: { [id: string]: Gestalt }
     gestaltInstances?: GestaltInstance[]
-    gestaltInstancesLookupMap?: GestaltInstanceLookupMap
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -34,20 +33,17 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     gestaltId: '0',
                     text: 'hack with jacob!',
                     relatedIds: [],
-                    instanceAndVisibleNubIds: {}
                 },
                 '1': {
                     gestaltId: '1',
                     text: 'build ideaflow!',
                     relatedIds: ['2', '0'],
-                    instanceAndVisibleNubIds: {}
 
                 },
                 '2': {
                     gestaltId: '2',
                     text: 'bring peace to world!',
                     relatedIds: ['1'],
-                    instanceAndVisibleNubIds: {}
 
                 },
             }
@@ -56,25 +52,28 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         let newGestalts: GestaltCollection = {}
 
-
+        //finish populating allGestalts
         for (let i = 0; i < 10; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
-            newGestalts[newGestalt.gestaltId] = newGestalt
-
-            initState.gestaltInstances.push(
-                this.createGestaltInstance(newGestalt.gestaltId, i))
-
+            initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
 
-        Object.keys(initState.allGestalts).forEach(id => {
-            const instanceId = "-" + id
 
-            this.createAndExpandGestaltInstance(initState, {
-                gestaltInstanceId: instanceId,
-                gestaltId: id,
-                parentGestaltInstanceId: null,
-                shouldUpdate: false,
-            }, true)
+
+
+        Object.keys(initState.allGestalts).forEach(id => {
+
+initState.gestaltInstances.push(
+                this.createGestaltInstance(newGestalt.gestaltId, i))
+
+        //     const instanceId = "-" + id
+
+        //     this.createAndExpandGestaltInstance(initState, {
+        //         gestaltInstanceId: instanceId,
+        //         gestaltId: id,
+        //         parentGestaltInstanceId: null,
+        //         shouldUpdate: false,
+        //     }, true)
 
             // initState.expandedGestaltInstances["-" + id] = this.createGestaltInstance(instanceId, id, null, false)
             // initState.allGestalts[id].instanceAndVisibleNubIds[instanceId] = true
@@ -82,7 +81,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         })
 
-        this.state = { allGestalts: { ...initState.allGestalts, ...newGestalts }, gestaltInstances: initState.gestaltInstances }
+        this.state = { allGestalts: { ...initState.allGestalts, ...newGestalts }, 
+        gestaltInstances: initState.gestaltInstances }
 
     }
 
@@ -144,6 +144,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     createGestaltInstance = (gestaltId: string, index: number, parentGestaltInstance?: GestaltInstance): GestaltInstance => {
+
         let newInstanceId = String(index)
         if (typeof parentGestaltInstance != 'undefined') {
             let parentInstanceId = parentGestaltInstance.instanceId
@@ -159,7 +160,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     // Takes a list of gestaltInstances rather than accessing this.state.gestaltInstances
     // to make the method more reusable (i.e. for nested items).
-    insertGestaltInstance = (gestaltInstances: GestaltInstance[], gestaltInstance: GestaltInstance, offset: number) : GestaltInstance[] => {
+    insertGestaltInstance = (gestaltInstances: GestaltInstance[], gestaltInstance: GestaltInstance, offset: number): GestaltInstance[] => {
         gestaltInstances = gestaltInstances.slice()
         gestaltInstances.splice(offset, 0, gestaltInstance)
         this.deepFixGestaltInstanceIds(gestaltInstances)
@@ -168,7 +169,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     // In-place, recursive operation on gestaltInstance[]
     // NOTE: This could definitely be optimized more
-    deepFixGestaltInstanceIds = (instances: GestaltInstance[], prefix?: string) : void => {
+    deepFixGestaltInstanceIds = (instances: GestaltInstance[], prefix?: string): void => {
         instances.forEach((instance, index) => {
             let correctId = _.filter([prefix, index]).join(INSTANCE_ID_DELIMITER)
             if (instance.instanceId != correctId) {
@@ -178,10 +179,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         })
     }
 
-    findGestaltInstance = (instanceId: string) : GestaltInstance => {
+    findGestaltInstance = (instanceId: string): GestaltInstance => {
         let idParts = instanceId.split(INSTANCE_ID_DELIMITER)
         let instances = this.state.gestaltInstances
-        let instance : GestaltInstance
+        let instance: GestaltInstance
         idParts.forEach(part => {
             instance = instances[parseInt(part)]
             instances = instance.expandedChildren
@@ -193,11 +194,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         // NOTE: need to deal with recursive copying of the gestaltInstances object
         //  ^^ should work similarly to findGestaltInstance
         // let parentGestaltInstance = this.findGestaltInstance(parentGestaltInstanceId)
-        
+
         let idParts = parentGestaltInstanceId.split(INSTANCE_ID_DELIMITER)
-        let instances : GestaltInstance[]
+        let instances: GestaltInstance[]
         let allInstances = instances = this.state.gestaltInstances
-        let instance : GestaltInstance
+        let instance: GestaltInstance
         idParts.forEach(part => {
             instance = { ...instances[parseInt(part)] }
             instances = instance.expandedChildren
@@ -207,7 +208,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             child => child.gestaltId == gestaltId)
 
         if (existingExpandedChild) {
-            
+
         }
 
         const expandedGestaltInstances = this.state.gestaltInstances
