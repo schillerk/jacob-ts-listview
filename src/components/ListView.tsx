@@ -156,8 +156,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         let newInstanceId = String(index)
         if (typeof parentGestaltInstance !== 'undefined') {
             const parentInstanceId = parentGestaltInstance.instanceId
-        console.log(parentInstanceId)
-            
+            console.log(parentInstanceId)
+
             newInstanceId = parentInstanceId + INSTANCE_ID_DELIMITER + newInstanceId
         }
 
@@ -177,22 +177,33 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return gestaltInstances
     }
 
+    // Takes a list of gestaltInstances rather than accessing this.state.gestaltInstances
+    // to make the method more reusable (i.e. for nested items).
+    collapseGestaltInstance = (gestaltInstances: GestaltInstance[], index: number): GestaltInstance[] => {
+        //TODO: if we're going to persist expansion state of subtree we can't delete instances that are collapsed
+        
+        // gestaltInstances = gestaltInstances.slice()
+        // gestaltInstances.splice(index, 1)
+        // this.deepFixGestaltInstanceIds(gestaltInstances)
+        return gestaltInstances
+    }
+
     // In-place, recursive operation on gestaltInstance[]
     // NOTE: This could definitely be optimized more
     deepFixGestaltInstanceIds = (instances: GestaltInstance[], prefix?: string): void => {
         if (typeof prefix !== "undefined")
             prefix = prefix + INSTANCE_ID_DELIMITER
         else {
-            if(instances.length>0) {
-                prefix = instances[0].instanceId.split(INSTANCE_ID_DELIMITER).slice(0,-1).join(INSTANCE_ID_DELIMITER)
+            if (instances.length > 0) {
+                prefix = instances[0].instanceId.split(INSTANCE_ID_DELIMITER).slice(0, -1).join(INSTANCE_ID_DELIMITER)
                 console.assert(typeof prefix === "string")
-                if(prefix!=="")
-                    prefix+=INSTANCE_ID_DELIMITER
+                if (prefix !== "")
+                    prefix += INSTANCE_ID_DELIMITER
             }
         }
 
         instances.forEach((instance, index) => {
-            let correctId = prefix+String(index)
+            let correctId = prefix + String(index)
             console.assert(correctId.length > 0, "correctId" + [prefix, index])
             if (instance.instanceId != correctId) {
                 instance.instanceId = correctId
@@ -239,7 +250,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
         if (existingExpandedChildIndex !== -1) {
-
+            this.collapseGestaltInstance(parentGestaltInstance.expandedChildren,existingExpandedChildIndex)
         } else {
             const newlyExpandedGestaltInstance: GestaltInstance =
                 this.createGestaltInstance(gestaltToExpandId, 0, parentGestaltInstance)
@@ -248,8 +259,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             parentGestaltInstance.expandedChildren = this.insertGestaltInstance(parentGestaltInstance.expandedChildren, newlyExpandedGestaltInstance, 0);
         }
 
-        this.setState({
-        })
+        this.setState({})
         // gestaltInstances: this.insertGestaltInstance(parentGestaltInstance.expandedChildren, instance, 0),
 
 
