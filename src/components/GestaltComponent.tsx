@@ -18,14 +18,28 @@ export interface GestaltComponentState {
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     gestaltInstance: HydratedGestaltHierarchicalViewItemContents
 
-    expanded: boolean
+    index: number
+
+    handleArrows: (arrowDir: Util.KEY_CODES, fromIndex: number) => void
+
     updateGestaltText: (gestaltId: string, newText: string) => void
     toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltHierarchicalViewItemContents) => void
+    addGestalt: (text: string, offset: number) => void
 }
 
 // #TODO: order comes out randomly, needs to be an OrderedMap
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
     nodeSpan: HTMLSpanElement
+
+    focus = () => { this.nodeSpan && this.nodeSpan.focus() }
+    
+    moveCaretToEnd=(e:React.FocusEvent<HTMLSpanElement>) => {
+        Util.moveCursorToEnd(e.currentTarget)
+        // let temp_value = e.currentTarget.innerHTML
+        // e.currentTarget.innerHTML = ''
+        // e.currentTarget.innerHTML = temp_value
+        console.log("ff")
+    }
 
     shouldComponentUpdate(nextProps: GestaltComponentProps) {
 
@@ -42,27 +56,28 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     onKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>) => {
-                        switch (e.keyCode) {
-                            case Util.KEY_CODES.ENTER:
-                                e.preventDefault()
-                                //this.props.addGestalt("e.currentTarget.value")
-                                //#todo
-                                break;
-                            case Util.KEY_CODES.DOWN:
-                                e.preventDefault()
-                                //#todo
-                                break;
-                            case Util.KEY_CODES.UP:
-                                e.preventDefault()
-                                //#todo
-                                break;
-                        }
+        switch (e.keyCode) {
+            case Util.KEY_CODES.ENTER:
+                e.preventDefault()
+                this.props.addGestalt("", this.props.index + 1)
+                //#todo
+                break;
 
-                    } 
-    
+            case Util.KEY_CODES.DOWN:
+            case Util.KEY_CODES.UP:
+
+                e.preventDefault()
+                this.props.handleArrows(e.keyCode, this.props.index)
+                //#todo
+                break;
+
+        }
+
+    }
+
     onInput = () => {
         this.props.updateGestaltText(this.props.gestaltInstance.gestaltId, this.nodeSpan.innerText)
-    } 
+    }
 
     render(): JSX.Element {
         return (
@@ -76,7 +91,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
                     onKeyDown={this.onKeyDown}
                     onInput={this.onInput}
-                >
+                    onFocus={this.moveCaretToEnd}
+                    >
                     {this.props.gestaltInstance.gestalt.text}
                 </span>
 
@@ -107,8 +123,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                                 { //assert nubId in this.props.allGestalts
                                     // (nubGestaltInstance.gestaltId in this.props.allGestalts) ?
-                                        nubText || Util.SPECIAL_CHARS_JS.NBSP
-                                        // : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
+                                    nubText || Util.SPECIAL_CHARS_JS.NBSP
+                                    // : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
                                 }
                             </li>
                         )
@@ -118,6 +134,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     gestaltInstances={this.props.gestaltInstance.hydratedChildren}
                     updateGestaltText={this.props.updateGestaltText}
                     toggleExpand={this.props.toggleExpand}
+                    addGestalt={this.props.addGestalt}
                     />
             </li>
         )

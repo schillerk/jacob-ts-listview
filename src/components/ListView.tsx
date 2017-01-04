@@ -52,7 +52,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
         //finish populating allGestalts
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 2; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -130,9 +130,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return newGestalt
     }
 
-    addGestalt = (text: string, offset: number = 0): void => {
-
-
+    addGestalt = (text: string, offset: number = 0, autoFocus:boolean=false): void => {
         const newGestalt = this.createGestalt(text)
 
         const newAllGestalts: { [id: string]: Gestalt } = {
@@ -297,6 +295,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     })}
                     updateGestaltText={this.updateGestaltText}
                     toggleExpand={this.toggleExpand}
+                    addGestalt={this.addGestalt}
                     />
             </div>
         )
