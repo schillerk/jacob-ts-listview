@@ -22,11 +22,11 @@ export interface GestaltListProps extends React.Props<GestaltListComponent> {
 export class GestaltListComponent extends React.Component<GestaltListProps, GestaltListState> {
     renderedGestaltComponents: GestaltComponent[]
 
+
     handleArrows = (arrowDir: Util.KEY_CODES, fromIndex: number) => {
         let dir: number = 0
 
         switch (arrowDir) {
-
             case Util.KEY_CODES.DOWN:
                 dir = 1
                 break
@@ -34,8 +34,14 @@ export class GestaltListComponent extends React.Component<GestaltListProps, Gest
                 dir = -1
                 break
         }
-        console.log(fromIndex, dir)
-        this.renderedGestaltComponents[fromIndex + dir].focus()
+
+        const newIndex = fromIndex + dir
+
+        if (newIndex < 0 || newIndex >= this.renderedGestaltComponents.length) {
+            return
+        }
+
+        this.renderedGestaltComponents[newIndex].focus()
     }
 
     render() {
