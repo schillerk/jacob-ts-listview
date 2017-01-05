@@ -3,7 +3,7 @@ import * as _ from "lodash";
 import { LinkedList, Stack } from "../LinkedList"
 
 import { Gestalt, GestaltsMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
-import { GestaltListComponent } from './GestaltListComponent';
+
 import * as Util from '../util';
 
 declare module "react" {
@@ -32,6 +32,28 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 // #TODO: order comes out randomly, needs to be an OrderedMap
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
     nodeSpan: HTMLSpanElement
+    renderedGestaltComponents: GestaltComponent[]
+
+    handleArrows = (arrowDir: Util.KEY_CODES, fromIndex: number) => {
+        let dir: number = 0
+
+        switch (arrowDir) {
+            case Util.KEY_CODES.DOWN:
+                dir = 1
+                break
+            case Util.KEY_CODES.UP:
+                dir = -1
+                break
+        }
+
+        const newIndex = fromIndex + dir
+
+        if (newIndex < 0 || newIndex >= this.renderedGestaltComponents.length) {
+            return
+        }
+
+        this.renderedGestaltComponents[newIndex].focus()
+    }
 
     focus = () => { this.nodeSpan && this.nodeSpan.focus() }
 
@@ -78,11 +100,14 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     render(): JSX.Element {
+        const renderedGestaltInstances = this.props.gestaltInstance.hydratedChildren
+            .filter(instance => instance.expanded)
+        this.renderedGestaltComponents = Array(renderedGestaltInstances.length)
 
         return false && !this.props.gestaltInstance.expanded ? null : (
             <li>
                 {/* gestalt body */}
-                {this.props.isRoot ? null 
+                {this.props.isRoot ? null
                     :
                     <div>
                         {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
@@ -136,16 +161,33 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                         </ul>
                     </div>
                 }
-
+                {/* render expanded children */}
                 {false && !this.props.gestaltInstance.hydratedChildren ? null
                     :
-                    <GestaltListComponent
-                        gestaltInstancesList={this.props.gestaltInstance.hydratedChildren}
+                    <ul>
+                        {
+                            renderedGestaltInstances.map((instance, i) => {
+                                // const gestaltInstanceId: string = instance.id + "-" + id
+                                return (
+                                    <GestaltComponent
+                                        key={instance.instanceId}
+                                        index={i}
+                                        gestaltInstance={instance}
+                                        // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
 
-                        updateGestaltText={this.props.updateGestaltText}
-                        toggleExpand={this.props.toggleExpand}
-                        addGestalt={this.props.addGestalt}
-                        />
+                                        ref={(gc: GestaltComponent) => { this.renderedGestaltComponents[i] = gc } }
+
+                                        updateGestaltText={this.props.updateGestaltText}
+                                        toggleExpand={this.props.toggleExpand}
+                                        addGestalt={this.props.addGestalt}
+                                        handleArrows={this.handleArrows}
+
+                                        />
+                                )
+                            })
+                        }
+                    </ul>
+
                 }
             </li>
         )

@@ -2,8 +2,6 @@ import * as React from "react";
 import * as ReactDOM from "react-dom"
 import * as _ from "lodash";
 
-
-import { GestaltListComponent } from './GestaltListComponent'
 import { GestaltComponent } from './GestaltComponent'
 import { SearchAddBox } from './SearchAddBox'
 
@@ -64,7 +62,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
         //finish populating allGestalts
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 3; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
