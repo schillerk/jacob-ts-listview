@@ -2,7 +2,7 @@ import * as React from "react";
 import * as _ from "lodash";
 import { LinkedList, Stack } from "../LinkedList"
 
-import { Gestalt, GestaltCollection, createGestaltInstance, GestaltHierarchicalViewItemContents, HydratedGestaltHierarchicalViewItemContents } from '../domain';
+import { Gestalt, GestaltsMap, createGestaltInstance, GestaltInstance, HydratedGestaltInstance } from '../domain';
 import { GestaltListComponent } from './GestaltListComponent';
 import * as Util from '../util';
 
@@ -16,15 +16,17 @@ export interface GestaltComponentState {
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
-    gestaltInstance: HydratedGestaltHierarchicalViewItemContents
+    gestaltInstance: HydratedGestaltInstance
 
     index: number
 
     handleArrows: (arrowDir: Util.KEY_CODES, fromIndex: number) => void
 
     updateGestaltText: (gestaltId: string, newText: string) => void
-    toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltHierarchicalViewItemContents) => void
+    toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
     addGestalt: (text: string, offset: number) => void
+
+    isRoot?: boolean
 }
 
 // #TODO: order comes out randomly, needs to be an OrderedMap
@@ -94,7 +96,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                 {/* related gestalts list */}
                 <ul style={{ display: 'inline' }}>
-                    {this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltHierarchicalViewItemContents) => {
+                    {this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltInstance) => {
                         const MAX_NUB_LENGTH = 20
                         let nubText = nubGestaltInstance.gestalt.text
                         if (nubText.length > MAX_NUB_LENGTH) {
@@ -127,7 +129,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     })}
                 </ul>
                 <GestaltListComponent
-                    gestaltInstances={this.props.gestaltInstance.hydratedChildren}
+                    allGestaltInstances={this.props.gestaltInstance.hydratedChildren}
                     updateGestaltText={this.props.updateGestaltText}
                     toggleExpand={this.props.toggleExpand}
                     addGestalt={this.props.addGestalt}

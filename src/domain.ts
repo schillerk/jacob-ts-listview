@@ -47,35 +47,22 @@ export interface Gestalt {
   relatedIds: string[]
 }
 
-export interface GestaltHierarchicalViewItemContents {
+export interface GestaltInstance {
   instanceId: string // uuid
-  path: number[] // [1, 0, 2, 1]
   gestaltId: string
-  children: GestaltHierarchicalViewItemContents[]
+  children: GestaltInstance[]
   expanded: boolean
 
   // childInstanceIds: string[]
 }
 
-export interface HydratedGestaltHierarchicalViewItemContents extends GestaltHierarchicalViewItemContents {
+export interface HydratedGestaltInstance extends GestaltInstance {
   gestalt: Gestalt
-  hydratedChildren: HydratedGestaltHierarchicalViewItemContents[]
+  hydratedChildren: HydratedGestaltInstance[]
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 export interface GestaltInstanceLookupMap {
-  [instanceId: string]: GestaltHierarchicalViewItemContents
+  [instanceId: string]: GestaltInstance
 }
 
 export function createGestaltInstance(gestalt: Gestalt) {
@@ -88,7 +75,10 @@ export function createGestaltInstance(gestalt: Gestalt) {
   // return newInstance;
 }
 
-export interface GestaltCollection {
+export interface GestaltsMap {
   [gestaltId: string]: Gestalt
 }
 
+export interface GestaltInstancesMap {
+    [id: string]: GestaltInstance
+}

@@ -1,9 +1,9 @@
 import * as _ from "lodash";
-import { Gestalt, GestaltCollection, GestaltHierarchicalViewItemContents, createGestaltInstance, HydratedGestaltHierarchicalViewItemContents } from './domain';
+import { Gestalt, GestaltsMap, GestaltInstance, createGestaltInstance, HydratedGestaltInstance } from './domain';
 
 var count = 0;
 
-export function moveCursorToEnd(el: HTMLSpanElement) {
+export function moveCaretToEnd(el: HTMLSpanElement) {
     const range = document.createRange()
     const sel = window.getSelection()
 
@@ -48,17 +48,17 @@ export function average(arr: number[]) {
     }, 0) / arr.length;
 }
 
-export function hydrateGestaltInstanceAndChildren(gestaltInstance: GestaltHierarchicalViewItemContents, allGestalts: { [id: string]: Gestalt }): HydratedGestaltHierarchicalViewItemContents {
+export function hydrateGestaltInstanceAndChildren(gestaltInstance: GestaltInstance, allGestalts: GestaltsMap): HydratedGestaltInstance {
     const currGestalt: Gestalt = allGestalts[gestaltInstance.gestaltId];
     console.assert(typeof currGestalt !== "undefined", gestaltInstance.gestaltId + " not in allGestalts")
-    const hydratedGestaltInstance: HydratedGestaltHierarchicalViewItemContents = {
+
+    const hydratedGestaltInstance: HydratedGestaltInstance = {
         ...gestaltInstance,
         gestalt: currGestalt,
         hydratedChildren: gestaltInstance.children === null ?
             null
-            : gestaltInstance.children.map((gi) => {
-                return this.hydrateGestaltInstanceAndChildren(gi, allGestalts);
-            })
+            : gestaltInstance.children.map((gi: GestaltInstance) =>
+                this.hydrateGestaltInstanceAndChildren(gi, allGestalts))
     };
 
     return hydratedGestaltInstance
