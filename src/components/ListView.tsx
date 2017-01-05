@@ -70,7 +70,6 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         }
 
         Object.keys(initState.allGestalts).forEach((id, i) => {
-            // debugger
 
             if (id === rootGestalt.gestaltId) {
                 //skip
@@ -171,18 +170,27 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     addGestalt = (text: string, offset: number = 0, autoFocus: boolean = false): void => {
         const newGestalt = this.createGestalt(text)
 
+        const rootGestaltInstance = this.state.allGestaltInstances[this.state.rootGestaltInstanceId]
+        const rootGestalt = this.state.allGestalts[rootGestaltInstance.gestaltId]
+
+        const newRootGestalt = {
+            ...rootGestalt,
+            relatedIds: [...rootGestalt.relatedIds, newGestalt.gestaltId]
+        }
+
         const newAllGestalts: GestaltsMap = {
             ...this.state.allGestalts,
-            [newGestalt.gestaltId]: newGestalt
+            [newGestalt.gestaltId]: newGestalt,
+            [rootGestalt.gestaltId]: rootGestalt
         }
-        const rootGestaltInstance = this.state.allGestaltInstances[this.state.rootGestaltInstanceId]
-        const newInstance = this.createGestaltInstance(newGestalt.gestaltId, true, newAllGestalts)
-        this.insertGestaltInstanceIntoParent(rootGestaltInstance, newInstance, offset)
 
+        const newInstance = this.createGestaltInstance(newGestalt.gestaltId, true, newAllGestalts)
+        const newRootGestaltInstance = this.insertGestaltInstanceIntoParent(rootGestaltInstance, newInstance, offset)
 
         const newAllGestaltInstances: GestaltInstancesMap = {
             ...this.state.allGestaltInstances,
-            [newInstance.instanceId]: newInstance
+            [newInstance.instanceId]: newInstance,
+            [newRootGestaltInstance.instanceId]: newRootGestaltInstance
         }
 
         this.setState({
@@ -289,7 +297,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             this.state.allGestalts,
             this.state.allGestaltInstances
         )
-        // debugger
+
         return (
             <div>
                 <SearchAddBox
