@@ -50,11 +50,14 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             },
         };
 
-        const rootGestalt: Gestalt = this.createGestalt("root text")
+        const rootGestalt: Gestalt = this.createGestalt("root text", true)
+
         initState.allGestalts[rootGestalt.gestaltId] = rootGestalt
         let rootGestaltInstance: GestaltInstance =
             this.createGestaltInstance(rootGestalt.gestaltId, false, initState.allGestalts)
-        // rootGestaltInstance.childrenInstanceIds = []
+
+        // rootGestaltInstance.childrenInstanceIds === null at this point
+        // rootGestalt.relatedIds === null always
 
         initState.rootGestaltInstanceId = rootGestaltInstance.instanceId
         initState.allGestaltInstances[rootGestaltInstance.instanceId] = rootGestaltInstance
@@ -67,35 +70,35 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
 
-        Object.keys(initState.allGestalts).forEach((id, i) => {
+        // Object.keys(initState.allGestalts).forEach((id, i) => {
 
-            if (id === rootGestalt.gestaltId) {
-                //skip
-            }
-            else {
+        //     if (id === rootGestalt.gestaltId) {
+        //         //skip
+        //     }
+        //     else {
 
-                rootGestalt.relatedIds.push(id)
+        //         //rootGestalt.relatedIds.push(id)
 
-                // const newGestaltInstance = this.createGestaltInstance(id, true, initState.allGestalts)
+        //         // const newGestaltInstance = this.createGestaltInstance(id, true, initState.allGestalts)
 
-                // initState.allGestaltInstances[newGestaltInstance.instanceId] = newGestaltInstance
+        //         // initState.allGestaltInstances[newGestaltInstance.instanceId] = newGestaltInstance
 
-                // rootGestaltInstance.childrenInstanceIds.push(newGestaltInstance.instanceId)
+        //         // rootGestaltInstance.childrenInstanceIds.push(newGestaltInstance.instanceId)
 
-                //     const instanceId = "-" + id
+        //         //     const instanceId = "-" + id
 
-                //     this.createAndExpandGestaltInstance(initState, {
-                //         gestaltInstanceId: instanceId,
-                //         gestaltId: id,
-                //         parentGestaltInstanceId: null,
-                //         shouldUpdate: false,
-                //     }, true)
+        //         //     this.createAndExpandGestaltInstance(initState, {
+        //         //         gestaltInstanceId: instanceId,
+        //         //         gestaltId: id,
+        //         //         parentGestaltInstanceId: null,
+        //         //         shouldUpdate: false,
+        //         //     }, true)
 
-                // initState.expandedGestaltInstances["-" + id] = this.createGestaltInstance(instanceId, id, null, false)
-                // initState.allGestalts[id].instanceAndVisibleNubIds[instanceId] = true
+        //         // initState.expandedGestaltInstances["-" + id] = this.createGestaltInstance(instanceId, id, null, false)
+        //         // initState.allGestalts[id].instanceAndVisibleNubIds[instanceId] = true
 
-            }
-        })
+        //     }
+        // })
 
 
         initState.allGestaltInstances =
@@ -153,12 +156,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     //     }
     // }
 
-    createGestalt = (text: string = '') => {
+    createGestalt = (text: string = '', isRoot?: boolean) => {
         const uid: string = Util.genGUID()
         const newGestalt: Gestalt = {
             text: text,
             gestaltId: uid,
-            relatedIds: [],
+            relatedIds: isRoot !== undefined && isRoot ? undefined : [],
+            isRoot: isRoot !== undefined && isRoot
         }
 
         return newGestalt
@@ -212,21 +216,30 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     //IMMUTABLE, returns new val for allGestaltInstances
     expandGestaltInstance = (gi: GestaltInstance, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap): GestaltInstancesMap => {
+        const gestalt: Gestalt = allGestalts[gi.gestaltId];
 
         const giOut: GestaltInstance = { ...gi, expanded: true }
 
         console.assert(typeof giOut.childrenInstanceIds !== "undefined")
-        console.assert(typeof allGestalts[giOut.gestaltId] !== "undefined")
+        console.assert(typeof gestalt !== "undefined")
 
         const newInsts: GestaltInstancesMap = { [giOut.instanceId]: giOut }
 
         if (giOut.childrenInstanceIds === null) {
 
-            giOut.childrenInstanceIds = allGestalts[giOut.gestaltId].relatedIds.map(id => {
+            const gestaltIdsToInstantiate: string[] = gestalt.isRoot ?
+                _.values(allGestalts).map((g) => g.isRoot ? undefined : g.gestaltId)
+                    .filter(id => id !== undefined) :
+                gestalt.relatedIds;
+
+            console.log(typeof gestaltIdsToInstantiate !== undefined);
+
+            giOut.childrenInstanceIds = gestaltIdsToInstantiate.map(id => {
                 const newInst: GestaltInstance = this.createGestaltInstance(id, false, allGestalts)
                 newInsts[newInst.instanceId] = newInst
                 return newInst.instanceId
             })
+
         }
 
         return {

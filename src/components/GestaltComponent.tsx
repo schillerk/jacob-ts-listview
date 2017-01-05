@@ -107,7 +107,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         return false && !this.props.gestaltInstance.expanded ? null : (
             <li>
                 {/* gestalt body */}
-                {this.props.isRoot ? null
+                {false && this.props.isRoot ? null
                     :
                     <div>
                         {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}

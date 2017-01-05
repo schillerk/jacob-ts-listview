@@ -1,4 +1,4 @@
-const production_react = true
+const production_react = false
 
 module.exports = {
     entry: "./src/index.tsx",
