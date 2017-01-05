@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { Gestalt, GestaltsMap, GestaltInstance, createGestaltInstance, HydratedGestaltInstance } from './domain';
+import { Gestalt, GestaltsMap, GestaltInstance, GestaltInstancesMap, HydratedGestaltInstance } from './domain';
 
 var count = 0;
 
@@ -48,17 +48,21 @@ export function average(arr: number[]) {
     }, 0) / arr.length;
 }
 
-export function hydrateGestaltInstanceAndChildren(gestaltInstance: GestaltInstance, allGestalts: GestaltsMap): HydratedGestaltInstance {
-    const currGestalt: Gestalt = allGestalts[gestaltInstance.gestaltId];
-    console.assert(typeof currGestalt !== "undefined", gestaltInstance.gestaltId + " not in allGestalts")
+export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap): HydratedGestaltInstance {
+
+    const currInstance: GestaltInstance = allGestaltInstances[gestaltInstanceId];
+    console.assert(typeof currInstance !== "undefined", gestaltInstanceId + " not in allGestaltInstances")
+
+    const currGestalt: Gestalt = allGestalts[currInstance.gestaltId];
+    console.assert(typeof currGestalt !== "undefined", currInstance.gestaltId + " not in allGestalts")
 
     const hydratedGestaltInstance: HydratedGestaltInstance = {
-        ...gestaltInstance,
+        ...currInstance,
         gestalt: currGestalt,
-        hydratedChildren: gestaltInstance.children === null ?
+        hydratedChildren: currInstance.childrenInstanceIds === null ?
             null
-            : gestaltInstance.children.map((gi: GestaltInstance) =>
-                this.hydrateGestaltInstanceAndChildren(gi, allGestalts))
+            : currInstance.childrenInstanceIds.map((instanceId: string) =>
+                hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
     };
 
     return hydratedGestaltInstance

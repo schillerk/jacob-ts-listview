@@ -50,14 +50,14 @@ export interface Gestalt {
 export interface GestaltInstance {
   instanceId: string // uuid
   gestaltId: string
-  children: GestaltInstance[]
+  childrenInstanceIds: string[]
   expanded: boolean
 
   // childInstanceIds: string[]
 }
 
 export interface HydratedGestaltInstance extends GestaltInstance {
-  gestalt: Gestalt
+  gestalt: Gestalt  
   hydratedChildren: HydratedGestaltInstance[]
 }
 
@@ -65,7 +65,7 @@ export interface GestaltInstanceLookupMap {
   [instanceId: string]: GestaltInstance
 }
 
-export function createGestaltInstance(gestalt: Gestalt) {
+// export function createGestaltInstance(gestalt: Gestalt) {
   // var newInstance : GestaltInstance = {
   //     instanceId: Util.genGUID(),
   //     childInstances: [],
@@ -73,7 +73,7 @@ export function createGestaltInstance(gestalt: Gestalt) {
   //     gestaltId: gestalt.gestaltId
   // }
   // return newInstance;
-}
+// }
 
 export interface GestaltsMap {
   [gestaltId: string]: Gestalt

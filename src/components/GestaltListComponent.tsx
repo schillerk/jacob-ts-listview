@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom";
 
 import { GestaltComponent } from './GestaltComponent'
 
-import { Gestalt, createGestaltInstance, GestaltInstance, HydratedGestaltInstance } from '../domain';
+import { Gestalt, GestaltInstance, HydratedGestaltInstance } from '../domain';
 import * as Util from '../util';
 
 export interface GestaltListState {
@@ -11,7 +11,7 @@ export interface GestaltListState {
 }
 
 export interface GestaltListProps extends React.Props<GestaltListComponent> {
-    allGestaltInstances: HydratedGestaltInstance[]
+    gestaltInstancesList: HydratedGestaltInstance[]
 
     toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
     updateGestaltText: (id: string, newText: string) => void
@@ -45,7 +45,8 @@ export class GestaltListComponent extends React.Component<GestaltListProps, Gest
     }
 
     render() {
-        const renderedGestaltInstances = this.props.allGestaltInstances.filter(instance => instance.expanded)
+        const renderedGestaltInstances = this.props.gestaltInstancesList
+            .filter(instance => instance.expanded)
         this.renderedGestaltComponents = Array(renderedGestaltInstances.length)
 
         return (

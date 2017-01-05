@@ -2,7 +2,7 @@ import * as React from "react";
 import * as _ from "lodash";
 import { LinkedList, Stack } from "../LinkedList"
 
-import { Gestalt, GestaltsMap, createGestaltInstance, GestaltInstance, HydratedGestaltInstance } from '../domain';
+import { Gestalt, GestaltsMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
 import { GestaltListComponent } from './GestaltListComponent';
 import * as Util from '../util';
 
@@ -34,8 +34,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     nodeSpan: HTMLSpanElement
 
     focus = () => { this.nodeSpan && this.nodeSpan.focus() }
-    
-    moveCaretToEnd=(e:React.FocusEvent<HTMLSpanElement>) => {
+
+    moveCaretToEnd = (e: React.FocusEvent<HTMLSpanElement>) => {
         Util.moveCaretToEnd(e.currentTarget)
     }
 
@@ -78,62 +78,75 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     render(): JSX.Element {
-        return (
+
+        return false && !this.props.gestaltInstance.expanded ? null : (
             <li>
                 {/* gestalt body */}
+                {this.props.isRoot ? null 
+                    :
+                    <div>
+                        {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
 
-                {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
-                <span
-                    contentEditable
-                    suppressContentEditableWarning
-                    ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
-                    onKeyDown={this.onKeyDown}
-                    onInput={this.onInput}
-                    onFocus={this.moveCaretToEnd}
-                    >
-                    {this.props.gestaltInstance.gestalt.text}
-                </span>
+                        <span
+                            contentEditable
+                            suppressContentEditableWarning
+                            ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
+                            onKeyDown={this.onKeyDown}
+                            onInput={this.onInput}
+                            onFocus={this.moveCaretToEnd}
+                            >
+                            {this.props.gestaltInstance.gestalt.text}
+                        </span>
 
-                {/* related gestalts list */}
-                <ul style={{ display: 'inline' }}>
-                    {this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltInstance) => {
-                        const MAX_NUB_LENGTH = 20
-                        let nubText = nubGestaltInstance.gestalt.text
-                        if (nubText.length > MAX_NUB_LENGTH) {
-                            nubText = nubText.slice(0, MAX_NUB_LENGTH)
-                            nubText += "..."
-                        }
 
-                        return (
-                            <li key={nubGestaltInstance.gestaltId}
-                                className='nub'
-                                style={
-                                    (nubGestaltInstance.expanded) ?
-                                        {
-                                            background: "lightgray",
-                                            borderColor: "darkblue",
-                                        }
-                                        :
-                                        { background: "white" }
-                                }
-                                onClick={() => this.props.toggleExpand(nubGestaltInstance.gestaltId, this.props.gestaltInstance)}
-                                >
+                        {/* related gestalts list */}
+                        <ul style={{ display: 'inline' }}>
+                            {false && !this.props.gestaltInstance.hydratedChildren ? []
+                                : this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltInstance) => {
+                                    const MAX_NUB_LENGTH = 20
+                                    let nubText = nubGestaltInstance.gestalt.text
+                                    if (nubText.length > MAX_NUB_LENGTH) {
+                                        nubText = nubText.slice(0, MAX_NUB_LENGTH)
+                                        nubText += "..."
+                                    }
 
-                                { //assert nubId in this.props.allGestalts
-                                    // (nubGestaltInstance.gestaltId in this.props.allGestalts) ?
-                                    nubText || Util.SPECIAL_CHARS_JS.NBSP
-                                    // : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
-                                }
-                            </li>
-                        )
-                    })}
-                </ul>
-                <GestaltListComponent
-                    allGestaltInstances={this.props.gestaltInstance.hydratedChildren}
-                    updateGestaltText={this.props.updateGestaltText}
-                    toggleExpand={this.props.toggleExpand}
-                    addGestalt={this.props.addGestalt}
-                    />
+                                    return (
+                                        <li key={nubGestaltInstance.gestaltId}
+                                            className='nub'
+                                            style={
+                                                (nubGestaltInstance.expanded) ?
+                                                    {
+                                                        background: "lightgray",
+                                                        borderColor: "darkblue",
+                                                    }
+                                                    :
+                                                    { background: "white" }
+                                            }
+                                            onClick={() => this.props.toggleExpand(nubGestaltInstance.gestaltId, this.props.gestaltInstance)}
+                                            >
+
+                                            { //assert nubId in this.props.allGestalts
+                                                // (nubGestaltInstance.gestaltId in this.props.allGestalts) ?
+                                                nubText || Util.SPECIAL_CHARS_JS.NBSP
+                                                // : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
+                                            }
+                                        </li>
+                                    )
+                                })}
+                        </ul>
+                    </div>
+                }
+
+                {false && !this.props.gestaltInstance.hydratedChildren ? null
+                    :
+                    <GestaltListComponent
+                        gestaltInstancesList={this.props.gestaltInstance.hydratedChildren}
+
+                        updateGestaltText={this.props.updateGestaltText}
+                        toggleExpand={this.props.toggleExpand}
+                        addGestalt={this.props.addGestalt}
+                        />
+                }
             </li>
         )
     }
