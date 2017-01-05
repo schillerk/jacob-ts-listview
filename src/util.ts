@@ -3,15 +3,19 @@ import { Gestalt, GestaltCollection, GestaltHierarchicalViewItemContents, create
 
 var count = 0;
 
-export function moveCursorToEnd(el:any) {
-    if (typeof el.selectionStart == "number") {
-        el.selectionStart = el.selectionEnd = el.value.length;
-    } else if (typeof el.createTextRange != "undefined") {
-        el.focus();
-        var range = el.createTextRange();
-        range.collapse(false);
-        range.select();
-    }
+export function moveCursorToEnd(el: HTMLSpanElement) {
+    const range = document.createRange()
+    const sel = window.getSelection()
+
+    const innerText = el.childNodes[0]
+
+    if (!innerText) { return }
+
+    range.setStart(innerText, innerText.textContent.length)
+    range.collapse(true)
+    sel.removeAllRanges()
+    sel.addRange(range)
+
 }
 
 export function genGUID() {
