@@ -34,11 +34,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     focus = () => { this.nodeSpan && this.nodeSpan.focus() }
     
     moveCaretToEnd=(e:React.FocusEvent<HTMLSpanElement>) => {
-        Util.moveCursorToEnd(e.currentTarget)
-        // let temp_value = e.currentTarget.innerHTML
-        // e.currentTarget.innerHTML = ''
-        // e.currentTarget.innerHTML = temp_value
-        console.log("ff")
+        Util.moveCaretToEnd(e.currentTarget)
     }
 
     shouldComponentUpdate(nextProps: GestaltComponentProps) {
