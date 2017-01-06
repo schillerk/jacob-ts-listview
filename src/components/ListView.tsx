@@ -169,30 +169,28 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     // Mutates state
-    addGestalt = (text: string, offset: number = 0, autoFocus: boolean = false): void => {
+    addGestalt = (text: string, offset: number = 0, autoFocus: boolean = false, parentInstanceId: string = this.state.rootGestaltInstanceId): void => {
         const newGestalt = this.createGestalt(text)
-
-        const rootGestaltInstance = this.state.allGestaltInstances[this.state.rootGestaltInstanceId]
-        const rootGestalt = this.state.allGestalts[rootGestaltInstance.gestaltId]
-
-        const newRootGestalt = {
-            ...rootGestalt,
-            relatedIds: [...rootGestalt.relatedIds, newGestalt.gestaltId]
-        }
-
         const newAllGestalts: GestaltsMap = {
             ...this.state.allGestalts,
             [newGestalt.gestaltId]: newGestalt,
-            [rootGestalt.gestaltId]: rootGestalt
         }
 
-        const newInstance = this.createGestaltInstance(newGestalt.gestaltId, true, newAllGestalts)
-        const newRootGestaltInstance = this.insertGestaltInstanceIntoParent(rootGestaltInstance, newInstance, offset)
+        const newInstance = this.createGestaltInstance(newGestalt.gestaltId, true, this.state.allGestalts)
+        if(parentInstanceId===this.state.rootGestaltInstanceId)
+            console.log("adding at root")
+
+        let parentGestaltInstance = this.state.allGestaltInstances[parentInstanceId]
+        parentGestaltInstance = this.insertChildInstance(parentGestaltInstance, newInstance, offset)
+        // rootGestaltInstance
+        // newRootGestaltInstance.childrenInstanceIds =
+        // rootGestaltInstance.childrenInstanceIds.concat(newInstance.instanceId)
+        // this.insertGestaltInstanceIntoParent(rootGestaltInstance, newInstance, offset)
 
         const newAllGestaltInstances: GestaltInstancesMap = {
             ...this.state.allGestaltInstances,
             [newInstance.instanceId]: newInstance,
-            [newRootGestaltInstance.instanceId]: newRootGestaltInstance
+            [parentGestaltInstance.instanceId]: parentGestaltInstance
         }
 
         this.setState({
@@ -249,10 +247,14 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     // immutable
-    insertGestaltInstanceIntoParent = (parentGestaltInstance: GestaltInstance, gestaltInstance: GestaltInstance, offset: number): GestaltInstance => {
+    insertChildInstance = (parentGestaltInstance: GestaltInstance, gestaltInstance: GestaltInstance, offset: number): GestaltInstance => {
+
+        const newChildrenInstanceIds = [...parentGestaltInstance.childrenInstanceIds]
+        newChildrenInstanceIds.splice(offset, 0, gestaltInstance.instanceId)
+
         return {
             ...parentGestaltInstance,
-            childrenInstanceIds: [...parentGestaltInstance.childrenInstanceIds].splice(offset, 0, gestaltInstance.instanceId)
+            childrenInstanceIds: newChildrenInstanceIds
         }
     }
 
@@ -313,7 +315,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             <div>
                 <SearchAddBox
                     autoFocus
-                    onAddGestalt={this.addGestalt}
+                    onAddGestalt={(text) => this.addGestalt(text)}
                     ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                     />
 
@@ -328,6 +330,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     updateGestaltText={this.updateGestaltText}
                     toggleExpand={this.toggleExpand}
                     addGestalt={this.addGestalt}
+                    addGestaltAsChild={(text) => this.addGestalt(text)}
                     handleArrows={() => { } }
                     isRoot
                     />

@@ -21,10 +21,11 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     index: number
 
     handleArrows: (arrowDir: Util.KEY_CODES, fromIndex: number) => void
+    addGestaltAsChild: (text: string, offset: number, autoFocus: boolean) => void
 
     updateGestaltText: (gestaltId: string, newText: string) => void
     toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
-    addGestalt: (text: string, offset: number) => void
+    addGestalt: (text: string, offset: number, autoFocus: boolean, parentInstanceId?: string) => void
 
     isRoot?: boolean
 }
@@ -55,6 +56,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         this.renderedGestaltComponents[newIndex].focus()
     }
 
+    addGestaltAsChild = (text: string, offset: number = 0, autoFocus: boolean = false): void => {
+        this.props.addGestalt(text, offset, autoFocus, this.props.gestaltInstance.instanceId)
+    }
+
     focus = () => { this.nodeSpan && this.nodeSpan.focus() }
 
     moveCaretToEnd = (e: React.FocusEvent<HTMLSpanElement>) => {
@@ -79,7 +84,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         switch (e.keyCode) {
             case Util.KEY_CODES.ENTER:
                 e.preventDefault()
-                this.props.addGestalt("", this.props.index + 1)
+                e.stopPropagation()
+
+                this.props.addGestaltAsChild("", this.props.index + 1, true)
                 //#todo
                 break;
 
@@ -87,6 +94,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             case Util.KEY_CODES.UP:
 
                 e.preventDefault()
+                e.stopPropagation()
+                
                 this.props.handleArrows(e.keyCode, this.props.index)
                 //#todo
                 break;
@@ -100,8 +109,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     render(): JSX.Element {
-        const renderedGestaltInstances = this.props.gestaltInstance.hydratedChildren
-            .filter(instance => instance.expanded)
+        const renderedGestaltInstances = this.props.gestaltInstance.hydratedChildren ? this.props.gestaltInstance.hydratedChildren
+            .filter(instance => instance.expanded) : []
         this.renderedGestaltComponents = Array(renderedGestaltInstances.length)
 
         return false && !this.props.gestaltInstance.expanded ? null : (
@@ -126,7 +135,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                         {/* related gestalts list */}
                         <ul style={{ display: 'inline' }}>
-                            {false && !this.props.gestaltInstance.hydratedChildren ? []
+                            {true && !this.props.gestaltInstance.hydratedChildren ? []
                                 : this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltInstance) => {
                                     const MAX_NUB_LENGTH = 20
                                     let nubText = nubGestaltInstance.gestalt.text
@@ -162,7 +171,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     </div>
                 }
                 {/* render expanded children */}
-                {false && !this.props.gestaltInstance.hydratedChildren ? null
+                {true && !this.props.gestaltInstance.hydratedChildren ? null
                     :
                     <ul>
                         {
@@ -180,6 +189,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         updateGestaltText={this.props.updateGestaltText}
                                         toggleExpand={this.props.toggleExpand}
                                         addGestalt={this.props.addGestalt}
+
+                                        addGestaltAsChild={this.addGestaltAsChild}
                                         handleArrows={this.handleArrows}
 
                                         />
