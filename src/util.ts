@@ -70,5 +70,6 @@ export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, all
                 hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
     };
 
+    console.assert(!(hydratedGestaltInstance.expanded && hydratedGestaltInstance.hydratedChildren===null),"expanded and hyd==null", hydratedGestaltInstance)
     return hydratedGestaltInstance
 }

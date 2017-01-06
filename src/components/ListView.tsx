@@ -65,7 +65,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
         //finish populating allGestalts
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 3; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -199,78 +199,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         }, callback)
     }
 
-    commitIndentChild = (parentInstanceId: string, childIndex: number, dedent: boolean = false) => {
-        let parentGestaltInstance: GestaltInstance = this.state.allGestaltInstances[parentInstanceId]
-        let parentGestalt: Gestalt = this.state.allGestalts[parentGestaltInstance.gestaltId]
-
-
-        const instList: string[] = parentGestaltInstance.childrenInstanceIds
-        const childInstanceId: string = instList[childIndex]
-        const childInstance: GestaltInstance = this.state.allGestaltInstances[childInstanceId]
-
-        let futureParentGestalt: Gestalt
-        let futureParentInstance: GestaltInstance
-
-        if (!dedent) {
-            if (childIndex - 1 < 0)
-                return
-
-            futureParentInstance =
-                this.state.allGestaltInstances[instList[childIndex - 1]]
-
-            //add to new list
-            futureParentInstance = {
-                ...futureParentInstance,
-                childrenInstanceIds: futureParentInstance.childrenInstanceIds.concat(childInstanceId)
-            }
-
-            //addRelation
-            futureParentGestalt = this.state.allGestalts[futureParentInstance.gestaltId]
-            futureParentGestalt = {
-                ...futureParentGestalt,
-                relatedIds: futureParentGestalt.relatedIds.concat(childInstance.gestaltId)
-            }
-        }
-        else {
-
-
-        }
-
-        //delete from old list
-        parentGestaltInstance = {
-            ...parentGestaltInstance,
-            childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, childIndex, 1)
-        }
-
-        //delete old relation
-        parentGestalt = {
-            ...parentGestalt,
-            relatedIds: _.without(parentGestalt.relatedIds, childInstance.gestaltId)
-        }
-
-        this.setState({
-            allGestaltInstances: {
-                ...this.state.allGestaltInstances,
-                [parentInstanceId]: parentGestaltInstance,
-                [futureParentInstance.instanceId]: futureParentInstance
-            },
-            allGestalts: {
-                ...this.state.allGestalts,
-                [futureParentGestalt.gestaltId]: futureParentGestalt
-            },
-        })
-    }
-
-    // addRelation() => {}
-
-
     createGestaltInstance = (gestaltId: string, expanded: boolean = true, allGestalts: GestaltsMap = this.state.allGestalts): GestaltInstance => {
         const newInstanceId: string = Util.genGUID()
 
         let newGestaltInstance: GestaltInstance = {
             instanceId: newInstanceId,
             gestaltId: gestaltId,
-            childrenInstanceIds: null as string[],
+            childrenInstanceIds: (expanded ? [] : null) as string[],
             expanded: expanded
         }
 
@@ -314,14 +249,89 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     // immutable
     insertChildInstance = (parentGestaltInstance: GestaltInstance, gestaltInstance: GestaltInstance, offset: number): GestaltInstance => {
 
-        const newChildrenInstanceIds = [...parentGestaltInstance.childrenInstanceIds]
-        newChildrenInstanceIds.splice(offset, 0, gestaltInstance.instanceId)
+        const newChildrenInstanceIds =
+            Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 0, gestaltInstance.instanceId)
 
         return {
             ...parentGestaltInstance,
             childrenInstanceIds: newChildrenInstanceIds
         }
     }
+
+    // immutable
+    removeChildInstance = (parentGestaltInstance: GestaltInstance, offset: number): GestaltInstance => {
+        return {
+            ...parentGestaltInstance,
+            childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 1)
+        }
+    }
+
+
+    commitIndentChild = (parentInstanceId: string, childIndex: number, dedent: boolean = false) => {
+        let parentGestaltInstance: GestaltInstance = this.state.allGestaltInstances[parentInstanceId]
+        let parentGestalt: Gestalt = this.state.allGestalts[parentGestaltInstance.gestaltId]
+
+
+        const instList: string[] = parentGestaltInstance.childrenInstanceIds
+        const childInstanceId: string = instList[childIndex]
+        const childInstance: GestaltInstance = this.state.allGestaltInstances[childInstanceId]
+
+        let futureParentGestalt: Gestalt
+        let futureParentInstance: GestaltInstance
+
+        if (!dedent) {
+            if (childIndex - 1 < 0)
+                return
+
+            futureParentInstance =
+                this.state.allGestaltInstances[instList[childIndex - 1]]
+
+            //add to new list
+            // futureParentInstance = this.insertChildInstance(
+            //     futureParentInstance, childInstanceId, futureParentInstance.childrenInstanceIds.length - 1)
+            futureParentInstance = {
+                ...futureParentInstance,
+                childrenInstanceIds: futureParentInstance.childrenInstanceIds.concat(childInstanceId)
+            }
+
+            //addRelation
+            futureParentGestalt = this.state.allGestalts[futureParentInstance.gestaltId]
+            futureParentGestalt = {
+                ...futureParentGestalt,
+                relatedIds: futureParentGestalt.relatedIds.concat(childInstance.gestaltId)
+            }
+        }
+        else {
+
+
+        }
+
+        //delete from old list
+        parentGestaltInstance = {
+            ...parentGestaltInstance,
+            childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, childIndex, 1)
+        }
+
+        //delete old relation
+        parentGestalt = {
+            ...parentGestalt,
+            relatedIds: _.without(parentGestalt.relatedIds, childInstance.gestaltId)
+        }
+
+        this.setState({
+            allGestaltInstances: {
+                ...this.state.allGestaltInstances,
+                [parentInstanceId]: parentGestaltInstance,
+                [futureParentInstance.instanceId]: futureParentInstance
+            },
+            allGestalts: {
+                ...this.state.allGestalts,
+                [futureParentGestalt.gestaltId]: futureParentGestalt
+            },
+        })
+    }
+
+    // addRelation() => {}
 
     toggleExpand = (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance): void => {
         // NOTE: need to deal with recursive copying of the gestaltInstances object

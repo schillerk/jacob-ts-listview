@@ -60,7 +60,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             () => { this.renderedGestaltComponents[offset].focus() })
     }
 
-    indentChild = (childIndex: number) => {
+    indentChild = (childIndex:number) => {
         this.props.commitIndentChild(this.props.gestaltInstance.instanceId, childIndex)
     }
 
@@ -170,8 +170,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 //#todo
                 break;
             case Util.KEY_CODES.TAB:
-                // debugger
-                e.preventDefault()
+            // debugger
+            e.preventDefault()
                 e.stopPropagation()
 
                 this.props.indentChild(this.props.index)
@@ -186,7 +186,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 this.handleArrows(e.keyCode)
                 //#todo
                 break;
-
+            
         }
 
     }
@@ -196,11 +196,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     render(): JSX.Element {
-        const renderedGestaltInstances = this.props.gestaltInstance.hydratedChildren ? this.props.gestaltInstance.hydratedChildren
-            .filter(instance => instance.expanded) : []
-        this.renderedGestaltComponents = Array(renderedGestaltInstances.length)
+        console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.hydratedChildren) 
+        
+        const renderedChildGestaltInstances = this.props.gestaltInstance.hydratedChildren
+            .filter(instance => instance.expanded) 
+        this.renderedGestaltComponents = Array(renderedChildGestaltInstances.length)
 
-        return false && !this.props.gestaltInstance.expanded ? null : (
+        return (
             <li>
                 {/* gestalt body */}
                 {this.props.isRoot ? null
@@ -222,7 +224,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                         {/* related gestalts list */}
                         <ul style={{ display: 'inline' }}>
-                            {true && !this.props.gestaltInstance.hydratedChildren ? []
+                            {false && !this.props.gestaltInstance.hydratedChildren ? []
                                 : this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltInstance) => {
                                     const MAX_NUB_LENGTH = 20
                                     let nubText = nubGestaltInstance.gestalt.text
@@ -258,11 +260,11 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     </div>
                 }
                 {/* render expanded children */}
-                {true && !this.props.gestaltInstance.hydratedChildren ? null
+                {false && !this.props.gestaltInstance.hydratedChildren ? null
                     :
                     <ul>
                         {
-                            renderedGestaltInstances.map((instance, i) => {
+                            renderedChildGestaltInstances.map((instance, i) => {
                                 // const gestaltInstanceId: string = instance.id + "-" + id
                                 return (
                                     <GestaltComponent
@@ -280,7 +282,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                                         addGestaltAsChild={this.addGestaltAsChild}
                                         indentChild={this.indentChild}
-
+                                        
                                         getOffsetChild={this.getOffsetChild}
                                         focus={this.focus}
 
