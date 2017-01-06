@@ -230,7 +230,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     .filter(id => id !== undefined) :
                 gestalt.relatedIds;
 
-            console.log(typeof gestaltIdsToInstantiate !== undefined);
+            console.assert(typeof gestaltIdsToInstantiate !== undefined);
 
             giOut.childrenInstanceIds = gestaltIdsToInstantiate.map(id => {
                 const newInst: GestaltInstance = this.createGestaltInstance(id, false, allGestalts)
@@ -331,7 +331,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     toggleExpand={this.toggleExpand}
                     addGestalt={this.addGestalt}
                     addGestaltAsChild={(text) => this.addGestalt(text)}
-                    handleArrows={() => { } }
+                    getOffsetChild={undefined}
+                    focus={() => { } }
                     isRoot
                     />
             </div>

@@ -20,7 +20,9 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 
     index: number
 
-    handleArrows: (arrowDir: Util.KEY_CODES, fromIndex: number) => void
+    getOffsetChild: (prevSelfNext: number, fromIndex: number) => GestaltComponent
+    focus: () => void
+
     addGestaltAsChild: (text: string, offset: number, autoFocus: boolean) => void
 
     updateGestaltText: (gestaltId: string, newText: string) => void
@@ -35,32 +37,104 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     nodeSpan: HTMLSpanElement
     renderedGestaltComponents: GestaltComponent[]
 
-    handleArrows = (arrowDir: Util.KEY_CODES, fromIndex: number) => {
-        let dir: number = 0
-
+    handleArrows = (arrowDir: Util.KEY_CODES) => {
+        let compToFocus: GestaltComponent = undefined
         switch (arrowDir) {
-            case Util.KEY_CODES.DOWN:
-                dir = 1
-                break
             case Util.KEY_CODES.UP:
-                dir = -1
+                compToFocus = this.getPrev()
                 break
+            case Util.KEY_CODES.DOWN:
+                compToFocus = this.getNext()
+                break
+
         }
 
-        const newIndex = fromIndex + dir
-
-        if (newIndex < 0 || newIndex >= this.renderedGestaltComponents.length) {
-            return
-        }
-
-        this.renderedGestaltComponents[newIndex].focus()
+        if (compToFocus)
+            compToFocus.focus()
     }
 
     addGestaltAsChild = (text: string, offset: number = 0, autoFocus: boolean = false): void => {
         this.props.addGestalt(text, offset, autoFocus, this.props.gestaltInstance.instanceId)
     }
 
-    focus = () => { this.nodeSpan && this.nodeSpan.focus() }
+
+    focus = () => {
+        this.nodeSpan && this.nodeSpan.focus()
+    }
+
+    getLastChild = (): GestaltComponent => {
+        if (this.renderedGestaltComponents.length > 0)
+            return this.renderedGestaltComponents[this.renderedGestaltComponents.length - 1].getLastChild()
+        else
+            return this
+    }
+
+    getNext = (): GestaltComponent => {
+        if (this.renderedGestaltComponents.length) //return first child
+            return this.renderedGestaltComponents[0]
+        else //return next sibling or node after parent
+            return this.props.getOffsetChild ? this.props.getOffsetChild(1, this.props.index) : undefined
+    }
+
+    getPrev = (): GestaltComponent => {
+        return this.props.getOffsetChild ? this.props.getOffsetChild(-1, this.props.index) : undefined
+    }
+
+    //returns prevSelfNext child relative to child at fromIndex
+    //prevSelfNext = -1, 0, 1
+    getOffsetChild = (prevSelfNext: number, fromIndex: number): GestaltComponent => {
+        const newIndex = fromIndex + prevSelfNext
+
+        if (prevSelfNext < 0) { //going up
+            if (newIndex < 0) //hit top of sublist. return parent
+                return this.props.getOffsetChild ? this.props.getOffsetChild(0, this.props.index) : undefined
+
+            //return prev sibling's last child 
+            return this.renderedGestaltComponents[newIndex].getLastChild()
+        }
+        else { //going down or still
+            if (newIndex >= this.renderedGestaltComponents.length) //hit end of sublist. return node after parent
+                return this.props.getOffsetChild ? this.props.getOffsetChild(1, this.props.index) : undefined
+
+            //return next sibling or self
+            return this.renderedGestaltComponents[newIndex]
+        }
+    }
+
+    // getPrevChild = (fromIndex: number): GestaltComponent => {
+
+    //     const newIndex = fromIndex - 1
+
+    //     // if (newIndex < 0)
+    //         // return this.props.(this.props.index)
+
+    //     return this.renderedGestaltComponents[newIndex]
+    // }
+
+
+    // else if( this.renderedGestaltComponents.length)
+    //     this.renderedGestaltComponents[newIndex].focus()
+
+
+    // //focus child
+    // if(this.renderedGestaltComponents.length)
+    //     this.renderedGestaltComponents[0]
+    // else //focus next sibling
+    //     this.props.getNextChild(fromIndex)
+
+
+    // const newIndex = fromIndex + 1
+
+    // if (newIndex >= this.renderedGestaltComponents.length) {
+    //     this.props.handleArrows(Util.KEY_CODES.DOWN, this.props.index)
+
+    // else if( this.renderedGestaltComponents.length)
+    //     this.renderedGestaltComponents[newIndex].focus()
+
+    // if (this.renderedGestaltComponents.length)
+    //     this.renderedGestaltComponents[this.renderedGestaltComponents.length - 1].focusLast()
+    // else
+    //     this.focus()
 
     moveCaretToEnd = (e: React.FocusEvent<HTMLSpanElement>) => {
         Util.moveCaretToEnd(e.currentTarget)
@@ -95,8 +169,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                 e.preventDefault()
                 e.stopPropagation()
-                
-                this.props.handleArrows(e.keyCode, this.props.index)
+
+                this.handleArrows(e.keyCode)
                 //#todo
                 break;
 
@@ -191,7 +265,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         addGestalt={this.props.addGestalt}
 
                                         addGestaltAsChild={this.addGestaltAsChild}
-                                        handleArrows={this.handleArrows}
+                                        getOffsetChild={this.getOffsetChild}
+                                        focus={this.focus}
 
                                         />
                                 )
