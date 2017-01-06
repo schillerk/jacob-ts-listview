@@ -23,11 +23,11 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     getOffsetChild: (prevSelfNext: number, fromIndex: number) => GestaltComponent
     focus: () => void
 
-    addGestaltAsChild: (text: string, offset: number, autoFocus: boolean) => void
+    addGestaltAsChild: (text: string, offset: number) => void
 
     updateGestaltText: (gestaltId: string, newText: string) => void
     toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
-    addGestalt: (text: string, offset: number, autoFocus: boolean, parentInstanceId?: string) => void
+    addGestalt: (text: string, offset: number, parentInstanceId?: string, callback?: () => any) => void
 
     isRoot?: boolean
 }
@@ -53,8 +53,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             compToFocus.focus()
     }
 
-    addGestaltAsChild = (text: string, offset: number = 0, autoFocus: boolean = false): void => {
-        this.props.addGestalt(text, offset, autoFocus, this.props.gestaltInstance.instanceId)
+    addGestaltAsChild = (text: string, offset: number = 0): void => {
+        this.props.addGestalt(text, offset, this.props.gestaltInstance.instanceId,
+            () => { this.renderedGestaltComponents[offset].focus() })
     }
 
 
@@ -160,7 +161,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 e.preventDefault()
                 e.stopPropagation()
 
-                this.props.addGestaltAsChild("", this.props.index + 1, true)
+                this.props.addGestaltAsChild("", this.props.index + 1)
                 //#todo
                 break;
 
@@ -209,7 +210,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                         {/* related gestalts list */}
                         <ul style={{ display: 'inline' }}>
-                            {false && !this.props.gestaltInstance.hydratedChildren ? []
+                            {true && !this.props.gestaltInstance.hydratedChildren ? []
                                 : this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltInstance) => {
                                     const MAX_NUB_LENGTH = 20
                                     let nubText = nubGestaltInstance.gestalt.text
@@ -245,7 +246,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     </div>
                 }
                 {/* render expanded children */}
-                {false && !this.props.gestaltInstance.hydratedChildren ? null
+                {true && !this.props.gestaltInstance.hydratedChildren ? null
                     :
                     <ul>
                         {

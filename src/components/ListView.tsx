@@ -65,7 +65,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
         //finish populating allGestalts
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 1000; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -169,7 +169,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     // Mutates state
-    addGestalt = (text: string, offset: number = 0, autoFocus: boolean = false, parentInstanceId: string = this.state.rootGestaltInstanceId): void => {
+    addGestalt = (text: string, offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, callback? : () => any): void => {
         const newGestalt = this.createGestalt(text)
         const newAllGestalts: GestaltsMap = {
             ...this.state.allGestalts,
@@ -195,8 +195,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         this.setState({
             allGestaltInstances: newAllGestaltInstances,
-            allGestalts: newAllGestalts
-        })
+            allGestalts: newAllGestalts, 
+        }, callback)
     }
 
     createGestaltInstance = (gestaltId: string, expanded: boolean = true, allGestalts: GestaltsMap = this.state.allGestalts): GestaltInstance => {
