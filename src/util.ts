@@ -32,10 +32,15 @@ export function objectToArray<T>(object: { [id: string]: T }) {
 }
 
 
+export function immSplice<T>(arr:T[], start:number, deleteCount:number, ...items:T[]) {
+  return [ ...arr.slice(0, start), ...items, ...arr.slice(start + deleteCount) ]
+}
+
 export enum KEY_CODES {
     UP = 38,
     DOWN = 40,
-    ENTER = 13
+    ENTER = 13,
+    TAB = 9,
 }
 
 export const SPECIAL_CHARS_JS = {

@@ -169,7 +169,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     // Mutates state
-    addGestalt = (text: string, offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, callback? : () => any): void => {
+    addGestalt = (text: string, offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, callback?: () => any): void => {
         const newGestalt = this.createGestalt(text)
         const newAllGestalts: GestaltsMap = {
             ...this.state.allGestalts,
@@ -177,7 +177,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         }
 
         const newInstance = this.createGestaltInstance(newGestalt.gestaltId, true, this.state.allGestalts)
-        if(parentInstanceId===this.state.rootGestaltInstanceId)
+        if (parentInstanceId === this.state.rootGestaltInstanceId)
             console.log("adding at root")
 
         let parentGestaltInstance = this.state.allGestaltInstances[parentInstanceId]
@@ -195,9 +195,74 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         this.setState({
             allGestaltInstances: newAllGestaltInstances,
-            allGestalts: newAllGestalts, 
+            allGestalts: newAllGestalts,
         }, callback)
     }
+
+    commitIndentChild = (parentInstanceId: string, childIndex: number, dedent: boolean = false) => {
+        let parentGestaltInstance: GestaltInstance = this.state.allGestaltInstances[parentInstanceId]
+        let parentGestalt: Gestalt = this.state.allGestalts[parentGestaltInstance.gestaltId]
+
+
+        const instList: string[] = parentGestaltInstance.childrenInstanceIds
+        const childInstanceId: string = instList[childIndex]
+        const childInstance: GestaltInstance = this.state.allGestaltInstances[childInstanceId]
+
+        let futureParentGestalt: Gestalt
+        let futureParentInstance: GestaltInstance
+
+        if (!dedent) {
+            if (childIndex - 1 < 0)
+                return
+
+            futureParentInstance =
+                this.state.allGestaltInstances[instList[childIndex - 1]]
+
+            //add to new list
+            futureParentInstance = {
+                ...futureParentInstance,
+                childrenInstanceIds: futureParentInstance.childrenInstanceIds.concat(childInstanceId)
+            }
+
+            //addRelation
+            futureParentGestalt = this.state.allGestalts[futureParentInstance.gestaltId]
+            futureParentGestalt = {
+                ...futureParentGestalt,
+                relatedIds: futureParentGestalt.relatedIds.concat(childInstance.gestaltId)
+            }
+        }
+        else {
+
+
+        }
+
+        //delete from old list
+        parentGestaltInstance = {
+            ...parentGestaltInstance,
+            childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, childIndex, 1)
+        }
+
+        //delete old relation
+        parentGestalt = {
+            ...parentGestalt,
+            relatedIds: _.without(parentGestalt.relatedIds, childInstance.gestaltId)
+        }
+
+        this.setState({
+            allGestaltInstances: {
+                ...this.state.allGestaltInstances,
+                [parentInstanceId]: parentGestaltInstance,
+                [futureParentInstance.instanceId]: futureParentInstance
+            },
+            allGestalts: {
+                ...this.state.allGestalts,
+                [futureParentGestalt.gestaltId]: futureParentGestalt
+            },
+        })
+    }
+
+    // addRelation() => {}
+
 
     createGestaltInstance = (gestaltId: string, expanded: boolean = true, allGestalts: GestaltsMap = this.state.allGestalts): GestaltInstance => {
         const newInstanceId: string = Util.genGUID()
@@ -330,6 +395,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     updateGestaltText={this.updateGestaltText}
                     toggleExpand={this.toggleExpand}
                     addGestalt={this.addGestalt}
+                    commitIndentChild={this.commitIndentChild}
+
+                    indentChild={undefined}
                     addGestaltAsChild={(text) => this.addGestalt(text)}
                     getOffsetChild={undefined}
                     focus={() => { } }

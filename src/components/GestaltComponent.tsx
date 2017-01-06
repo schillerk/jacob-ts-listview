@@ -24,10 +24,12 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     focus: () => void
 
     addGestaltAsChild: (text: string, offset: number) => void
+    indentChild: (childIndex: number) => void
 
     updateGestaltText: (gestaltId: string, newText: string) => void
     toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
     addGestalt: (text: string, offset: number, parentInstanceId?: string, callback?: () => any) => void
+    commitIndentChild: (parentInstanceId: string, childIndex: number) => void
 
     isRoot?: boolean
 }
@@ -58,6 +60,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             () => { this.renderedGestaltComponents[offset].focus() })
     }
 
+    indentChild = (childIndex: number) => {
+        this.props.commitIndentChild(this.props.gestaltInstance.instanceId, childIndex)
+    }
 
     focus = () => {
         this.nodeSpan && this.nodeSpan.focus()
@@ -164,6 +169,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 this.props.addGestaltAsChild("", this.props.index + 1)
                 //#todo
                 break;
+            case Util.KEY_CODES.TAB:
+                // debugger
+                e.preventDefault()
+                e.stopPropagation()
+
+                this.props.indentChild(this.props.index)
+                break;
 
             case Util.KEY_CODES.DOWN:
             case Util.KEY_CODES.UP:
@@ -264,8 +276,11 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         updateGestaltText={this.props.updateGestaltText}
                                         toggleExpand={this.props.toggleExpand}
                                         addGestalt={this.props.addGestalt}
+                                        commitIndentChild={this.props.commitIndentChild}
 
                                         addGestaltAsChild={this.addGestaltAsChild}
+                                        indentChild={this.indentChild}
+
                                         getOffsetChild={this.getOffsetChild}
                                         focus={this.focus}
 
