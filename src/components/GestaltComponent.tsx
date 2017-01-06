@@ -190,7 +190,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         return false && !this.props.gestaltInstance.expanded ? null : (
             <li>
                 {/* gestalt body */}
-                {false && this.props.isRoot ? null
+                {this.props.isRoot ? null
                     :
                     <div>
                         {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
@@ -209,7 +209,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                         {/* related gestalts list */}
                         <ul style={{ display: 'inline' }}>
-                            {true && !this.props.gestaltInstance.hydratedChildren ? []
+                            {false && !this.props.gestaltInstance.hydratedChildren ? []
                                 : this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltInstance) => {
                                     const MAX_NUB_LENGTH = 20
                                     let nubText = nubGestaltInstance.gestalt.text
@@ -245,7 +245,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     </div>
                 }
                 {/* render expanded children */}
-                {true && !this.props.gestaltInstance.hydratedChildren ? null
+                {false && !this.props.gestaltInstance.hydratedChildren ? null
                     :
                     <ul>
                         {
@@ -258,7 +258,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         gestaltInstance={instance}
                                         // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
 
-                                        ref={(gc: GestaltComponent) => { this.renderedGestaltComponents[i] = gc } }
+                                        ref={(gc: GestaltComponent) => { gc && (this.renderedGestaltComponents[i] = gc) } }
 
                                         updateGestaltText={this.props.updateGestaltText}
                                         toggleExpand={this.props.toggleExpand}
