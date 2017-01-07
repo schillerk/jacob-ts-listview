@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/lodash": "^4.14.47", // in production, should match lodash version
+    "@types/lodash": "^4.14.47", 
     "@types/react": "^0.14.55",
     "@types/react-dom": "^0.14.19",
     "immutable": "^3.8.1",

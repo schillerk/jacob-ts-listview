@@ -241,7 +241,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
                         {/* related gestalts list */}
-                        <ul style={{ display: 'inline' }}>
+                        <ul style={{ display: 'inline' }}><b>
                             {this.props.isRoot ? null : this.props.gestaltInstance.gestalt.relatedIds.map((relatedId: string) => {
                                 const nubGestaltInstance = gestaltIdsToNubInstances[relatedId];
                                 const MAX_NUB_LENGTH = 20
@@ -273,7 +273,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         }
                                     </li>
                                 )
-                            })}
+                            })}</b>
                         </ul>
                     </div>
                 }
