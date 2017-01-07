@@ -253,39 +253,41 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     //MUTATOR
     addRelation = (srcGestaltId: string, tgtGestaltId: string) => {
         //add rel to gestalt
-        //add GestaltInstances to all relevant existing GestaltInstances
-
-        const srcGestalt: Gestalt = this.state.allGestalts[srcGestaltId]
-        const newSrcGestalt: Gestalt = {
-            ...srcGestalt,
+        const srcGestalt: Gestalt = this.state.allGestalts[srcGestaltId];
+        const newSrcGestalt: Gestalt = _.assign({}, srcGestalt, {
             relatedIds: srcGestalt.relatedIds.concat(tgtGestaltId)
-        };
+        });
 
-        const newGestaltInstances: GestaltInstancesMap = {};
-        const parentToNewGestaltInstance: GestaltInstancesMap = {};
-        for (const gestaltInstance of _.values(this.state.allGestaltInstances)) {
-            if (gestaltInstance.gestaltId === tgtGestaltId) {
-                const newGestaltInstance = this.createGestaltInstance(tgtGestaltId, false);
-                newGestaltInstances[newGestaltInstance.instanceId] = newGestaltInstance;
-                parentToNewGestaltInstance[gestaltInstance.instanceId] = newGestaltInstance;
+        //add new GestaltInstances to all relevant existing GestaltInstances
+        const instancesOfNewlyRelatedGestalts: GestaltInstancesMap = {};
+        const relevantInstanceIdsToNewInstances: {[relevantInstanceId: string]: GestaltInstance} = {};
+        for (const currGestaltInstance of _.values(this.state.allGestaltInstances)) {
+            if (currGestaltInstance.gestaltId === srcGestaltId) { // find relevant gestalt instances
+                const instanceOfNewlyRelatedGestalt = this.createGestaltInstance(tgtGestaltId, false);
+                instancesOfNewlyRelatedGestalts[instanceOfNewlyRelatedGestalt.instanceId] = instanceOfNewlyRelatedGestalt;
+                relevantInstanceIdsToNewInstances[currGestaltInstance.instanceId] = instanceOfNewlyRelatedGestalt;
             }
         }
 
-        const newAllGestaltInstances: GestaltInstancesMap = _.assign(newGestaltInstances, _.mapValues(this.state.allGestaltInstances, (gestaltInstance) => {
-            if (gestaltInstance.gestaltId === tgtGestaltId) {
-                const parentGestaltInstanceId = gestaltInstance.instanceId;
-                const childGestaltInstanceId = parentToNewGestaltInstance[parentGestaltInstanceId].instanceId;
-                return this.insertChildInstance(gestaltInstance, childGestaltInstanceId);
-            } else {
-                return gestaltInstance;
-            }
-        }));
+        const newAllGestaltInstances: GestaltInstancesMap = _.assign(
+            {},
+            instancesOfNewlyRelatedGestalts,
+            _.mapValues(this.state.allGestaltInstances, (currGestaltInstance) => {
+                if (currGestaltInstance.gestaltId === srcGestaltId) { // if relevant
+                    const relevantInstanceId = currGestaltInstance.instanceId;
+                    const newlyRelatedInstanceId = relevantInstanceIdsToNewInstances[relevantInstanceId].instanceId;
+                    return this.insertChildInstance(currGestaltInstance, newlyRelatedInstanceId);
+                } else {
+                    return currGestaltInstance;
+                }
+            })
+        );
 
         this.setState({
             allGestaltInstances: newAllGestaltInstances,
             allGestalts: {
                 ...this.state.allGestalts,
-                [srcGestaltId]: newSrcGestalt
+                [srcGestaltId]: newSrcGestalt // replace srcGestaltId
             },
         });
     }
@@ -355,30 +357,30 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         }
 
         //delete old relation
-        parentGestalt = {
-            ...parentGestalt,
-            relatedIds: _.without(parentGestalt.relatedIds, childInstance.gestaltId)
-        }
+        // parentGestalt = {
+        //     ...parentGestalt,
+        //     relatedIds: _.without(parentGestalt.relatedIds, childInstance.gestaltId)
+        // }
 
-        //delete from old list
-        parentGestaltInstance = {
-            ...parentGestaltInstance,
-            childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, childIndex, 1)
-        }
+        // //delete from old list
+        // parentGestaltInstance = {
+        //     ...parentGestaltInstance,
+        //     childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, childIndex, 1)
+        // }
 
 
 
-        this.setState({
-            allGestaltInstances: {
-                ...this.state.allGestaltInstances,
-                [parentInstanceId]: parentGestaltInstance,
-                [futureParentInstance.instanceId]: futureParentInstance
-            },
-            allGestalts: {
-                ...this.state.allGestalts,
-                [futureParentGestalt.gestaltId]: futureParentGestalt
-            },
-        })
+        // this.setState({
+        //     allGestaltInstances: {
+        //         ...this.state.allGestaltInstances,
+        //         [parentInstanceId]: parentGestaltInstance,
+        //         [futureParentInstance.instanceId]: futureParentInstance
+        //     },
+        //     allGestalts: {
+        //         ...this.state.allGestalts,
+        //         [futureParentGestalt.gestaltId]: futureParentGestalt
+        //     },
+        // })
     }
 
 

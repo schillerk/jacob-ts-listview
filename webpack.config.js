@@ -1,3 +1,5 @@
+// in production, typings should match code version (e.g. lodash)
+
 const production_react = false
 
 module.exports = {
