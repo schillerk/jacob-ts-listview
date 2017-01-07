@@ -24,12 +24,12 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     focus: () => void
 
     addGestaltAsChild: (text: string, offset: number) => void
-    indentChild: (childIndex: number) => void
+    // indentChild: (childIndex: number) => void
 
     updateGestaltText: (gestaltId: string, newText: string) => void
     toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
     addGestalt: (text: string, offset: number, parentInstanceId?: string, callback?: () => any) => void
-    commitIndentChild: (parentInstanceId: string, childIndex: number) => void
+    // commitIndentChild: (parentInstanceId: string, childIndex: number) => void
 
     isRoot?: boolean
 }
@@ -60,9 +60,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             () => { this.renderedGestaltComponents[offset].focus() })
     }
 
-    indentChild = (childIndex: number) => {
-        this.props.commitIndentChild(this.props.gestaltInstance.instanceId, childIndex)
-    }
+    // indentChild = (childIndex: number) => {
+    //     this.props.commitIndentChild(this.props.gestaltInstance.instanceId, childIndex)
+    // }
 
     focus = () => {
         this.nodeSpan && this.nodeSpan.focus()
@@ -174,7 +174,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 e.preventDefault()
                 e.stopPropagation()
 
-                this.props.indentChild(this.props.index)
+                // this.props.indentChild(this.props.index)
                 break;
 
             case Util.KEY_CODES.DOWN:
@@ -220,15 +220,17 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             (hydratedChild) => hydratedChild.gestaltId
         );
 
+        const styleObj = _.assign({ listStyleType: "none" }, this.props.isRoot ? {} : { borderLeft: "3px solid lightgray", padding: "0px 4px", margin: "8px" })
+
         return (
-            <li>
+            <li style={styleObj}>
                 {/* gestalt body */}
-                {false && this.props.isRoot ? null
+                {true && this.props.isRoot ? null
                     :
                     <div>
                         {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
 
-                        <span
+                        <span style={{ padding: "2px 4px", height: "36px" }}
                             contentEditable
                             suppressContentEditableWarning
                             ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
@@ -241,7 +243,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
                         {/* related gestalts list */}
-                        <ul style={{ display: 'inline' }}><b>
+                        <ul style={{ display: 'inline' }}>
                             {this.props.isRoot ? null : this.props.gestaltInstance.gestalt.relatedIds.map((relatedId: string) => {
                                 const nubGestaltInstance = gestaltIdsToNubInstances[relatedId];
                                 const MAX_NUB_LENGTH = 20
@@ -273,13 +275,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                         }
                                     </li>
                                 )
-                            })}</b>
+                            })}
                         </ul>
                     </div>
                 }
                 {/* render expanded children */}
 
-                <ul>
+                <ul style={{ paddingLeft: (this.props.isRoot ? 0 : 40) }}>
                     {
                         renderedChildGestaltInstances.map((instance, i) => {
                             // const gestaltInstanceId: string = instance.id + "-" + id
@@ -295,10 +297,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                                     updateGestaltText={this.props.updateGestaltText}
                                     toggleExpand={this.props.toggleExpand}
                                     addGestalt={this.props.addGestalt}
-                                    commitIndentChild={this.props.commitIndentChild}
+                                    // commitIndentChild={this.props.commitIndentChild}
 
                                     addGestaltAsChild={this.addGestaltAsChild}
-                                    indentChild={this.indentChild}
+                                    // indentChild={this.indentChild}
 
                                     getOffsetChild={this.getOffsetChild}
                                     focus={this.focus}

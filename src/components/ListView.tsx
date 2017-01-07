@@ -345,62 +345,62 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
 
-    commitIndentChild = (parentInstanceId: string, childIndex: number, dedent: boolean = false) => {
-        //add child's gestaltId as relatedId to new parent gestalt
-        //remove child's gestaltId as relatedId from old parent gestalt
-        //add child's gestaltInstanceId as a childs instance id to new parent's gestalt instance
-        //remove child's gestaltInstanceId as a childs instance id from old parent's gestalt instance
+    // commitIndentChild = (parentInstanceId: string, childIndex: number, dedent: boolean = false) => {
+    //     //add child's gestaltId as relatedId to new parent gestalt
+    //     //remove child's gestaltId as relatedId from old parent gestalt
+    //     //add child's gestaltInstanceId as a childs instance id to new parent's gestalt instance
+    //     //remove child's gestaltInstanceId as a childs instance id from old parent's gestalt instance
 
-        let parentGestaltInstance: GestaltInstance = this.state.allGestaltInstances[parentInstanceId]
-        let parentGestalt: Gestalt = this.state.allGestalts[parentGestaltInstance.gestaltId]
+    //     let parentGestaltInstance: GestaltInstance = this.state.allGestaltInstances[parentInstanceId]
+    //     let parentGestalt: Gestalt = this.state.allGestalts[parentGestaltInstance.gestaltId]
 
-        console.assert(parentGestalt.gestaltId === parentGestaltInstance.gestaltId)
+    //     console.assert(parentGestalt.gestaltId === parentGestaltInstance.gestaltId)
 
-        const instanceIdListInWhichChildLies: string[] = parentGestaltInstance.childrenInstanceIds
-        const childInstanceId: string = instanceIdListInWhichChildLies[childIndex]
-        const childInstance: GestaltInstance = this.state.allGestaltInstances[childInstanceId]
+    //     const instanceIdListInWhichChildLies: string[] = parentGestaltInstance.childrenInstanceIds
+    //     const childInstanceId: string = instanceIdListInWhichChildLies[childIndex]
+    //     const childInstance: GestaltInstance = this.state.allGestaltInstances[childInstanceId]
 
-        let futureParentGestalt: Gestalt
-        let futureParentInstance: GestaltInstance
+    //     let futureParentGestalt: Gestalt
+    //     let futureParentInstance: GestaltInstance
 
-        if (childIndex - 1 < 0)
-            return
+    //     if (childIndex - 1 < 0)
+    //         return
 
-        const futureParentInstanceId = instanceIdListInWhichChildLies[childIndex - 1]
+    //     const futureParentInstanceId = instanceIdListInWhichChildLies[childIndex - 1]
 
-        if (!dedent) {
-            futureParentInstance = this.state.allGestaltInstances[futureParentInstanceId];
-            this.addRelation(futureParentInstance.gestaltId, childInstance.gestaltId, futureParentInstanceId);
-        } else {
+    //     if (!dedent) {
+    //         futureParentInstance = this.state.allGestaltInstances[futureParentInstanceId];
+    //         this.addRelation(futureParentInstance.gestaltId, childInstance.gestaltId, futureParentInstanceId);
+    //     } else {
 
-        }
+    //     }
 
-        //delete old relation
-        // parentGestalt = {
-        //     ...parentGestalt,
-        //     relatedIds: _.without(parentGestalt.relatedIds, childInstance.gestaltId)
-        // }
+    //     //delete old relation
+    //     // parentGestalt = {
+    //     //     ...parentGestalt,
+    //     //     relatedIds: _.without(parentGestalt.relatedIds, childInstance.gestaltId)
+    //     // }
 
-        // //delete from old list
-        // parentGestaltInstance = {
-        //     ...parentGestaltInstance,
-        //     childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, childIndex, 1)
-        // }
+    //     // //delete from old list
+    //     // parentGestaltInstance = {
+    //     //     ...parentGestaltInstance,
+    //     //     childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, childIndex, 1)
+    //     // }
 
 
 
-        // this.setState({
-        //     allGestaltInstances: {
-        //         ...this.state.allGestaltInstances,
-        //         [parentInstanceId]: parentGestaltInstance,
-        //         [futureParentInstance.instanceId]: futureParentInstance
-        //     },
-        //     allGestalts: {
-        //         ...this.state.allGestalts,
-        //         [futureParentGestalt.gestaltId]: futureParentGestalt
-        //     },
-        // })
-    }
+    //     // this.setState({
+    //     //     allGestaltInstances: {
+    //     //         ...this.state.allGestaltInstances,
+    //     //         [parentInstanceId]: parentGestaltInstance,
+    //     //         [futureParentInstance.instanceId]: futureParentInstance
+    //     //     },
+    //     //     allGestalts: {
+    //     //         ...this.state.allGestalts,
+    //     //         [futureParentGestalt.gestaltId]: futureParentGestalt
+    //     //     },
+    //     // })
+    // }
 
 
     toggleExpand = (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance): void => {
@@ -462,31 +462,33 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         return (
             <div>
-                <SearchAddBox
-                    autoFocus
-                    onAddGestalt={(text) => this.addGestalt(text)}
-                    ref={(instance: SearchAddBox) => this.searchAddBox = instance}
-                    />
+                <div style={{padding: "30px 60px 10px",width:"700px",background: "white", margin:"0 auto", border: "1px solid #d6d6d6"}}>
+                    <SearchAddBox
+                        autoFocus
+                        onAddGestalt={(text) => this.addGestalt(text)}
+                        ref={(instance: SearchAddBox) => this.searchAddBox = instance}
+                        />
 
-                <GestaltComponent
-                    key={this.state.rootGestaltInstanceId}
-                    index={0}
-                    gestaltInstance={hydratedRootGestaltInstance}
-                    // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
+                    <GestaltComponent
+                        key={this.state.rootGestaltInstanceId}
+                        index={0}
+                        gestaltInstance={hydratedRootGestaltInstance}
+                        // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
 
-                    ref={() => { } }
+                        ref={() => { } }
 
-                    updateGestaltText={this.updateGestaltText}
-                    toggleExpand={this.toggleExpand}
-                    addGestalt={this.addGestalt}
-                    commitIndentChild={this.commitIndentChild}
+                        updateGestaltText={this.updateGestaltText}
+                        toggleExpand={this.toggleExpand}
+                        addGestalt={this.addGestalt}
+                        // commitIndentChild={this.commitIndentChild}
 
-                    indentChild={undefined}
-                    addGestaltAsChild={(text) => this.addGestalt(text)}
-                    getOffsetChild={undefined}
-                    focus={() => { } }
-                    isRoot
-                    />
+                        // indentChild={undefined}
+                        addGestaltAsChild={(text) => this.addGestalt(text)}
+                        getOffsetChild={undefined}
+                        focus={() => { } }
+                        isRoot
+                        />
+                </div>
             </div>
         )
     }
