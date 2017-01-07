@@ -9,6 +9,32 @@ import { Gestalt, GestaltsMap, GestaltInstancesMap, GestaltInstance, HydratedGes
 import * as Util from '../util';
 
 
+declare var require: Function;
+var Infinite: any = require("react-infinite");
+
+var injectTapEventPlugin: any = require("react-tap-event-plugin");
+
+
+var fdt: any = require("fixed-data-table");
+let {Table, Column, Cell} = fdt
+
+// Needed for onTouchTap 
+// http://stackoverflow.com/a/34015469/988941 
+injectTapEventPlugin();
+
+
+
+import { List, ListItem } from 'material-ui/List';
+import ContentInbox from 'material-ui/svg-icons/content/inbox';
+import ActionGrade from 'material-ui/svg-icons/action/grade';
+import ContentSend from 'material-ui/svg-icons/content/send';
+import ContentDrafts from 'material-ui/svg-icons/content/drafts';
+import Divider from 'material-ui/Divider';
+import ActionInfo from 'material-ui/svg-icons/action/info';
+
+
+
+
 export interface ListViewState {
     allGestalts?: GestaltsMap
     allGestaltInstances?: GestaltInstancesMap
@@ -65,7 +91,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
         //finish populating allGestalts
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 1000; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -452,16 +478,78 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         })
     }
 
+         myTableData = _.times(30,
+            (i) => ['a1', i, 'c1']
+        )
+         rows = _.times(300000, (i) => <div key={i} className="one" style={{ "height": "40px" }}>yooooo {i} </div>
+        )
+
     render() {
 
-        const hydratedRootGestaltInstance = Util.hydrateGestaltInstanceAndChildren(
-            this.state.rootGestaltInstanceId,
-            this.state.allGestalts,
-            this.state.allGestaltInstances
-        )
+
+
+        //     // .... and more
+        //     ;
+
+        // const hydratedRootGestaltInstance = Util.hydrateGestaltInstanceAndChildren(
+        //     this.state.rootGestaltInstanceId,
+        //     this.state.allGestalts,
+        //     this.state.allGestaltInstances
+        // )
+
 
         return (
             <div>
+
+
+
+                <Infinite containerHeight={200} elementHeight={40}>
+                    {this.rows}
+                </Infinite>
+
+
+
+
+                {/*
+
+
+
+                    <Table
+                        rowsCount={myTableData.length}
+                        rowHeight={50}
+                        headerHeight={50}
+                        width={1000}
+                        height={500}>
+                        <Column
+                            header={<Cell>Name</Cell>}
+                            cell={(props: any) => (
+                                <Cell {...props}>
+                                    {myTableData[props.rowIndex][0]}
+                                </Cell>
+                            )}
+                            width={200}
+                            />
+                        <Column
+                            header={<Cell>Name</Cell>}
+                            cell={(props: any) => (
+                                <Cell {...props}>
+                                    {myTableData[props.rowIndex][1]}
+                                </Cell>
+                            )}
+                            width={200}
+                            />
+                    </Table>
+
+
+
+                <List>
+                    {_.times(300, (i) => <ListItem primaryText={"All mail" + i} key={i} className="one" style={{ "height": "40px" }} />
+                    )}
+                </List>
+
+
+
+
                 <SearchAddBox
                     autoFocus
                     onAddGestalt={(text) => this.addGestalt(text)}
@@ -487,6 +575,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                     focus={() => { } }
                     isRoot
                     />
+                    */}
             </div>
         )
     }

@@ -12,6 +12,13 @@ declare module "react" {
     }
 }
 
+
+declare var require: Function;
+var Infinite: any = require("react-infinite");
+
+
+
+
 export interface GestaltComponentState {
 }
 
@@ -221,7 +228,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         );
 
         return (
-            <li>
+            <div  style={{ "height": "80px" }}>
                 {/* gestalt body */}
                 {false && this.props.isRoot ? null
                     :
@@ -280,35 +287,38 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 {/* render expanded children */}
 
                 <ul>
-                    {
-                        renderedChildGestaltInstances.map((instance, i) => {
-                            // const gestaltInstanceId: string = instance.id + "-" + id
-                            return (
-                                <GestaltComponent
-                                    key={instance.instanceId}
-                                    index={i}
-                                    gestaltInstance={instance}
-                                    // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
+                    <Infinite containerHeight={800} elementHeight={80}>
+                        {
+                            renderedChildGestaltInstances.map((instance, i) => {
+                                // const gestaltInstanceId: string = instance.id + "-" + id
+                                return (
+                                    <GestaltComponent
+                                        key={instance.instanceId}
+                                        index={i}
+                                        gestaltInstance={instance}
+                                        // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
 
-                                    ref={(gc: GestaltComponent) => { gc && (this.renderedGestaltComponents[i] = gc) } }
+                                        ref={(gc: GestaltComponent) => { gc && (this.renderedGestaltComponents[i] = gc) } }
 
-                                    updateGestaltText={this.props.updateGestaltText}
-                                    toggleExpand={this.props.toggleExpand}
-                                    addGestalt={this.props.addGestalt}
-                                    commitIndentChild={this.props.commitIndentChild}
+                                        updateGestaltText={this.props.updateGestaltText}
+                                        toggleExpand={this.props.toggleExpand}
+                                        addGestalt={this.props.addGestalt}
+                                        commitIndentChild={this.props.commitIndentChild}
 
-                                    addGestaltAsChild={this.addGestaltAsChild}
-                                    indentChild={this.indentChild}
+                                        addGestaltAsChild={this.addGestaltAsChild}
+                                        indentChild={this.indentChild}
 
-                                    getOffsetChild={this.getOffsetChild}
-                                    focus={this.focus}
+                                        getOffsetChild={this.getOffsetChild}
+                                        focus={this.focus}
 
-                                    />
-                            )
-                        })
-                    }
+                                        />
+                                )
+                            })
+                        }
+
+                    </Infinite>
                 </ul>
-            </li>
+            </div>
         )
     }
 
