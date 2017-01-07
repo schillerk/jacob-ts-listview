@@ -61,7 +61,6 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     indentChild = (childIndex: number) => {
-        debugger
         this.props.commitIndentChild(this.props.gestaltInstance.instanceId, childIndex)
     }
 

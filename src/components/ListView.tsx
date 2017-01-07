@@ -264,7 +264,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         for (const currGestaltInstance of _.values(this.state.allGestaltInstances)) {
             if (currGestaltInstance.gestaltId === srcGestaltId) { // find relevant gestalt instances
                 const currInstanceId = currGestaltInstance.instanceId;
-                const instanceOfNewlyRelatedGestalt = this.createGestaltInstance(tgtGestaltId, currInstanceId === expandInstanceId);
+                const expanded = currInstanceId === expandInstanceId;
+                let instanceOfNewlyRelatedGestalt = this.createGestaltInstance(tgtGestaltId, expanded);
+                if (expanded) {
+                    const newAllInstancesWithNubs = this.expandGestaltInstance(instanceOfNewlyRelatedGestalt, this.state.allGestalts, this.state.allGestaltInstances);
+                    instanceOfNewlyRelatedGestalt = newAllInstancesWithNubs[instanceOfNewlyRelatedGestalt.instanceId];
+
+                }
                 instancesOfNewlyRelatedGestalts[instanceOfNewlyRelatedGestalt.instanceId] = instanceOfNewlyRelatedGestalt;
                 relevantInstanceIdsToNewInstances[currGestaltInstance.instanceId] = instanceOfNewlyRelatedGestalt;
             }
@@ -306,6 +312,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     // immutable
     //if no offset, append
     insertChildInstance = (parentGestaltInstance: GestaltInstance, instanceId: string, offset?: number): GestaltInstance => {
+        console.assert(
+            parentGestaltInstance.childrenInstanceIds !== null && parentGestaltInstance.expanded,
+            'trying to insert child into nub instance',
+            parentGestaltInstance
+        );
         if (typeof offset === "undefined")
             offset = parentGestaltInstance.childrenInstanceIds.length
 
