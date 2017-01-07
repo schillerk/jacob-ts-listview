@@ -203,6 +203,24 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             .filter(instance => instance.expanded)
         this.renderedGestaltComponents = Array(renderedChildGestaltInstances.length)
 
+        // warn about tricky edge case
+        _.mapValues(
+            _.groupBy(
+                this.props.gestaltInstance.hydratedChildren,
+                (hydratedChild) => hydratedChild.gestaltId
+            ),
+            (hydratedChildren) => {
+                if (hydratedChildren.length > 1) {
+                    console.warn('multiple instances of same gestalt in children', this.props.gestaltInstance);
+                }
+            }
+        );
+
+        const gestaltIdsToNubInstances = _.keyBy(
+            this.props.gestaltInstance.hydratedChildren,
+            (hydratedChild) => hydratedChild.gestaltId
+        );
+
         return (
             <li>
                 {/* gestalt body */}
@@ -225,7 +243,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                         {/* related gestalts list */}
                         <ul style={{ display: 'inline' }}>
-                            {this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltInstance) => {
+                            {this.props.isRoot ? null : this.props.gestaltInstance.gestalt.relatedIds.map((relatedId: string) => {
+                                const nubGestaltInstance = gestaltIdsToNubInstances[relatedId];
                                 const MAX_NUB_LENGTH = 20
                                 let nubText = nubGestaltInstance.gestalt.text
                                 if (nubText.length > MAX_NUB_LENGTH) {
