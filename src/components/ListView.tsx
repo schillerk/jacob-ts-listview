@@ -251,7 +251,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     //MUTATOR
-    addRelation = (srcGestaltId: string, tgtGestaltId: string) => {
+    addRelation = (srcGestaltId: string, tgtGestaltId: string, expandInstanceId: string) => {
         //add rel to gestalt
         const srcGestalt: Gestalt = this.state.allGestalts[srcGestaltId];
         const newSrcGestalt: Gestalt = _.assign({}, srcGestalt, {
@@ -263,7 +263,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const relevantInstanceIdsToNewInstances: {[relevantInstanceId: string]: GestaltInstance} = {};
         for (const currGestaltInstance of _.values(this.state.allGestaltInstances)) {
             if (currGestaltInstance.gestaltId === srcGestaltId) { // find relevant gestalt instances
-                const instanceOfNewlyRelatedGestalt = this.createGestaltInstance(tgtGestaltId, false);
+                const currInstanceId = currGestaltInstance.instanceId;
+                const instanceOfNewlyRelatedGestalt = this.createGestaltInstance(tgtGestaltId, currInstanceId === expandInstanceId);
                 instancesOfNewlyRelatedGestalts[instanceOfNewlyRelatedGestalt.instanceId] = instanceOfNewlyRelatedGestalt;
                 relevantInstanceIdsToNewInstances[currGestaltInstance.instanceId] = instanceOfNewlyRelatedGestalt;
             }
@@ -351,7 +352,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         if (!dedent) {
             futureParentInstance = this.state.allGestaltInstances[futureParentInstanceId];
-            this.addRelation(futureParentInstance.gestaltId, childInstance.gestaltId);
+            this.addRelation(futureParentInstance.gestaltId, childInstance.gestaltId, futureParentInstanceId);
         } else {
 
         }

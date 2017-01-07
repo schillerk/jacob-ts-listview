@@ -61,6 +61,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     indentChild = (childIndex: number) => {
+        debugger
         this.props.commitIndentChild(this.props.gestaltInstance.instanceId, childIndex)
     }
 
@@ -224,75 +225,71 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                         {/* related gestalts list */}
                         <ul style={{ display: 'inline' }}>
-                            {false && !this.props.gestaltInstance.hydratedChildren ? []
-                                : this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltInstance) => {
-                                    const MAX_NUB_LENGTH = 20
-                                    let nubText = nubGestaltInstance.gestalt.text
-                                    if (nubText.length > MAX_NUB_LENGTH) {
-                                        nubText = nubText.slice(0, MAX_NUB_LENGTH)
-                                        nubText += "..."
-                                    }
+                            {this.props.gestaltInstance.hydratedChildren.map((nubGestaltInstance: HydratedGestaltInstance) => {
+                                const MAX_NUB_LENGTH = 20
+                                let nubText = nubGestaltInstance.gestalt.text
+                                if (nubText.length > MAX_NUB_LENGTH) {
+                                    nubText = nubText.slice(0, MAX_NUB_LENGTH)
+                                    nubText += "..."
+                                }
 
-                                    return (
-                                        <li key={nubGestaltInstance.gestaltId}
-                                            className='nub'
-                                            style={
-                                                (nubGestaltInstance.expanded) ?
-                                                    {
-                                                        background: "lightgray",
-                                                        borderColor: "darkblue",
-                                                    }
-                                                    :
-                                                    { background: "white" }
-                                            }
-                                            onClick={() => this.props.toggleExpand(nubGestaltInstance.gestaltId, this.props.gestaltInstance)}
-                                            >
+                                return (
+                                    <li key={nubGestaltInstance.gestaltId}
+                                        className='nub'
+                                        style={
+                                            (nubGestaltInstance.expanded) ?
+                                                {
+                                                    background: "lightgray",
+                                                    borderColor: "darkblue",
+                                                }
+                                                :
+                                                { background: "white" }
+                                        }
+                                        onClick={() => this.props.toggleExpand(nubGestaltInstance.gestaltId, this.props.gestaltInstance)}
+                                        >
 
-                                            { //assert nubId in this.props.allGestalts
-                                                // (nubGestaltInstance.gestaltId in this.props.allGestalts) ?
-                                                nubText || Util.SPECIAL_CHARS_JS.NBSP
-                                                // : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
-                                            }
-                                        </li>
-                                    )
-                                })}
+                                        { //assert nubId in this.props.allGestalts
+                                            // (nubGestaltInstance.gestaltId in this.props.allGestalts) ?
+                                            nubText || Util.SPECIAL_CHARS_JS.NBSP
+                                            // : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
+                                        }
+                                    </li>
+                                )
+                            })}
                         </ul>
                     </div>
                 }
                 {/* render expanded children */}
-                {false && !this.props.gestaltInstance.hydratedChildren ? null
-                    :
-                    <ul>
-                        {
-                            renderedChildGestaltInstances.map((instance, i) => {
-                                // const gestaltInstanceId: string = instance.id + "-" + id
-                                return (
-                                    <GestaltComponent
-                                        key={instance.instanceId}
-                                        index={i}
-                                        gestaltInstance={instance}
-                                        // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
 
-                                        ref={(gc: GestaltComponent) => { gc && (this.renderedGestaltComponents[i] = gc) } }
+                <ul>
+                    {
+                        renderedChildGestaltInstances.map((instance, i) => {
+                            // const gestaltInstanceId: string = instance.id + "-" + id
+                            return (
+                                <GestaltComponent
+                                    key={instance.instanceId}
+                                    index={i}
+                                    gestaltInstance={instance}
+                                    // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
 
-                                        updateGestaltText={this.props.updateGestaltText}
-                                        toggleExpand={this.props.toggleExpand}
-                                        addGestalt={this.props.addGestalt}
-                                        commitIndentChild={this.props.commitIndentChild}
+                                    ref={(gc: GestaltComponent) => { gc && (this.renderedGestaltComponents[i] = gc) } }
 
-                                        addGestaltAsChild={this.addGestaltAsChild}
-                                        indentChild={this.indentChild}
+                                    updateGestaltText={this.props.updateGestaltText}
+                                    toggleExpand={this.props.toggleExpand}
+                                    addGestalt={this.props.addGestalt}
+                                    commitIndentChild={this.props.commitIndentChild}
 
-                                        getOffsetChild={this.getOffsetChild}
-                                        focus={this.focus}
+                                    addGestaltAsChild={this.addGestaltAsChild}
+                                    indentChild={this.indentChild}
 
-                                        />
-                                )
-                            })
-                        }
-                    </ul>
+                                    getOffsetChild={this.getOffsetChild}
+                                    focus={this.focus}
 
-                }
+                                    />
+                            )
+                        })
+                    }
+                </ul>
             </li>
         )
     }

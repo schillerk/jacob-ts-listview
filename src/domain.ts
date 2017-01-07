@@ -51,10 +51,8 @@ export interface Gestalt {
 export interface GestaltInstance {
   instanceId: string // uuid
   gestaltId: string
-  childrenInstanceIds: string[]
-  expanded: boolean
-
-  // childInstanceIds: string[]
+  childrenInstanceIds: string[] // initially null if created as a nub
+  expanded: boolean // is displayed fully => children instance ids are present vs null
 }
 
 export interface HydratedGestaltInstance extends GestaltInstance {
