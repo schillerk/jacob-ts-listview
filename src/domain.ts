@@ -62,9 +62,6 @@ export interface HydratedGestaltInstance extends GestaltInstance {
   hydratedChildren: HydratedGestaltInstance[]
 }
 
-export interface GestaltInstanceLookupMap {
-  [instanceId: string]: GestaltInstance
-}
 
 // export function createGestaltInstance(gestalt: Gestalt) {
   // var newInstance : GestaltInstance = {

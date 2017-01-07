@@ -60,7 +60,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             () => { this.renderedGestaltComponents[offset].focus() })
     }
 
-    indentChild = (childIndex:number) => {
+    indentChild = (childIndex: number) => {
+        debugger
         this.props.commitIndentChild(this.props.gestaltInstance.instanceId, childIndex)
     }
 
@@ -170,8 +171,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 //#todo
                 break;
             case Util.KEY_CODES.TAB:
-            // debugger
-            e.preventDefault()
+                // debugger
+                e.preventDefault()
                 e.stopPropagation()
 
                 this.props.indentChild(this.props.index)
@@ -186,7 +187,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 this.handleArrows(e.keyCode)
                 //#todo
                 break;
-            
+
         }
 
     }
@@ -196,16 +197,16 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     render(): JSX.Element {
-        console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.hydratedChildren) 
-        
+        console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.hydratedChildren)
+
         const renderedChildGestaltInstances = this.props.gestaltInstance.hydratedChildren
-            .filter(instance => instance.expanded) 
+            .filter(instance => instance.expanded)
         this.renderedGestaltComponents = Array(renderedChildGestaltInstances.length)
 
         return (
             <li>
                 {/* gestalt body */}
-                {this.props.isRoot ? null
+                {false && this.props.isRoot ? null
                     :
                     <div>
                         {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
@@ -282,7 +283,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
                                         addGestaltAsChild={this.addGestaltAsChild}
                                         indentChild={this.indentChild}
-                                        
+
                                         getOffsetChild={this.getOffsetChild}
                                         focus={this.focus}
 
