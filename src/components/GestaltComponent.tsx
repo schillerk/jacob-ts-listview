@@ -158,8 +158,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         // }
 
         // return true;
-        return !_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
-            // !_.isEqual(nextProps.filter, this.props.filter)
+        return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
+            && _.isEqual(nextProps.filter, this.props.filter))
 
         // slower by 8fps!
         //   return !(JSON.stringify(this.props.gestaltInstance) === JSON.stringify(nextProps.gestaltInstance) )
@@ -321,7 +321,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
                     {
-                        false && this.props.isRoot ?
+                        this.props.isRoot ?
                             // finalRndComp.slice(100, 110)
                             <Infinite containerHeight={400} elementHeight={34}>
                                 {finalRndComp}
