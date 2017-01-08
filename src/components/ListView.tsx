@@ -67,7 +67,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
         //finish populating allGestalts
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 3000; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
