@@ -158,8 +158,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         // }
 
         // return true;
-        return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
-            && _.isEqual(nextProps.filter, this.props.filter))
+        return !_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
+            // !_.isEqual(nextProps.filter, this.props.filter)
 
         // slower by 8fps!
         //   return !(JSON.stringify(this.props.gestaltInstance) === JSON.stringify(nextProps.gestaltInstance) )
@@ -231,7 +231,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         const styleObj = _.assign({ listStyleType: "none" }, this.props.isRoot ? {} : { height: "34px", borderLeft: "2px solid lightgray", padding: "0px 4px", margin: "8px 0" })
 
 
-        const finalRndComp = renderedChildGestaltInstances.map((instance, i) => {
+        const finalRndComp: JSX.Element[] = renderedChildGestaltInstances.map((instance, i): JSX.Element => {
             // const gestaltInstanceId: string = instance.id + "-" + id
             return (
                 <GestaltComponent
@@ -321,12 +321,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
                     {
-                        this.props.isRoot ?
+                        false && this.props.isRoot ?
+                            // finalRndComp.slice(100, 110)
                             <Infinite containerHeight={400} elementHeight={34}>
                                 {finalRndComp}
                             </Infinite>
                             :
-                             finalRndComp 
+                            finalRndComp
                     }
 
                 </ul>
