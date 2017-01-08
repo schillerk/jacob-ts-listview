@@ -46,6 +46,7 @@ export interface Gestalt {
   text: string
   relatedIds: string[]
   isRoot?: boolean
+  lastInstanceIDToUpdate?: string
 }
 
 export interface GestaltInstance {

@@ -33,7 +33,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     addGestaltAsChild: (text: string, offset: number) => void
     // indentChild: (childIndex: number) => void
 
-    updateGestaltText: (gestaltId: string, newText: string) => void
+    updateGestaltText: (gestaltId: string, newText: string, whoUpdatedId: string) => void
     toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
     addGestalt: (text: string, offset: number, parentInstanceId?: string, callback?: () => any) => void
     // commitIndentChild: (parentInstanceId: string, childIndex: number) => void
@@ -162,8 +162,12 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         // }
 
         // return true;
-        return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
-            && _.isEqual(nextProps.filter, this.props.filter))
+        // return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
+        //     && _.isEqual(nextProps.filter, this.props.filter))
+        const sameInstance: boolean = this.props.gestaltInstance.instanceId === this.props.gestaltInstance.gestalt.lastInstanceIDToUpdate
+        return !sameInstance //|| (!(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
+            //&& _.isEqual(nextProps.filter, this.props.filter)))
+
 
         // slower by 8fps!
         //   return !(JSON.stringify(this.props.gestaltInstance) === JSON.stringify(nextProps.gestaltInstance) )
@@ -200,7 +204,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     onInput = () => {
-        this.props.updateGestaltText(this.props.gestaltInstance.gestaltId, this.nodeSpan.innerText)
+        this.props.updateGestaltText(this.props.gestaltInstance.gestaltId, this.nodeSpan.innerText, this.props.gestaltInstance.instanceId)
     }
 
     calcHeight = (text: string): number => {
@@ -241,8 +245,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         let myHeight: number = undefined
         let childrenHeights: number[] = undefined
         if (this.props.isRoot) {
-            
-            
+
+
             childrenHeights = renderedChildGestaltInstances.map((instance, i): number => (
                 this.calcHeight(instance.gestalt.text)
             ))
@@ -250,7 +254,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         }
         else {
             myHeight = this.calcHeight(this.props.gestaltInstance.gestalt.text)
-            
+
         }
         // debugger
 

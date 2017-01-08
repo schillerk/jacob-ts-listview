@@ -222,8 +222,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         _.assign(newAllGestalts, _.keyBy(newGestalts, g => g.gestaltId))
 
         const newAllGestaltInstances = this.state.allGestaltInstances
-        _.assign(newAllGestaltInstances, _.keyBy(newInstances, i => i.instanceId), {[updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance})
-        
+        _.assign(newAllGestaltInstances, _.keyBy(newInstances, i => i.instanceId), { [updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance })
+
         // const newAllGestalts: GestaltsMap = {
         //     ...this.state.allGestalts,
         //     ...(_.keyBy(newGestalts, g => g.gestaltId)),
@@ -251,6 +251,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             childrenInstanceIds: (expanded ? [] : null) as string[],
             expanded: expanded
         }
+
+        allGestalts[gestaltId].lastInstanceIDToUpdate=newInstanceId
 
         return newGestaltInstance
     }
@@ -469,12 +471,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     }
 
-    updateGestaltText = (id: string, newText: string) => {
+    updateGestaltText = (id: string, newText: string, whoUpdatedId: string) => {
         const timeInd = this.updateTimes.push(Date.now()) - 1
 
         //#hack #dangerous #notimmutable
-        this.state.allGestalts[id].text= newText
-        const updatedAllGestalts=this.state.allGestalts
+        this.state.allGestalts[id].text = newText
+        this.state.allGestalts[id].lastInstanceIDToUpdate = whoUpdatedId
+        const updatedAllGestalts = this.state.allGestalts
         // const updatedGestalt: Gestalt = {
         //     ...this.state.allGestalts[id],
         //     text: newText
