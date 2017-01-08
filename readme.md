@@ -1,3 +1,10 @@
+To run:
+Just open index.html
+
+For dev:
+If you want react dev tools chrome extension: webpack-dev-server => localhost:8080
+To auto-recompile on changes: webpack --watch
+
 Notes:
 react dev tools in chrome slow it wayy down -- should this be a worry for users who are developers? or does prod mode disable
 cursor position on gestalts doesn't work in safari
