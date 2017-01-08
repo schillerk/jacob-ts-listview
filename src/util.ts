@@ -117,7 +117,7 @@ export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, all
     //             hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
     // };
 
-
+    //#hack #dangerous #notimmutable
     _.assign(
         currInstance,
         {
