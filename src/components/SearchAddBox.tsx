@@ -12,7 +12,7 @@ export interface SearchAddBoxState {
 export interface SearchAddBoxProps extends React.Props<SearchAddBox> {
     onAddGestalt: (text: string) => void
     autoFocus: boolean
-    
+
 }
 
 
@@ -21,15 +21,17 @@ export class SearchAddBox extends React.Component<SearchAddBoxProps, SearchAddBo
 
     constructor(props: SearchAddBoxProps) {
         super(props);
-        this.state={searchAddBox:""}
+        this.state = { searchAddBox: "" }
     }
 
     focus = () => { this.textarea && this.textarea.focus() }
 
     onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
-        if (e.keyCode === Util.KEY_CODES.ENTER) {
+        if (e.keyCode === Util.KEY_CODES.ENTER && !e.shiftKey) {
             e.preventDefault() // prevents onChange
+
             this.props.onAddGestalt(e.currentTarget.value)
+
             this.setState({ searchAddBox: "" })
         }
     }
@@ -42,15 +44,15 @@ export class SearchAddBox extends React.Component<SearchAddBoxProps, SearchAddBo
         return (
             <textarea
 
-                    autoFocus={this.props.autoFocus}
-                    placeholder="Search/add gestalts: "
-                    onKeyDown={this.onKeyDown}
-                    onChange={this.onChange}
-                    ref={(e: HTMLTextAreaElement) => this.textarea=e }
-                    tabIndex={2} cols={20} value={this.state.searchAddBox}> {/* #slow */}
-{/*                 tabIndex={2} cols={20}> */}
+                autoFocus={this.props.autoFocus}
+                placeholder="Search/add gestalts: "
+                onKeyDown={this.onKeyDown}
+                onChange={this.onChange}
+                ref={(e: HTMLTextAreaElement) => this.textarea = e}
+                tabIndex={2} cols={20} value={this.state.searchAddBox}> {/* #slow */}
+                {/*                 tabIndex={2} cols={20}> */}
 
-                </textarea>                
+            </textarea>
         )
     }
 

@@ -173,36 +173,58 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     // Mutates state
-    addGestalt = (text: string, offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, callback?: () => any): void => {
-        const newGestalt = this.createGestalt(text)
-        const newAllGestalts: GestaltsMap = {
-            ...this.state.allGestalts,
-            [newGestalt.gestaltId]: newGestalt,
+    addGestalt = (text: string, offset?: number, parentInstanceId?: string, callback?: () => any): void => {
+        const splitTexts: string[] = text.split("\n\n")
+        let textsToAdd: string[]
+
+        if (splitTexts.length > 1 && window.confirm("Split by double linebreak?")) {
+            textsToAdd = splitTexts
+        }
+        else
+            textsToAdd = [text]
+
+        this.addGestalts(textsToAdd, offset, parentInstanceId, callback)
+    }
+
+
+    addGestalts = (texts: string[], offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, callback?: () => any): void => {
+        if (parentInstanceId === this.state.rootGestaltInstanceId)
+            console.log("adding at root")
+        else  //#TODO 
+        {
+            console.error("ERR: can only add at root for now")
+            return
         }
 
-        const newInstance = this.createGestaltInstance(newGestalt.gestaltId)
+        const newGestalts: Gestalt[] = texts.map(text => this.createGestalt(text))
+        const newInstances: GestaltInstance[] = newGestalts.map(g => this.createGestaltInstance(g.gestaltId))
 
-
-        const parentGestaltInstance = this.insertChildInstance(
+        const updatedParentGestaltInstance: GestaltInstance = this.insertChildInstances(
             this.state.allGestaltInstances[parentInstanceId],
-            newInstance.instanceId,
+            newInstances.map(nI => nI.instanceId),
             offset
         );
 
-        if (parentInstanceId === this.state.rootGestaltInstanceId)
-            console.log("adding at root")
-        else
-            this.addRelation(parentGestaltInstance.gestaltId, newGestalt.gestaltId) //#todo
+
+
+
+        // else
+        //     this.addRelation(parentGestaltInstance.gestaltId, newGestalts.gestaltId) //#todo
 
         // rootGestaltInstance
         // newRootGestaltInstance.childrenInstanceIds =
         // rootGestaltInstance.childrenInstanceIds.concat(newInstance.instanceId)
         // this.insertGestaltInstanceIntoParent(rootGestaltInstance, newInstance, offset)
 
+        const newAllGestalts: GestaltsMap = {
+            ...this.state.allGestalts,
+            ...(_.keyBy(newGestalts, g => g.gestaltId)),
+        }
+
         const newAllGestaltInstances: GestaltInstancesMap = {
             ...this.state.allGestaltInstances,
-            [newInstance.instanceId]: newInstance,
-            [parentGestaltInstance.instanceId]: parentGestaltInstance
+            ...(_.keyBy(newInstances, i => i.instanceId)),
+            [updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance
         }
 
         this.setState({
@@ -259,57 +281,57 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     //MUTATOR
-    addRelation = (srcGestaltId: string, tgtGestaltId: string, expandInstanceId: string = undefined) => {
-        //add rel to gestalt
-        const srcGestalt: Gestalt = this.state.allGestalts[srcGestaltId];
-        const newSrcGestalt: Gestalt = _.assign({}, srcGestalt)
-        if (_.find(srcGestalt.relatedIds, (id) => this.state.allGestalts[id].gestaltId === tgtGestaltId))
-            _.assign(newSrcGestalt,
-                { relatedIds: srcGestalt.relatedIds.concat(tgtGestaltId) });
+    // addRelation = (srcGestaltId: string, tgtGestaltId: string, expandInstanceId: string = undefined) => {
+    //     //add rel to gestalt
+    //     const srcGestalt: Gestalt = this.state.allGestalts[srcGestaltId];
+    //     const newSrcGestalt: Gestalt = _.assign({}, srcGestalt)
+    //     if (_.find(srcGestalt.relatedIds, (id) => this.state.allGestalts[id].gestaltId === tgtGestaltId))
+    //         _.assign(newSrcGestalt,
+    //             { relatedIds: srcGestalt.relatedIds.concat(tgtGestaltId) });
 
-        //add new GestaltInstances to all relevant existing GestaltInstances
+    //     //add new GestaltInstances to all relevant existing GestaltInstances
 
-        const instancesOfNewlyRelatedGestaltsAndTheirNubs: GestaltInstancesMap = {};
-        const relevantInstanceIdsToNewInstances: { [relevantInstanceId: string]: GestaltInstance } = {};
+    //     const instancesOfNewlyRelatedGestaltsAndTheirNubs: GestaltInstancesMap = {};
+    //     const relevantInstanceIdsToNewInstances: { [relevantInstanceId: string]: GestaltInstance } = {};
 
-        for (const currGestaltInstance of _.values(this.state.allGestaltInstances)) {
-            if (currGestaltInstance.gestaltId === srcGestaltId && currGestaltInstance.childrenInstanceIds !== null) { // find relevant gestalt instances, determine it isn't a nub w null children
-                const currInstanceId = currGestaltInstance.instanceId;
-                const shouldExpand = currInstanceId === expandInstanceId;
-                let instanceOfNewlyRelatedGestalt = this.createGestaltInstance(tgtGestaltId, shouldExpand);
+    //     for (const currGestaltInstance of _.values(this.state.allGestaltInstances)) {
+    //         if (currGestaltInstance.gestaltId === srcGestaltId && currGestaltInstance.childrenInstanceIds !== null) { // find relevant gestalt instances, determine it isn't a nub w null children
+    //             const currInstanceId = currGestaltInstance.instanceId;
+    //             const shouldExpand = currInstanceId === expandInstanceId;
+    //             let instanceOfNewlyRelatedGestalt = this.createGestaltInstance(tgtGestaltId, shouldExpand);
 
-                if (shouldExpand) {
-                    const newInstanceAndNubs: GestaltInstancesMap = this.expandGestaltInstance(instanceOfNewlyRelatedGestalt, this.state.allGestalts, this.state.allGestaltInstances);
-                    instanceOfNewlyRelatedGestalt = newInstanceAndNubs[instanceOfNewlyRelatedGestalt.instanceId];
-                    _.assign(instancesOfNewlyRelatedGestaltsAndTheirNubs, newInstanceAndNubs)
-                }
-                instancesOfNewlyRelatedGestaltsAndTheirNubs[instanceOfNewlyRelatedGestalt.instanceId] = instanceOfNewlyRelatedGestalt;
-                relevantInstanceIdsToNewInstances[currGestaltInstance.instanceId] = instanceOfNewlyRelatedGestalt;
-            }
-        }
+    //             if (shouldExpand) {
+    //                 const newInstanceAndNubs: GestaltInstancesMap = this.expandGestaltInstance(instanceOfNewlyRelatedGestalt, this.state.allGestalts, this.state.allGestaltInstances);
+    //                 instanceOfNewlyRelatedGestalt = newInstanceAndNubs[instanceOfNewlyRelatedGestalt.instanceId];
+    //                 _.assign(instancesOfNewlyRelatedGestaltsAndTheirNubs, newInstanceAndNubs)
+    //             }
+    //             instancesOfNewlyRelatedGestaltsAndTheirNubs[instanceOfNewlyRelatedGestalt.instanceId] = instanceOfNewlyRelatedGestalt;
+    //             relevantInstanceIdsToNewInstances[currGestaltInstance.instanceId] = instanceOfNewlyRelatedGestalt;
+    //         }
+    //     }
 
-        const newAllGestaltInstances: GestaltInstancesMap = _.assign(
-            {},
-            instancesOfNewlyRelatedGestaltsAndTheirNubs,
-            _.mapValues(this.state.allGestaltInstances, (currGestaltInstance) => {
-                if (currGestaltInstance.gestaltId === srcGestaltId && currGestaltInstance.childrenInstanceIds !== null) { // if relevant gestalt instance; it isn't a nub w null children
-                    const relevantInstanceId = currGestaltInstance.instanceId;
-                    const newlyRelatedInstanceId = relevantInstanceIdsToNewInstances[relevantInstanceId].instanceId;
-                    return this.insertChildInstance(currGestaltInstance, newlyRelatedInstanceId);
-                } else {
-                    return currGestaltInstance;
-                }
-            })
-        );
+    //     const newAllGestaltInstances: GestaltInstancesMap = _.assign(
+    //         {},
+    //         instancesOfNewlyRelatedGestaltsAndTheirNubs,
+    //         _.mapValues(this.state.allGestaltInstances, (currGestaltInstance) => {
+    //             if (currGestaltInstance.gestaltId === srcGestaltId && currGestaltInstance.childrenInstanceIds !== null) { // if relevant gestalt instance; it isn't a nub w null children
+    //                 const relevantInstanceId = currGestaltInstance.instanceId;
+    //                 const newlyRelatedInstanceId = relevantInstanceIdsToNewInstances[relevantInstanceId].instanceId;
+    //                 return this.insertChildInstances(currGestaltInstance, newlyRelatedInstanceId);
+    //             } else {
+    //                 return currGestaltInstance;
+    //             }
+    //         })
+    //     );
 
-        this.setState({
-            allGestaltInstances: newAllGestaltInstances,
-            allGestalts: {
-                ...this.state.allGestalts,
-                [srcGestaltId]: newSrcGestalt // replace srcGestaltId
-            },
-        });
-    }
+    //     this.setState({
+    //         allGestaltInstances: newAllGestaltInstances,
+    //         allGestalts: {
+    //             ...this.state.allGestalts,
+    //             [srcGestaltId]: newSrcGestalt // replace srcGestaltId
+    //         },
+    //     });
+    // }
 
 
 
@@ -323,7 +345,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     // immutable
     //if no offset, append
-    insertChildInstance = (parentGestaltInstance: GestaltInstance, instanceId: string, offset?: number): GestaltInstance => {
+    insertChildInstances = (parentGestaltInstance: GestaltInstance, instanceIds: string[], offset?: number): GestaltInstance => {
         console.assert(
             parentGestaltInstance.childrenInstanceIds !== null,
             'trying to insert child into nub instance',
@@ -333,7 +355,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             offset = parentGestaltInstance.childrenInstanceIds.length
 
         const newChildrenInstanceIds =
-            Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 0, instanceId)
+            Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 0, ...instanceIds)
 
         return {
             ...parentGestaltInstance,
