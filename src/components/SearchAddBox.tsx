@@ -45,7 +45,7 @@ export class SearchAddBox extends React.Component<SearchAddBoxProps, SearchAddBo
             <textarea
 
                 autoFocus={this.props.autoFocus}
-                placeholder="Search/add gestalts: "
+                placeholder="Search/add gestalts. Can add double linebreak-separated lists."
                 onKeyDown={this.onKeyDown}
                 onChange={this.onChange}
                 ref={(e: HTMLTextAreaElement) => this.textarea = e}

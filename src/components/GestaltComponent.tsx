@@ -225,7 +225,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             (hydratedChild) => hydratedChild.gestaltId
         );
 
-        const styleObj = _.assign({ listStyleType: "none" }, this.props.isRoot ? {} : { borderLeft: "3px solid lightgray", padding: "0px 4px", margin: "8px 0" })
+        const styleObj = _.assign({ listStyleType: "none" }, this.props.isRoot ? {} : { borderLeft: "2px solid lightgray", padding: "0px 4px", margin: "8px 0" })
 
         return (
             <li style={styleObj}>
