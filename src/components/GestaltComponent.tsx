@@ -14,6 +14,10 @@ declare module "react" {
 
 var Infinite: any = require("react-infinite");
 
+export const W_WIDTH = 11.55
+export const LINE_HEIGHT = 23
+export const LINE_WIDTH = 685
+export const GESTALT_PADDING = 8
 
 export interface GestaltComponentState {
 }
@@ -199,6 +203,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         this.props.updateGestaltText(this.props.gestaltInstance.gestaltId, this.nodeSpan.innerText)
     }
 
+    calcHeight = (text: string): number => {
+        return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
+    }
+
     render(): JSX.Element {
         console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.hydratedChildren)
 
@@ -228,10 +236,25 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             (hydratedChild) => hydratedChild.gestaltId
         );
 
-        const styleObj = _.assign({ listStyleType: "none" }, this.props.isRoot ? {} : { height: "34px", borderLeft: "2px solid lightgray", padding: "0px 4px", margin: "8px 0" })
+        const mainLiStyles = _.assign({ listStyleType: "none" }, this.props.isRoot ? {} : { height: "34px", borderLeft: "2px solid lightgray", padding: "0px 4px", margin: "8px 0" })
 
+        let myHeight: number = undefined
+        let childrenHeights: number[] = undefined
+        if (this.props.isRoot) {
+            
+            
+            childrenHeights = renderedChildGestaltInstances.map((instance, i): number => (
+                this.calcHeight(instance.gestalt.text)
+            ))
+            myHeight = window.innerHeight - 160
+        }
+        else {
+            myHeight = this.calcHeight(this.props.gestaltInstance.gestalt.text)
+            
+        }
+        // debugger
 
-        const finalRndComp: JSX.Element[] = renderedChildGestaltInstances.map((instance, i): JSX.Element => {
+        const finalRenderedChildrenComponents: JSX.Element[] = renderedChildGestaltInstances.map((instance, i): JSX.Element => {
             // const gestaltInstanceId: string = instance.id + "-" + id
             return (
                 <GestaltComponent
@@ -259,7 +282,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
         return (
-            <li style={styleObj}>
+            <li style={{ ...mainLiStyles, height: myHeight }}>
                 {/* gestalt body */}
                 {true && this.props.isRoot ? null
                     :
@@ -323,11 +346,11 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     {
                         this.props.isRoot ?
                             // finalRndComp.slice(100, 110)
-                            <Infinite containerHeight={400} elementHeight={34}>
-                                {finalRndComp}
+                            <Infinite containerHeight={myHeight - 20} elementHeight={childrenHeights}>
+                                {finalRenderedChildrenComponents}
                             </Infinite>
                             :
-                            finalRndComp
+                            finalRenderedChildrenComponents
                     }
 
                 </ul>
