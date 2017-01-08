@@ -2,48 +2,60 @@ import * as React from "react";
 
 import { LinkedList, Stack } from "../LinkedList"
 
-import { Gestalt, GestaltInstance, createGestaltInstance } from '../domain';
+import { Gestalt, GestaltInstance } from '../domain';
 import * as Util from '../util';
 
 export interface SearchAddBoxState {
-    searchAddBox: string
 }
 
 export interface SearchAddBoxProps extends React.Props<SearchAddBox> {
-    addGestalt: (text: string) => void 
+    onAddGestalt: (text: string) => void
+    onChangeText: (text: string) => void
+    autoFocus: boolean
+    value: string
+
 }
 
 
 export class SearchAddBox extends React.Component<SearchAddBoxProps, SearchAddBoxState> {
-
+    textarea: HTMLTextAreaElement
 
     constructor(props: SearchAddBoxProps) {
         super(props);
-        this.state={searchAddBox:""}
+        this.state = { searchAddBox: "" }
+    }
+
+    focus = () => { this.textarea && this.textarea.focus() }
+
+    onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
+        if (e.keyCode === Util.KEY_CODES.ENTER && !e.shiftKey) {
+            e.preventDefault() // prevents onChange
+
+            this.props.onAddGestalt(e.currentTarget.value)
+
+        }
+    }
+
+    onChange = (e: React.FormEvent<HTMLTextAreaElement>): void => {
+        this.props.onChangeText(e.currentTarget.value) //#slow
     }
 
     render() {
         return (
             <textarea
-                    placeholder="Search/add gestalts: "
-                    onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
-                        if (e.keyCode === 13) {
-                            e.preventDefault() // prevents onChange
-                            this.props.addGestalt(e.currentTarget.value)
-                            this.setState({ searchAddBox: "" })
-                        }
-                    }
-                    }
-                    onChange={(e: React.FormEvent<HTMLTextAreaElement>): void => {
-                        this.setState({ searchAddBox: e.currentTarget.value }) //#slow
-                        
-                    }
-                    }
-                    ref={(e: HTMLTextAreaElement) => { /* this.searchAddBox = e; */ }}
-                    tabIndex={2} cols={20} value={this.state.searchAddBox}> {/* #slow */}
-{/*                 tabIndex={2} cols={20}> */}
 
-                </textarea>                
+                autoFocus={this.props.autoFocus}
+                placeholder="Search/add gestalts: "
+                onKeyDown={this.onKeyDown}
+                onChange={this.onChange}
+                ref={(e: HTMLTextAreaElement) => this.textarea = e}
+                tabIndex={2}
+                value={this.props.value}
+                style={{width:"100%", height:"40px"}}
+                > {/* #slow */}
+                {/*                 tabIndex={2} cols={20}> */}
+
+            </textarea>
         )
     }
 

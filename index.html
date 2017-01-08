@@ -3,13 +3,28 @@
     <head>
         <meta charset="UTF-8" />
         <title>List View Typscript</title>
+        <style>
+            .nub {
+                padding: 3px 6px;
+                display: inline-block;
+                cursor: pointer;
+                border: 1px solid lightGray;
+                margin: 4px;
+                border-radius: 3px;
+                color: blue;
+            }
+            .nub:hover {
+                border-color: blue;
+            }
+            body {
+                background: #F7F7F7
+            }
+        </style>
     </head>
     <body>
         <div id="app-container"></div>
 
         <!-- Dependencies -->
-        <script src="./node_modules/react/dist/react.js"></script>
-        <script src="./node_modules/react-dom/dist/react-dom.js"></script>
 
         <!-- Main -->
         <script src="./dist/bundle.js"></script>

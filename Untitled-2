@@ -9,17 +9,14 @@ Example of the state object:
     {
       instanceId, // 0
       gestaltId,
-      expanded,
-      children: [
+      expandedChildren: [
         {
           instanceId, // 0.0
           gestaltId,
-          expanded,
-          children: [
+          expandedChildren: [
             instanceId, // 0.0.0
             gestaltId,
-            expanded,
-            children: [...]
+            expandedChildren: [...]
           ]
         }
       ]
@@ -30,9 +27,6 @@ Example of the state object:
     text,
     relatedIds: []
   },
-
-
-
 allInstances: {
     [instanceId: string]: GestaltInstance
   },
@@ -45,23 +39,39 @@ export interface Gestalt {
   gestaltId: string
   text: string
   relatedIds: string[]
-  isRoot?: boolean
 }
 
-export interface GestaltInstance {
-  instanceId: string // uuid
+export interface GestaltHierarchicalViewItemContents {
+  instanceId: string //1.0.2.1
   gestaltId: string
-  childrenInstanceIds: string[] // initially null if created as a nub, can be non-null and non-expanded if expanded then collapsed
-  expanded: boolean // is displayed fully => children instance ids are present vs null
+  // children: GestaltHierarchicalViewItemContents[]
+  expanded: boolean
+
+  childInstanceIds: string[]
 }
 
-export interface HydratedGestaltInstance extends GestaltInstance {
-  gestalt: Gestalt  
-  hydratedChildren: HydratedGestaltInstance[]
+export interface HydratedGestaltHierarchicalViewItemContents extends GestaltHierarchicalViewItemContents {
+  gestalt: Gestalt
+  hydratedChildren: HydratedGestaltHierarchicalViewItemContents[]
 }
 
 
-// export function createGestaltInstance(gestalt: Gestalt) {
+
+
+
+
+
+
+
+
+
+
+
+export interface GestaltInstanceLookupMap {
+  [instanceId: string]: GestaltHierarchicalViewItemContents
+}
+
+export function createGestaltInstance(gestalt: Gestalt) {
   // var newInstance : GestaltInstance = {
   //     instanceId: Util.genGUID(),
   //     childInstances: [],
@@ -69,12 +79,9 @@ export interface HydratedGestaltInstance extends GestaltInstance {
   //     gestaltId: gestalt.gestaltId
   // }
   // return newInstance;
-// }
+}
 
-export interface GestaltsMap {
+export interface GestaltCollection {
   [gestaltId: string]: Gestalt
 }
 
-export interface GestaltInstancesMap {
-    [id: string]: GestaltInstance
-}
