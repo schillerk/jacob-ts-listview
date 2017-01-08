@@ -32,6 +32,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
     // commitIndentChild: (parentInstanceId: string, childIndex: number) => void
 
     isRoot?: boolean
+    filter?: string
 }
 
 // #TODO: order comes out randomly, needs to be an OrderedMap
@@ -154,7 +155,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         // }
 
         // return true;
-        return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance))
+        return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
+            && _.isEqual(nextProps.filter, this.props.filter))
 
         // slower by 8fps!
         //   return !(JSON.stringify(this.props.gestaltInstance) === JSON.stringify(nextProps.gestaltInstance) )
@@ -170,7 +172,6 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 //#todo
                 break;
             case Util.KEY_CODES.TAB:
-                // debugger
                 e.preventDefault()
                 e.stopPropagation()
 
@@ -198,8 +199,12 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     render(): JSX.Element {
         console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.hydratedChildren)
 
-        const renderedChildGestaltInstances = this.props.gestaltInstance.hydratedChildren
-            .filter(instance => instance.expanded)
+        let hydratedChildren = this.props.gestaltInstance.hydratedChildren
+
+        if (this.props.isRoot)
+            hydratedChildren = Util.filterEntries(hydratedChildren, this.props.filter || "")
+
+        const renderedChildGestaltInstances = hydratedChildren.filter(instance => instance.expanded)
         this.renderedGestaltComponents = Array(renderedChildGestaltInstances.length)
 
         // warn about tricky edge case
@@ -220,7 +225,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             (hydratedChild) => hydratedChild.gestaltId
         );
 
-        const styleObj = _.assign({ listStyleType: "none" }, this.props.isRoot ? {} : { borderLeft: "3px solid lightgray", padding: "0px 4px", margin: "8px" })
+        const styleObj = _.assign({ listStyleType: "none" }, this.props.isRoot ? {} : { borderLeft: "3px solid lightgray", padding: "0px 4px", margin: "8px 0" })
 
         return (
             <li style={styleObj}>

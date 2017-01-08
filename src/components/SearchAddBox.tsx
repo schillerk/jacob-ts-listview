@@ -6,12 +6,13 @@ import { Gestalt, GestaltInstance } from '../domain';
 import * as Util from '../util';
 
 export interface SearchAddBoxState {
-    searchAddBox: string
 }
 
 export interface SearchAddBoxProps extends React.Props<SearchAddBox> {
     onAddGestalt: (text: string) => void
+    onChangeText: (text: string) => void
     autoFocus: boolean
+    value: string
 
 }
 
@@ -32,12 +33,11 @@ export class SearchAddBox extends React.Component<SearchAddBoxProps, SearchAddBo
 
             this.props.onAddGestalt(e.currentTarget.value)
 
-            this.setState({ searchAddBox: "" })
         }
     }
 
     onChange = (e: React.FormEvent<HTMLTextAreaElement>): void => {
-        this.setState({ searchAddBox: e.currentTarget.value }) //#slow
+        this.props.onChangeText(e.currentTarget.value) //#slow
     }
 
     render() {
@@ -49,7 +49,10 @@ export class SearchAddBox extends React.Component<SearchAddBoxProps, SearchAddBo
                 onKeyDown={this.onKeyDown}
                 onChange={this.onChange}
                 ref={(e: HTMLTextAreaElement) => this.textarea = e}
-                tabIndex={2} cols={20} value={this.state.searchAddBox}> {/* #slow */}
+                tabIndex={2}
+                value={this.props.value}
+                style={{width:"100%", height:"40px"}}
+                > {/* #slow */}
                 {/*                 tabIndex={2} cols={20}> */}
 
             </textarea>

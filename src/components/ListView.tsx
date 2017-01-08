@@ -13,6 +13,7 @@ export interface ListViewState {
     allGestalts?: GestaltsMap
     allGestaltInstances?: GestaltInstancesMap
     rootGestaltInstanceId?: string
+    filter?: string
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -28,6 +29,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         super(props);
 
         const initState: ListViewState = {
+            filter: "",
             allGestaltInstances: {},
             allGestalts: {
                 '0id': {
@@ -489,11 +491,19 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         return (
             <div>
-                <div style={{ padding: "30px 60px 10px", width: "700px", background: "white", margin: "0 auto", border: "1px solid #d6d6d6" }}>
+                <div style={{ padding: "45px 60px 10px", width: "700px", background: "white", margin: "0 auto", border: "1px solid #d6d6d6" }}>
                     <SearchAddBox
                         autoFocus
-                        onAddGestalt={(text) => this.addGestalt(text)}
+                        onAddGestalt={(text) => {
+                            this.addGestalt(text)
+                            this.setState({filter:""})
+                        } }
+                        onChangeText={(text) => {
+                            this.setState({filter:text})
+                        } }
+                        
                         ref={(instance: SearchAddBox) => this.searchAddBox = instance}
+                        value={this.state.filter}
                         />
 
                     <GestaltComponent
@@ -514,6 +524,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         getOffsetChild={undefined}
                         focus={() => { } }
                         isRoot
+                        filter={this.state.filter}
                         />
                 </div>
             </div>

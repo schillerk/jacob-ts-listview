@@ -3,6 +3,24 @@ import { Gestalt, GestaltsMap, GestaltInstance, GestaltInstancesMap, HydratedGes
 
 var count = 0;
 
+
+export function genGUID() {
+    count++;
+    return "UNIQUE_ID_" + count.toString();
+}
+
+export enum KEY_CODES {
+    UP = 38,
+    DOWN = 40,
+    ENTER = 13,
+    TAB = 9,
+}
+
+export const SPECIAL_CHARS_JS = {
+    NBSP: "\xa0"
+}
+
+
 export function moveCaretToEnd(el: HTMLSpanElement) {
     const range = document.createRange()
     const sel = window.getSelection()
@@ -18,10 +36,6 @@ export function moveCaretToEnd(el: HTMLSpanElement) {
 
 }
 
-export function genGUID() {
-    count++;
-    return "UNIQUE_ID_" + count.toString();
-}
 
 export function objectToArray<T>(object: { [id: string]: T }) {
     var arr: T[] = [];
@@ -32,20 +46,53 @@ export function objectToArray<T>(object: { [id: string]: T }) {
 }
 
 
-export function immSplice<T>(arr:T[], start:number, deleteCount:number, ...items:T[]) {
-  return [ ...arr.slice(0, start), ...items, ...arr.slice(start + deleteCount) ]
+export function immSplice<T>(arr: T[], start: number, deleteCount: number, ...items: T[]) {
+    return [...arr.slice(0, start), ...items, ...arr.slice(start + deleteCount)]
 }
 
-export enum KEY_CODES {
-    UP = 38,
-    DOWN = 40,
-    ENTER = 13,
-    TAB = 9,
+
+
+export const encodeHtmlEntity = function (str: string) {
+    var buf = [];
+    for (var i = str.length - 1; i >= 0; i--) {
+        buf.unshift(['&#', str.charCodeAt(i), ';'].join(''));
+    }
+    return buf.join('');
+};
+
+
+export const filterEntries = (entries: HydratedGestaltInstance[], filter: string) => {
+    const pdFilter = filter.toLowerCase();
+
+    let fNotes = entries
+    if (filter !== '')
+        fNotes = entries.filter((currNote) => currNote.gestalt.text.toLowerCase().indexOf(pdFilter) !== -1)
+
+    // const openPlaceHolder = "4309jfei8jnasdf"
+    // const closePlaceHolder = "0jf0893489j01q"
+
+    // fNotes = fNotes.map((currNote) => {
+    //     let txt = currNote.gestalt.text
+    //     if (pdFilter.length > 0) {
+    //         const r = new RegExp("(" + pdFilter + ")", "ig")
+    //         //txt = txt.replace(r, '<span style="font-weight:bold;background-color: yellow"}>$1</span>')
+    //         txt = txt.replace(r, openPlaceHolder + '$1' + closePlaceHolder)
+    //         txt = encodeHtmlEntity(txt).replace("&#10;", "<br />")
+    //         txt = txt.replace(new RegExp(encodeHtmlEntity(openPlaceHolder), 'g'), '<span style="font-weight:bold;background-color: yellow"}>')
+    //         txt = txt.replace(new RegExp(encodeHtmlEntity(closePlaceHolder), 'g'), '</span>')
+    //     }
+    //     else {
+    //         txt = encodeHtmlEntity(txt).replace("&#10;", "<br />")
+    //     }
+
+    //     return { ...currNote, gestalt: { ...currNote.gestalt, text: txt } };
+    // });
+
+
+    return fNotes
+
 }
 
-export const SPECIAL_CHARS_JS = {
-    NBSP: "\xa0"
-}
 
 export function average(arr: number[]) {
     return _.reduce(arr, function (memo, num) {
@@ -70,6 +117,9 @@ export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, all
                 hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
     };
 
-    console.assert(!(hydratedGestaltInstance.expanded && hydratedGestaltInstance.hydratedChildren===null),"expanded and hyd==null", hydratedGestaltInstance)
+    console.assert(!(hydratedGestaltInstance.expanded && hydratedGestaltInstance.hydratedChildren === null), "expanded and hyd==null", hydratedGestaltInstance)
     return hydratedGestaltInstance
 }
+
+
+
