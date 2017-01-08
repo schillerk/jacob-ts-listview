@@ -181,14 +181,19 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         }
 
         const newInstance = this.createGestaltInstance(newGestalt.gestaltId)
-        if (parentInstanceId === this.state.rootGestaltInstanceId)
-            console.log("adding at root")
+
 
         const parentGestaltInstance = this.insertChildInstance(
             this.state.allGestaltInstances[parentInstanceId],
             newInstance.instanceId,
             offset
         );
+
+        if (parentInstanceId === this.state.rootGestaltInstanceId)
+            console.log("adding at root")
+        else
+            this.addRelation(parentGestaltInstance.gestaltId, newGestalt.gestaltId) //#todo
+
         // rootGestaltInstance
         // newRootGestaltInstance.childrenInstanceIds =
         // rootGestaltInstance.childrenInstanceIds.concat(newInstance.instanceId)
@@ -254,7 +259,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     //MUTATOR
-    addRelation = (srcGestaltId: string, tgtGestaltId: string, expandInstanceId: string) => {
+    addRelation = (srcGestaltId: string, tgtGestaltId: string, expandInstanceId: string = undefined) => {
         //add rel to gestalt
         const srcGestalt: Gestalt = this.state.allGestalts[srcGestaltId];
         const newSrcGestalt: Gestalt = _.assign({}, srcGestalt)
@@ -462,7 +467,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         return (
             <div>
-                <div style={{padding: "30px 60px 10px",width:"700px",background: "white", margin:"0 auto", border: "1px solid #d6d6d6"}}>
+                <div style={{ padding: "30px 60px 10px", width: "700px", background: "white", margin: "0 auto", border: "1px solid #d6d6d6" }}>
                     <SearchAddBox
                         autoFocus
                         onAddGestalt={(text) => this.addGestalt(text)}
