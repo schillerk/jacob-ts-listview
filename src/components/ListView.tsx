@@ -24,6 +24,7 @@ export interface ListViewProps extends React.Props<ListView> {
 export class ListView extends React.Component<ListViewProps, ListViewState> {
     searchAddBox: SearchAddBox;
     updateTimes: number[] = []
+    lastHydratedRootGestaltInstance:HydratedGestaltInstance
 
     constructor(props: ListViewProps) {
         super(props);
@@ -486,8 +487,14 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const hydratedRootGestaltInstance = Util.hydrateGestaltInstanceAndChildren(
             this.state.rootGestaltInstanceId,
             this.state.allGestalts,
-            this.state.allGestaltInstances
+            this.state.allGestaltInstances,
+            this.lastHydratedRootGestaltInstance
         )
+
+        this.lastHydratedRootGestaltInstance=hydratedRootGestaltInstance
+
+
+
 
         return (
             <div>

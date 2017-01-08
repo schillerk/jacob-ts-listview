@@ -100,7 +100,8 @@ export function average(arr: number[]) {
     }, 0) / arr.length;
 }
 
-export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap): HydratedGestaltInstance {
+// Includes lastHydratedRootGestaltInstance for faster diffing
+export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap, lastHydratedRootGestaltInstance?: HydratedGestaltInstance): HydratedGestaltInstance {
 
     const currInstance: GestaltInstance = allGestaltInstances[gestaltInstanceId];
     console.assert(typeof currInstance !== "undefined", gestaltInstanceId + " not in allGestaltInstances")
