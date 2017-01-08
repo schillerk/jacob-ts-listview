@@ -1,6 +1,6 @@
 // in production, typings should match code version (e.g. lodash)
 
-const production_react = false
+const production_react = true
 
 module.exports = {
     entry: "./src/index.tsx",

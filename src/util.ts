@@ -108,14 +108,28 @@ export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, all
     const currGestalt: Gestalt = allGestalts[currInstance.gestaltId];
     console.assert(typeof currGestalt !== "undefined", currInstance.gestaltId + " not in allGestalts")
 
-    const hydratedGestaltInstance: HydratedGestaltInstance = {
-        ...currInstance,
-        gestalt: currGestalt,
-        hydratedChildren: currInstance.childrenInstanceIds === null ?
-            null
-            : currInstance.childrenInstanceIds.map((instanceId: string) =>
-                hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
-    };
+    // const hydratedGestaltInstance: HydratedGestaltInstance = {
+    //     ...currInstance,
+    //     gestalt: currGestalt,
+    //     hydratedChildren: currInstance.childrenInstanceIds === null ?
+    //         null
+    //         : currInstance.childrenInstanceIds.map((instanceId: string) =>
+    //             hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+    // };
+
+
+    _.assign(
+        currInstance,
+        {
+            gestalt: currGestalt,
+            hydratedChildren: currInstance.childrenInstanceIds === null ?
+                null
+                : currInstance.childrenInstanceIds.map((instanceId: string) =>
+                    hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+        }
+    );
+    const hydratedGestaltInstance: HydratedGestaltInstance = currInstance as HydratedGestaltInstance
+
 
     console.assert(!(hydratedGestaltInstance.expanded && hydratedGestaltInstance.hydratedChildren === null), "expanded and hyd==null", hydratedGestaltInstance)
     return hydratedGestaltInstance

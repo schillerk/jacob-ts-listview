@@ -67,7 +67,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
         //finish populating allGestalts
-        for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < 20000; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             initState.allGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -116,13 +116,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         rootGestaltInstance.childrenInstanceIds
             .forEach((iId: string) =>
-                initState.allGestaltInstances = {
-                    ...initState.allGestaltInstances,
-                    ...this.expandGestaltInstance(initState.allGestaltInstances[iId],
+                _.assign(initState.allGestaltInstances,
+                    this.expandGestaltInstance(initState.allGestaltInstances[iId],
                         initState.allGestalts,
                         initState.allGestaltInstances
                     )
-                }
+                )
             )
 
 
@@ -218,16 +217,23 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         // rootGestaltInstance.childrenInstanceIds.concat(newInstance.instanceId)
         // this.insertGestaltInstanceIntoParent(rootGestaltInstance, newInstance, offset)
 
-        const newAllGestalts: GestaltsMap = {
-            ...this.state.allGestalts,
-            ...(_.keyBy(newGestalts, g => g.gestaltId)),
-        }
+        //#hack #dangerous #notimmutable
+        const newAllGestalts = this.state.allGestalts
+        _.assign(newAllGestalts, _.keyBy(newGestalts, g => g.gestaltId))
 
-        const newAllGestaltInstances: GestaltInstancesMap = {
-            ...this.state.allGestaltInstances,
-            ...(_.keyBy(newInstances, i => i.instanceId)),
-            [updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance
-        }
+        const newAllGestaltInstances = this.state.allGestaltInstances
+        _.assign(newAllGestaltInstances, _.keyBy(newInstances, i => i.instanceId), {[updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance})
+        
+        // const newAllGestalts: GestaltsMap = {
+        //     ...this.state.allGestalts,
+        //     ...(_.keyBy(newGestalts, g => g.gestaltId)),
+        // }
+
+        // const newAllGestaltInstances: GestaltInstancesMap = {
+        //     ...this.state.allGestaltInstances,
+        //     ...(_.keyBy(newInstances, i => i.instanceId)),
+        //     [updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance
+        // }
 
         this.setState({
             allGestaltInstances: newAllGestaltInstances,
@@ -465,15 +471,19 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     updateGestaltText = (id: string, newText: string) => {
         const timeInd = this.updateTimes.push(Date.now()) - 1
-        const updatedGestalt: Gestalt = {
-            ...this.state.allGestalts[id],
-            text: newText
-        }
 
-        const updatedAllGestalts: { [gestaltId: string]: Gestalt } = {
-            ...this.state.allGestalts,
-            [updatedGestalt.gestaltId]: updatedGestalt
-        }
+        //#hack #dangerous #notimmutable
+        this.state.allGestalts[id].text= newText
+        const updatedAllGestalts=this.state.allGestalts
+        // const updatedGestalt: Gestalt = {
+        //     ...this.state.allGestalts[id],
+        //     text: newText
+        // }
+
+        // const updatedAllGestalts: { [gestaltId: string]: Gestalt } = {
+        //     ...this.state.allGestalts,
+        //     [updatedGestalt.gestaltId]: updatedGestalt
+        // }
 
         this.setState({ allGestalts: updatedAllGestalts }, () => {
             this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
@@ -496,12 +506,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         autoFocus
                         onAddGestalt={(text) => {
                             this.addGestalt(text)
-                            this.setState({filter:""})
+                            this.setState({ filter: "" })
                         } }
                         onChangeText={(text) => {
-                            this.setState({filter:text})
+                            this.setState({ filter: text })
                         } }
-                        
+
                         ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                         value={this.state.filter}
                         />
