@@ -466,9 +466,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     updateGestaltText = (id: string, newText: string) => {
         const timeInd = this.updateTimes.push(Date.now()) - 1
+        
+         // TODO: recompute gestalt.textHeight
         const updatedGestalt: Gestalt = {
             ...this.state.allGestalts[id],
-            text: newText
+            text: newText,
+            textHeight: Util.computeTextHeight(newText)
         }
 
         const updatedAllGestalts: { [gestaltId: string]: Gestalt } = {
