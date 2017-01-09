@@ -134,7 +134,7 @@ export function computeTextHeight(text: string): number {
         // width,10,50)
 
 
-        return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
+        return 0 //Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
     }
 
 

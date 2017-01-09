@@ -24,7 +24,7 @@ export interface ListViewProps extends React.Props<ListView> {
 export class ListView extends React.Component<ListViewProps, ListViewState> {
     searchAddBox: SearchAddBox;
     updateTimes: number[] = []
-    lastHydratedRootGestaltInstance:HydratedGestaltInstance
+    lastHydratedRootGestaltInstance: HydratedGestaltInstance
 
     constructor(props: ListViewProps) {
         super(props);
@@ -466,8 +466,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     updateGestaltText = (id: string, newText: string) => {
         const timeInd = this.updateTimes.push(Date.now()) - 1
-        
-         // TODO: recompute gestalt.textHeight
+
+        // TODO: recompute gestalt.textHeight
         const updatedGestalt: Gestalt = {
             ...this.state.allGestalts[id],
             text: newText,
@@ -494,7 +494,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             this.lastHydratedRootGestaltInstance
         )
 
-        this.lastHydratedRootGestaltInstance=hydratedRootGestaltInstance
+        this.lastHydratedRootGestaltInstance = hydratedRootGestaltInstance
 
 
 
@@ -506,12 +506,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         autoFocus
                         onAddGestalt={(text) => {
                             this.addGestalt(text)
-                            this.setState({filter:""})
+                            this.setState({ filter: "" })
                         } }
                         onChangeText={(text) => {
-                            this.setState({filter:text})
+                            this.setState({ filter: text })
                         } }
-                        
+
                         ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                         value={this.state.filter}
                         />

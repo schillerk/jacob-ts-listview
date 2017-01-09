@@ -44,7 +44,7 @@ allInstances: {
 export interface Gestalt {
   gestaltId: string
   text: string
-  textHeight: number
+  textHeight?: number
   relatedIds: string[]
   isRoot?: boolean
 }

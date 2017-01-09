@@ -204,6 +204,14 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     calcHeight = (text: string): number => {
+        // var c=document.getElementById("myCanvas");
+        // var ctx=c.getContext("2d");
+        // ctx.font="30px Arial";
+        // width = ctx.measureText(text))
+        
+        // width,10,50)
+
+
         return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
     }
 
