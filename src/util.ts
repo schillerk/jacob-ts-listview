@@ -6,8 +6,8 @@ var count = 0;
 let canvasElement = document.createElement('canvas')
 document.body.appendChild(canvasElement)
 // var c=document.getElementById("myCanvas");
-var ctx=canvasElement.getContext("2d");
-ctx.font="16px Helvetica";
+var ctx = canvasElement.getContext("2d");
+ctx.font = "16px Helvetica";
 
 
 export function genGUID() {
@@ -129,12 +129,12 @@ export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, all
 }
 
 export function computeTextHeight(text: string): number {
-        let width = ctx.measureText(text).width
-        
-        // width,10,50)
+    let width = ctx.measureText(text).width
+
+    // width,10,50)
 
 
-        return 0 //Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
-    }
+    return 0 //Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
+}
 
 
