@@ -22,8 +22,9 @@ export interface ListViewProps extends React.Props<ListView> {
 
 
 export class ListView extends React.Component<ListViewProps, ListViewState> {
-  searchAddBox: SearchAddBox;
-  updateTimes: number[] = []
+    searchAddBox: SearchAddBox;
+    updateTimes: number[] = []
+    lastHydratedRootGestaltInstance: HydratedGestaltInstance
 
   constructor(props: ListViewProps) {
   super(props);
@@ -462,48 +463,57 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
   }
 
-  updateGestaltText = (id: string, newText: string) => {
-  const timeInd = this.updateTimes.push(Date.now()) - 1
-  const updatedGestalt: Gestalt = {
-    ...this.state.allGestalts[id],
-    text: newText
-  }
+    updateGestaltText = (id: string, newText: string) => {
+        const timeInd = this.updateTimes.push(Date.now()) - 1
 
-  const updatedAllGestalts: { [gestaltId: string]: Gestalt } = {
-    ...this.state.allGestalts,
-    [updatedGestalt.gestaltId]: updatedGestalt
-  }
+        // TODO: recompute gestalt.textHeight
+        const updatedGestalt: Gestalt = {
+            ...this.state.allGestalts[id],
+            text: newText,
+            textHeight: Util.computeTextHeight(newText)
+        }
 
-  this.setState({ allGestalts: updatedAllGestalts }, () => {
-    this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
-    if (this.updateTimes.length % 10 == 0) console.log("updateGestalt FPS", 1000 / Util.average(this.updateTimes))
-  })
-  }
+        const updatedAllGestalts: { [gestaltId: string]: Gestalt } = {
+            ...this.state.allGestalts,
+            [updatedGestalt.gestaltId]: updatedGestalt
+        }
 
-  render() {
+        this.setState({ allGestalts: updatedAllGestalts }, () => {
+            this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
+            if (this.updateTimes.length % 10 == 0) console.log("updateGestalt FPS", 1000 / Util.average(this.updateTimes))
+        })
+    }
 
-  const hydratedRootGestaltInstance = Util.hydrateGestaltInstanceAndChildren(
-    this.state.rootGestaltInstanceId,
-    this.state.allGestalts,
-    this.state.allGestaltInstances
-  )
+    render() {
 
-  return (
-    <div>
-    <div style={{ padding: "45px 60px 10px", width: "700px", background: "white", margin: "0 auto", border: "1px solid #d6d6d6" }}>
-      <SearchAddBox
-      autoFocus
-      onAddGestalt={(text) => {
-        this.addGestalt(text)
-        this.setState({ filter: "" })
-      } }
-      onChangeText={(text) => {
-        this.setState({ filter: text })
-      } }
+        const hydratedRootGestaltInstance = Util.hydrateGestaltInstanceAndChildren(
+            this.state.rootGestaltInstanceId,
+            this.state.allGestalts,
+            this.state.allGestaltInstances,
+            this.lastHydratedRootGestaltInstance
+        )
 
-      ref={(instance: SearchAddBox) => this.searchAddBox = instance}
-      value={this.state.filter}
-      />
+        this.lastHydratedRootGestaltInstance = hydratedRootGestaltInstance
+
+
+
+
+        return (
+            <div>
+                <div style={{ padding: "45px 60px 10px", width: "700px", background: "white", margin: "0 auto", border: "1px solid #d6d6d6" }}>
+                    <SearchAddBox
+                        autoFocus
+                        onAddGestalt={(text) => {
+                            this.addGestalt(text)
+                            this.setState({ filter: "" })
+                        } }
+                        onChangeText={(text) => {
+                            this.setState({ filter: text })
+                        } }
+
+                        ref={(instance: SearchAddBox) => this.searchAddBox = instance}
+                        value={this.state.filter}
+                        />
 
       <GestaltComponent
       key={this.state.rootGestaltInstanceId}

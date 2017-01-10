@@ -3,6 +3,12 @@ import { Gestalt, GestaltsMap, GestaltInstance, GestaltInstancesMap, HydratedGes
 
 var count = 0;
 
+let canvasElement = document.createElement('canvas')
+document.body.appendChild(canvasElement)
+// var c=document.getElementById("myCanvas");
+var ctx=canvasElement.getContext("2d");
+ctx.font="16px Helvetica";
+
 
 export function genGUID() {
     count++;
@@ -100,7 +106,8 @@ export function average(arr: number[]) {
     }, 0) / arr.length;
 }
 
-export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap): HydratedGestaltInstance {
+// Includes lastHydratedRootGestaltInstance for faster diffing
+export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap, lastHydratedRootGestaltInstance?: HydratedGestaltInstance): HydratedGestaltInstance {
 
     const currInstance: GestaltInstance = allGestaltInstances[gestaltInstanceId];
     console.assert(typeof currInstance !== "undefined", gestaltInstanceId + " not in allGestaltInstances")
@@ -121,5 +128,13 @@ export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, all
     return hydratedGestaltInstance
 }
 
+export function computeTextHeight(text: string): number {
+        let width = ctx.measureText(text).width
+        
+        // width,10,50)
+
+
+        return 0 //Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
+    }
 
 
