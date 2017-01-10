@@ -1,5 +1,6 @@
 import * as _ from "lodash";
 import { Gestalt, GestaltsMap, GestaltInstance, GestaltInstancesMap, HydratedGestaltInstance } from './domain';
+import LazyListFactory from './LazyList'
 
 var count = 0;
 
@@ -121,16 +122,28 @@ export function hydrateGestaltInstanceAndChildren(
     console.assert(typeof currGestalt !== "undefined", `${currInstance.gestaltId} not in allGestalts`)
 
     let nextHydGesInsts
-    if (currGestalt.isRoot) {
-        const newlyHydGesInsts:HydratedGestaltInstance[] = currInstance.childrenInstanceIds.slice(startInd, endInd).map((instanceId: string) =>
-            hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+    if (currInstance.childrenInstanceIds === null) {
+        nextHydGesInsts = null
+    } else {
+        if (currGestalt.isRoot) {
+            nextHydGesInsts = LazyListFactory(
+                currInstance.childrenInstanceIds,
+                (i: number) => hydrateGestaltInstanceAndChildren(
+                    currInstance.childrenInstanceIds[i],
+                    allGestalts,
+                    allGestaltInstances))
 
-        nextHydGesInsts = immSplice(lastHydratedRootGestaltInstance.hydratedChildren,
-            startInd, endInd - startInd, ...newlyHydGesInsts)
-    }
-    else {
-        nextHydGesInsts = currInstance.childrenInstanceIds.map((instanceId: string) =>
-            hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+            /*     const newlyHydGesInsts:HydratedGestaltInstance[] = currInstance.childrenInstanceIds.slice(startInd, endInd).map((instanceId: string) =>
+                    hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+
+                nextHydGesInsts = immSplice(lastHydratedRootGestaltInstance.hydratedChildren,
+                    startInd, endInd - startInd, ...newlyHydGesInsts) */
+        }
+        else {
+            nextHydGesInsts = currInstance.childrenInstanceIds.map((instanceId: string) =>
+                hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+        }
+
     }
 
     const hydratedGestaltInstance: HydratedGestaltInstance = {
