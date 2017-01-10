@@ -53,7 +53,7 @@ export interface GestaltInstance {
   instanceId: string // uuid
   gestaltId: string
   childrenInstanceIds: string[] // initially null if created as a nub, can be non-null and non-expanded if expanded then collapsed
-  expanded: boolean // is displayed fully => children instance ids are present vs null
+  expanded: boolean // is displayed fully => children instance ids are present vs null,
 }
 
 export interface HydratedGestaltInstance extends GestaltInstance {

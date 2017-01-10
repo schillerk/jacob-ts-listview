@@ -25,6 +25,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
   searchAddBox: SearchAddBox;
   updateTimes: number[] = []
   lastHydratedRootGestaltInstance: HydratedGestaltInstance
+  firstVisibleElemInd: number
+  lastVisibleElemInd: number
 
   constructor(props: ListViewProps) {
     super(props);
@@ -484,13 +486,22 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     })
   }
 
+
+
+  onScrollChange = (firstVisibleElemInd: number, lastVisibleElemInd: number) => {
+    this.firstVisibleElemInd = firstVisibleElemInd
+    this.lastVisibleElemInd = lastVisibleElemInd
+  }
+
   render() {
 
     const hydratedRootGestaltInstance = Util.hydrateGestaltInstanceAndChildren(
       this.state.rootGestaltInstanceId,
       this.state.allGestalts,
       this.state.allGestaltInstances,
-      this.lastHydratedRootGestaltInstance
+      this.lastHydratedRootGestaltInstance,
+      this.firstVisibleElemInd,
+      this.lastVisibleElemInd
     )
 
     this.lastHydratedRootGestaltInstance = hydratedRootGestaltInstance
@@ -516,6 +527,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             />
 
           <GestaltComponent
+            onScrollChange={this.onScrollChange}
             key={this.state.rootGestaltInstanceId}
             index={0}
             gestaltInstance={hydratedRootGestaltInstance}

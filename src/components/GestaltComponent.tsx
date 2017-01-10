@@ -37,6 +37,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
   toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
   addGestalt: (text: string, offset: number, parentInstanceId?: string, callback?: () => any) => void
   // commitIndentChild: (parentInstanceId: string, childIndex: number) => void
+  onScrollChange?: (firstVisibleElemInd: number, lastVisibleElemInd: number)=> void
 
   isRoot?: boolean
   filter?: string
@@ -162,7 +163,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     // }
 
     // return true;
-    return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
+    return !()
       && _.isEqual(nextProps.filter, this.props.filter))
 
     // slower by 8fps!
@@ -203,17 +204,17 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     this.props.updateGestaltText(this.props.gestaltInstance.gestaltId, this.nodeSpan.innerText)
   }
 
-    calcHeight = (text: string): number => {
-        // var c=document.getElementById("myCanvas");
-        // var ctx=c.getContext("2d");
-        // ctx.font="30px Arial";
-        // width = ctx.measureText(text))
-        
-        // width,10,50)
+  calcHeight = (text: string): number => {
+    // var c=document.getElementById("myCanvas");
+    // var ctx=c.getContext("2d");
+    // ctx.font="30px Arial";
+    // width = ctx.measureText(text))
+
+    // width,10,50)
 
 
-        return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
-    }
+    return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
+  }
 
   render(): JSX.Element {
     console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.hydratedChildren)
@@ -249,8 +250,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     let myHeight: number = undefined
     let childrenHeights: number[] = undefined
     if (this.props.isRoot) {
-      
-      
+
+
       childrenHeights = renderedChildGestaltInstances.map((instance, i): number => (
         this.calcHeight(instance.gestalt.text)
       ))
@@ -258,7 +259,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
     else {
       myHeight = this.calcHeight(this.props.gestaltInstance.gestalt.text)
-      
+
     }
     // debugger
 
@@ -354,7 +355,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
           {
             this.props.isRoot ?
               // finalRndComp.slice(100, 110)
-              <Infinite containerHeight={myHeight - 20} elementHeight={childrenHeights}>
+              <Infinite onScrollChange={this.props.onScrollChange} containerHeight={myHeight - 20} elementHeight={childrenHeights}>
                 {finalRenderedChildrenComponents}
               </Infinite>
               :

@@ -107,24 +107,42 @@ export function average(arr: number[]) {
 }
 
 // Includes lastHydratedRootGestaltInstance for faster diffing
-export function hydrateGestaltInstanceAndChildren(gestaltInstanceId: string, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap, lastHydratedRootGestaltInstance?: HydratedGestaltInstance): HydratedGestaltInstance {
+export function hydrateGestaltInstanceAndChildren(
+    gestaltInstanceId: string,
+    allGestalts: GestaltsMap,
+    allGestaltInstances: GestaltInstancesMap,
+    lastHydratedRootGestaltInstance?: HydratedGestaltInstance, startInd?: number, endInd?: number
+): HydratedGestaltInstance {
 
-    const currInstance: GestaltInstance = allGestaltInstances[gestaltInstanceId];
-    console.assert(typeof currInstance !== "undefined", gestaltInstanceId + " not in allGestaltInstances")
+    const currInstance: GestaltInstance = allGestaltInstances[gestaltInstanceId]
+    console.assert(typeof currInstance !== "undefined", `${gestaltInstanceId} not in allGestaltInstances`)
 
-    const currGestalt: Gestalt = allGestalts[currInstance.gestaltId];
-    console.assert(typeof currGestalt !== "undefined", currInstance.gestaltId + " not in allGestalts")
+    const currGestalt: Gestalt = allGestalts[currInstance.gestaltId]
+    console.assert(typeof currGestalt !== "undefined", `${currInstance.gestaltId} not in allGestalts`)
+
+    let nextHydGesInsts
+    if (currGestalt.isRoot) {
+        const newlyHydGesInsts:HydratedGestaltInstance[] = currInstance.childrenInstanceIds.slice(startInd, endInd).map((instanceId: string) =>
+            hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+
+        nextHydGesInsts = immSplice(lastHydratedRootGestaltInstance.hydratedChildren,
+            startInd, endInd - startInd, ...newlyHydGesInsts)
+    }
+    else {
+        nextHydGesInsts = currInstance.childrenInstanceIds.map((instanceId: string) =>
+            hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+    }
 
     const hydratedGestaltInstance: HydratedGestaltInstance = {
         ...currInstance,
         gestalt: currGestalt,
         hydratedChildren: currInstance.childrenInstanceIds === null ?
             null
-            : currInstance.childrenInstanceIds.map((instanceId: string) =>
-                hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
-    };
+            : nextHydGesInsts
+    }
 
-    console.assert(!(hydratedGestaltInstance.expanded && hydratedGestaltInstance.hydratedChildren === null), "expanded and hyd==null", hydratedGestaltInstance)
+    console.assert(!(hydratedGestaltInstance.expanded && hydratedGestaltInstance.hydratedChildren === null),
+        "expanded and hyd==null", hydratedGestaltInstance)
     return hydratedGestaltInstance
 }
 
