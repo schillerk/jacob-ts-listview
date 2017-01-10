@@ -163,7 +163,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     // }
 
     // return true;
-    return !()
+    return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
       && _.isEqual(nextProps.filter, this.props.filter))
 
     // slower by 8fps!
