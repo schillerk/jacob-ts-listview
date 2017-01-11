@@ -57,7 +57,7 @@ export interface GestaltInstance {
 }
 
 export interface HydratedGestaltInstance extends GestaltInstance {
-  gestalt: Gestalt
+  gestalt: Gestalt  
   hydratedChildren: HydratedGestaltInstance[]
 }
 
