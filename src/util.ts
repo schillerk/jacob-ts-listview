@@ -242,7 +242,7 @@ export function removeChildInstance(parentGestaltInstance: GestaltInstance, offs
   }
 }
 
-export function expandGestaltInstance(
+export function expandGestaltInstanceAndCreateChildren(
   instance: GestaltInstance,
   gestaltsMap: GestaltsMap,
   gestaltInstancesMap: GestaltInstancesMap,
@@ -251,14 +251,19 @@ export function expandGestaltInstance(
 ): GestaltInstancesMap {
   const gestalt: Gestalt = gestaltsMap[instance.gestaltId]
 
-  const updatedInstance: GestaltInstance = { ...instance, expanded: true }
-
-  console.assert(typeof updatedInstance.childInstanceIds !== "undefined")
+  console.assert(typeof instance.childInstanceIds !== "undefined")
   console.assert(typeof gestalt !== "undefined")
+  console.assert(!instance.expanded)
 
-  let updatedGestaltInstances: GestaltInstancesMap = { [updatedInstance.instanceId]: updatedInstance }
+  const updatedGestaltInstancesMap =  gestaltInstancesMap
 
-  if (updatedInstance.childInstanceIds === null) {
+  const updatedInstance = {
+    ...instance,
+    expanded: true,
+    version: instance.version + 1,
+  }
+
+  if (instance.childInstanceIds === null) {
     const gestaltIdsToInstantiate: string[] = gestalt.isRoot ?
       _.values(gestaltsMap).map((g) => g.isRoot ? undefined : g.gestaltId)
         .filter((id) => id !== undefined) :
@@ -267,18 +272,13 @@ export function expandGestaltInstance(
     console.assert(typeof gestaltIdsToInstantiate !== undefined)
 
     updatedInstance.childInstanceIds = gestaltIdsToInstantiate.map((id) => {
-      const newInst: GestaltInstance = createGestaltInstance(id, false)
-      updatedGestaltInstances[newInst.instanceId] = newInst
-      return newInst.instanceId
+      const newInstance: GestaltInstance = createGestaltInstance(id, false)
+      updatedGestaltInstancesMap[newInstance.instanceId] = newInstance
+      return newInstance.instanceId
     })
   }
 
-  updatedGestaltInstances = updateAncestorInstanceVersions(
-    instance.instanceId, updatedGestaltInstances, gestaltToGestaltInstanceMap, rootGestaltInstanceId)
+  updatedGestaltInstancesMap[instance.instanceId] = updatedInstance
 
-  return {
-    ...updatedGestaltInstances,
-  }
+  return updatedGestaltInstancesMap
 }
-
-

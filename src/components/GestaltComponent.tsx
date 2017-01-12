@@ -1,10 +1,10 @@
-import * as React from "react";
-import * as _ from "lodash";
+import * as _ from "lodash"
+import * as React from "react"
+
+import { Gestalt, GestaltInstance, GestaltInstancesMap, GestaltsMap } from "../domain"
 import { LinkedList, Stack } from "../LinkedList"
 
-import { Gestalt, GestaltsMap, GestaltInstance, GestaltInstancesMap } from '../domain';
-
-import * as Util from '../util';
+import * as Util from "../util"
 
 declare module "react" {
   interface HTMLProps<T> {
@@ -12,7 +12,7 @@ declare module "react" {
   }
 }
 
-var Infinite: any = require("react-infinite");
+const Infinite: any = require("react-infinite")
 
 export const W_WIDTH = 11.55
 export const LINE_HEIGHT = 23
@@ -45,10 +45,10 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
   // indentChild: (childIndex: number) => void
 
   updateGestaltText: (gestaltId: string, newText: string) => void
-  toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
+  toggleExpand: (gestaltInstance: GestaltInstance) => void
   addGestalt: (text: string, offset: number, parentInstanceId?: string, callback?: () => any) => void
   // commitIndentChild: (parentInstanceId: string, childIndex: number) => void
-  onScrollChange?: (firstVisibleElemInd: number, lastVisibleElemInd: number)=> void
+  onScrollChange?: (firstVisibleElemInd: number, lastVisibleElemInd: number) => void
 
   isRoot?: boolean
   filter?: string
@@ -77,10 +77,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
   }
 
   public render(): JSX.Element {
-    console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.childInstanceIds)
+    console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.expandedChildInstanceIds)
     const currentGestalt = this.props.gestaltsMap[this.props.gestaltInstance.gestaltId]
 
-    let childGestaltInstances = this.props.gestaltInstance.childInstanceIds
+    let childGestaltInstances = this.props.gestaltInstance.expandedChildInstanceIds
       .map((instanceId) => this.props.gestaltInstancesMap[instanceId])
 
     if (this.props.isRoot) {
@@ -92,15 +92,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     // warn about tricky edge case
     _.mapValues(
-      _.groupBy(
-        childGestaltInstances,
-        (instance) => instance.gestaltId
-      ),
-      (childInstances) => {
-        if (childInstances.length > 1) {
-          console.warn("multiple instances of same gestalt in children", this.props.gestaltInstance);
-        }
-      }
+      _.groupBy(childGestaltInstances, (instance) => instance.gestaltId),
+      (childInstances) => (childInstances.length > 1) && console.warn(
+        "multiple instances of same gestalt in children", this.props.gestaltInstance),
     )
 
     const gestaltIdsToNubInstances = _.keyBy(childGestaltInstances, (instance) => instance.gestaltId)
@@ -169,46 +163,12 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
               onKeyDown={this.onKeyDown}
               onInput={this.onInput}
               onFocus={this.moveCaretToEnd}
-              >
+            >
               {currentGestalt.text}
             </span>
-
-
-            {/* related gestalts list */}
-            <ul style={{ display: "inline" }}>
-              {this.props.isRoot ? null : currentGestalt.relatedIds.map((relatedId: string) => {
-                const nubGestaltInstance = gestaltIdsToNubInstances[relatedId];
-                const MAX_NUB_LENGTH = 20
-                let nubText = this.props.gestaltsMap[nubGestaltInstance.gestaltId].text
-                if (nubText.length > MAX_NUB_LENGTH) {
-                  nubText = `${nubText.slice(0, MAX_NUB_LENGTH)}...`
-                }
-
-                return (
-                  <li key={nubGestaltInstance.gestaltId}
-                    className="nub"
-                    style={ (nubGestaltInstance.expanded) ?
-                      {
-                        background: "lightgray",
-                        borderColor: "darkblue",
-                      } : {
-                        background: "white",
-                      }
-                    }
-                    onClick={() => this.props.toggleExpand(nubGestaltInstance.gestaltId, this.props.gestaltInstance)}
-                    >
-
-                    { // assert nubId in this.props.allGestalts
-                      // (nubGestaltInstance.gestaltId in this.props.allGestalts) ?
-                      nubText || Util.SPECIAL_CHARS_JS.NBSP
-                      // : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
-                    }
-                  </li>
-                )
-              })}
-            </ul>
           </div>
         }
+        {this.renderNubs()}
         {/* render expanded children */}
         <ul style={{ paddingLeft: (this.props.isRoot ? 0 : 40) }}>
           {
@@ -223,9 +183,51 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
               </Infinite> :
               finalRenderedChildrenComponents
           }
-
         </ul>
       </li>
+    )
+  }
+
+  /* related gestalts nubs list */
+  private renderNubs(): JSX.Element {
+    const currentGestalt = this.props.gestaltsMap[this.props.gestaltInstance.gestaltId]
+    const childGestaltInstances = this.props.gestaltInstance.expandedChildInstanceIds
+      .map((instanceId) => this.props.gestaltInstancesMap[instanceId])
+
+    const gestaltIdsToNubInstances = _.keyBy(childGestaltInstances, (instance) => instance.gestaltId)
+
+    return (
+      <ul style={{ display: "inline" }}>
+        {this.props.isRoot ? null : currentGestalt.relatedIds.map((relatedId: string) => {
+          const nubGestaltInstance = gestaltIdsToNubInstances[relatedId]
+          const MAX_NUB_LENGTH = 20
+          let nubText = this.props.gestaltsMap[nubGestaltInstance.gestaltId].text
+          if (nubText.length > MAX_NUB_LENGTH) {
+            nubText = `${nubText.slice(0, MAX_NUB_LENGTH)}...`
+          }
+
+          return (
+            <li key={nubGestaltInstance.gestaltId}
+              className="nub"
+              style={ (nubGestaltInstance.expanded) ?
+                {
+                  background: "lightgray",
+                  borderColor: "darkblue",
+                } : {
+                  background: "white",
+                }
+              }
+              onClick={() => this.props.toggleExpand(nubGestaltInstance)}
+            >
+              { // assert nubId in this.props.allGestalts
+                // (nubGestaltInstance.gestaltId in this.props.allGestalts) ?
+                nubText || Util.SPECIAL_CHARS_JS.NBSP
+                // : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
+              }
+            </li>
+          )
+        })}
+      </ul>
     )
   }
 
@@ -238,11 +240,11 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       case Util.KEY_CODES.DOWN:
         compToFocus = this.getNext()
         break
-
     }
 
-    if (compToFocus)
+    if (compToFocus) {
       compToFocus.focus()
+    }
   }
 
   protected addGestaltAsChild = (text: string, offset: number = 0): void => {
@@ -267,9 +269,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
   }
 
   protected getNext = (): GestaltComponent => {
-    if (this.renderedGestaltComponents.length) {//return first child
+    if (this.renderedGestaltComponents.length) {// return first child
       return this.renderedGestaltComponents[0]
-    } else { //return next sibling or node after parent
+    } else { // return next sibling or node after parent
       return this.props.getOffsetChild ? this.props.getOffsetChild(1, this.props.index) : undefined
     }
   }
@@ -278,25 +280,24 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     return this.props.getOffsetChild ? this.props.getOffsetChild(-1, this.props.index) : undefined
   }
 
-  //returns prevSelfNext child relative to child at fromIndex
-  //prevSelfNext = -1, 0, 1
+  // returns prevSelfNext child relative to child at fromIndex
+  // prevSelfNext = -1, 0, 1
   protected getOffsetChild = (prevSelfNext: number, fromIndex: number): GestaltComponent => {
     const newIndex = fromIndex + prevSelfNext
 
-    if (prevSelfNext < 0) { //going up
-      if (newIndex < 0) {//hit top of sublist. return parent
+    if (prevSelfNext < 0) { // going up
+      if (newIndex < 0) {// hit top of sublist. return parent
         return this.props.getOffsetChild ? this.props.getOffsetChild(0, this.props.index) : undefined
       }
 
-      //return prev sibling's last child
+      // return prev sibling's last child
       return this.renderedGestaltComponents[newIndex].getLastChild()
-    }
-    else { //going down or still
-      if (newIndex >= this.renderedGestaltComponents.length) {//hit end of sublist. return node after parent
+    } else { // going down or still
+      if (newIndex >= this.renderedGestaltComponents.length) {// hit end of sublist. return node after parent
         return this.props.getOffsetChild ? this.props.getOffsetChild(1, this.props.index) : undefined
       }
 
-      //return next sibling or self
+      // return next sibling or self
       return this.renderedGestaltComponents[newIndex]
     }
   }
@@ -347,7 +348,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         e.stopPropagation()
         this.props.addGestaltAsChild("", this.props.index + 1)
         // #todo
-        break;
+        break
       case Util.KEY_CODES.TAB:
         e.preventDefault()
         e.stopPropagation()
@@ -360,7 +361,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         e.stopPropagation()
         this.handleArrows(e.keyCode)
         // #todo
-        break;
+        break
       default:
         break
     }
