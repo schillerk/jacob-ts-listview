@@ -104,7 +104,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       if (newIndex < 0) //hit top of sublist. return parent
         return this.props.getOffsetChild ? this.props.getOffsetChild(0, this.props.index) : undefined
 
-      //return prev sibling's last child 
+      //return prev sibling's last child
       return this.renderedGestaltComponents[newIndex].getLastChild()
     }
     else { //going down or still
@@ -204,7 +204,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     this.props.updateGestaltText(this.props.gestaltInstance.gestaltId, this.nodeSpan.innerText)
   }
 
-  calcHeight = (text: string): number => {
+  estimateHeight = (text: string): number => {
     // var c=document.getElementById("myCanvas");
     // var ctx=c.getContext("2d");
     // ctx.font="30px Arial";
@@ -253,12 +253,12 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
       childrenHeights = renderedChildGestaltInstances.map((instance, i): number => (
-        this.calcHeight(instance.gestalt.text)
+        this.estimateHeight(instance.gestalt.text)
       ))
       myHeight = window.innerHeight - 160
     }
     else {
-      myHeight = this.calcHeight(this.props.gestaltInstance.gestalt.text)
+      myHeight = this.estimateHeight(this.props.gestaltInstance.gestalt.text)
 
     }
     // debugger

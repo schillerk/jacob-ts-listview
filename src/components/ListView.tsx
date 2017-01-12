@@ -5,13 +5,14 @@ import * as _ from "lodash";
 import { GestaltComponent } from './GestaltComponent'
 import { SearchAddBox } from './SearchAddBox'
 
-import { Gestalt, GestaltsMap, GestaltInstancesMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
+import { Gestalt, GestaltsMap, GestaltToGestaltInstanceMap, GestaltInstancesMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
 import * as Util from '../util';
 
 
 export interface ListViewState {
-  allGestalts?: GestaltsMap
-  allGestaltInstances?: GestaltInstancesMap
+  gestaltsMap?: GestaltsMap
+  gestaltInstancesMap?: GestaltInstancesMap
+  gestaltToGestaltInstanceMap?: GestaltToGestaltInstanceMap
   rootGestaltInstanceId?: string
   filter?: string
 }
@@ -20,9 +21,8 @@ export interface ListViewProps extends React.Props<ListView> {
 
 }
 
-
 export class ListView extends React.Component<ListViewProps, ListViewState> {
-  searchAddBox: SearchAddBox;
+  searchAddBox: SearchAddBox
   updateTimes: number[] = []
   lastHydratedRootGestaltInstance: HydratedGestaltInstance
   firstVisibleElemInd: number
@@ -32,9 +32,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     super(props);
 
     const initState: ListViewState = {
-      filter: "",
-      allGestaltInstances: {},
-      allGestalts: {
+      gestaltsMap: {
         '0id': {
           gestaltId: '0id',
           text: 'hack with jacob!',
@@ -53,27 +51,27 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         },
       },
-    };
+      gestaltInstancesMap: {},
+      gestaltToGestaltInstanceMap: {},
+      rootGestaltInstanceId: null,
+      filter: "",
+    }
 
-    const rootGestalt: Gestalt = this.createGestalt("root text", true)
+    const rootGestalt: Gestalt = Util.createGestalt("root text", true)
 
-    initState.allGestalts[rootGestalt.gestaltId] = rootGestalt
-    let rootGestaltInstance: GestaltInstance =
-      this.createGestaltInstance(rootGestalt.gestaltId, false, initState.allGestalts)
+    initState.gestaltsMap[rootGestalt.gestaltId] = rootGestalt
+    let rootGestaltInstance: GestaltInstance = Util.createGestaltInstance(rootGestalt.gestaltId, false)
 
     // rootGestaltInstance.childrenInstanceIds === null at this point
     // rootGestalt.relatedIds === null always
 
     initState.rootGestaltInstanceId = rootGestaltInstance.instanceId
-    initState.allGestaltInstances[rootGestaltInstance.instanceId] = rootGestaltInstance
-
-
-
+    initState.gestaltInstancesMap[rootGestaltInstance.instanceId] = rootGestaltInstance
 
     //finish populating allGestalts
     for (let i = 0; i < 20000; i++) {
-      const newGestalt = this.createGestalt(Math.random() + '')
-      initState.allGestalts[newGestalt.gestaltId] = newGestalt
+      const newGestalt = Util.createGestalt(Math.random() + '')
+      initState.gestaltsMap[newGestalt.gestaltId] = newGestalt
     }
 
     // Object.keys(initState.allGestalts).forEach((id, i) => {
@@ -106,76 +104,37 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     //     }
     // })
 
-    initState.allGestaltInstances = {
-      ...initState.allGestaltInstances,
+    initState.gestaltInstancesMap = {
+      ...initState.gestaltInstancesMap,
       ...this.expandGestaltInstance(
         rootGestaltInstance,
-        initState.allGestalts,
-        initState.allGestaltInstances
+        initState.gestaltsMap,
+        initState.gestaltInstancesMap
       )
     }
 
-    rootGestaltInstance = initState.allGestaltInstances[initState.rootGestaltInstanceId]
+    _.each(initState.gestaltInstancesMap as Object, (gestaltInstance, instanceId) => {
+      if (_.isEmpty(initState.gestaltToGestaltInstanceMap[gestaltInstance.gestaltId])){
+       initState.gestaltToGestaltInstanceMap[gestaltInstance.gestaltId] = []
+      }
+
+      ((initState.gestaltToGestaltInstanceMap[gestaltInstance.gestaltId] || []).push(instanceId))
+    })
+
+    rootGestaltInstance = initState.gestaltInstancesMap[initState.rootGestaltInstanceId]
 
     rootGestaltInstance.childrenInstanceIds
       .forEach((iId: string) =>
-        _.assign(initState.allGestaltInstances,
-          this.expandGestaltInstance(initState.allGestaltInstances[iId],
-            initState.allGestalts,
-            initState.allGestaltInstances
+        _.assign(initState.gestaltInstancesMap,
+          this.expandGestaltInstance(initState.gestaltInstancesMap[iId],
+            initState.gestaltsMap,
+            initState.gestaltInstancesMap
           )
         )
       )
 
-
     this.state = initState
-
   }
-
-
-
-  // createAndExpandGestaltInstance = (theState: ListViewState, gIP: { gestaltInstanceId: string, gestaltId: string, parentGestaltInstanceId: string, shouldUpdate: boolean }, expand: boolean) => {
-  //     if (expand) {
-  //         theState.gestaltInstances[gIP.gestaltInstanceId] =
-  //             this.createGestaltInstance(gIP.gestaltInstanceId, gIP.gestaltId, true, gIP.parentGestaltInstanceId, gIP.shouldUpdate)
-
-  //         theState.allGestalts[gIP.gestaltId].instanceAndVisibleNubIds[gIP.gestaltInstanceId] = true
-
-  //         theState.allGestalts[gIP.gestaltId].relatedIds.map((relatedId) => {
-  //             const nubInstanceId = gIP.gestaltInstanceId + '-' + relatedId;
-  //             // initState.allGestalts[id].instanceAndVisibleNubIds[nubInstanceId] = true
-  //             // this.createAndExpandGestaltInstance(initState, {
-  //             //     gestaltInstanceId: nubInstanceId,
-  //             //     gestaltId: relatedId,
-  //             //     parentGestaltInstanceId: instanceId,
-  //             //     shouldUpdate: false,
-  //             // }, true)
-
-  //             theState.gestaltInstances[nubInstanceId] =
-  //                 this.createGestaltInstance(nubInstanceId, relatedId, false, gIP.gestaltInstanceId, false)
-
-  //             theState.allGestalts[relatedId].instanceAndVisibleNubIds[nubInstanceId] = false
-
-  //         })
-  //     } else {
-  //         theState.gestaltInstances[gIP.gestaltInstanceId].expanded = false
-  //         // delete theState.expandedGestaltInstances[gIP.gestaltInstanceId]
-  //         // delete theState.allGestalts[gIP.gestaltId].instanceAndVisibleNubIds[gIP.gestaltInstanceId]
-  //     }
-  // }
-
-  createGestalt = (text: string = '', isRoot?: boolean) => {
-    const uid: string = Util.genGUID()
-    const newGestalt: Gestalt = {
-      text: text,
-      gestaltId: uid,
-      relatedIds: isRoot !== undefined && isRoot ? undefined : [],
-      isRoot: isRoot !== undefined && isRoot
-    }
-
-    return newGestalt
-  }
-
   // Mutates state
   addGestalt = (text: string, offset?: number, parentInstanceId?: string, callback?: () => any): void => {
     const splitTexts: string[] = text.split("\n\n")
@@ -190,27 +149,23 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     this.addGestalts(textsToAdd, offset, parentInstanceId, callback)
   }
 
-
   addGestalts = (texts: string[], offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, callback?: () => any): void => {
     if (parentInstanceId === this.state.rootGestaltInstanceId)
       console.log("adding at root")
-    else  //#TODO 
+    else  //#TODO
     {
       console.error("ERR: can only add at root for now")
       return
     }
 
-    const newGestalts: Gestalt[] = texts.map(text => this.createGestalt(text))
-    const newInstances: GestaltInstance[] = newGestalts.map(g => this.createGestaltInstance(g.gestaltId))
+    const newGestalts: Gestalt[] = texts.map(text => Util.createGestalt(text))
+    const newInstances: GestaltInstance[] = newGestalts.map(g => Util.createGestaltInstance(g.gestaltId))
 
     const updatedParentGestaltInstance: GestaltInstance = this.insertChildInstances(
-      this.state.allGestaltInstances[parentInstanceId],
+      this.state.gestaltInstancesMap[parentInstanceId],
       newInstances.map(nI => nI.instanceId),
       offset
-    );
-
-
-
+    )
 
     // else
     //     this.addRelation(parentGestaltInstance.gestaltId, newGestalts.gestaltId) //#todo
@@ -221,34 +176,20 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     // this.insertGestaltInstanceIntoParent(rootGestaltInstance, newInstance, offset)
 
     const newAllGestalts: GestaltsMap = {
-      ...this.state.allGestalts,
+      ...this.state.gestaltsMap,
       ...(_.keyBy(newGestalts, g => g.gestaltId)),
     }
 
     const newAllGestaltInstances: GestaltInstancesMap = {
-      ...this.state.allGestaltInstances,
+      ...this.state.gestaltInstancesMap,
       ...(_.keyBy(newInstances, i => i.instanceId)),
       [updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance
     }
 
     this.setState({
-      allGestaltInstances: newAllGestaltInstances,
-      allGestalts: newAllGestalts,
+      gestaltInstancesMap: newAllGestaltInstances,
+      gestaltsMap: newAllGestalts,
     }, callback)
-  }
-
-  //IMMUTABLE
-  createGestaltInstance = (gestaltId: string, expanded: boolean = true, allGestalts: GestaltsMap = this.state.allGestalts): GestaltInstance => {
-    const newInstanceId: string = Util.genGUID()
-
-    let newGestaltInstance: GestaltInstance = {
-      instanceId: newInstanceId,
-      gestaltId: gestaltId,
-      childrenInstanceIds: (expanded ? [] : null) as string[],
-      expanded: expanded
-    }
-
-    return newGestaltInstance
   }
 
   //IMMUTABLE, returns new entries to add to allGestaltInstances
@@ -260,7 +201,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     console.assert(typeof giOut.childrenInstanceIds !== "undefined")
     console.assert(typeof gestalt !== "undefined")
 
-    const newInsts: GestaltInstancesMap = { [giOut.instanceId]: giOut }
+    let updatedGestaltInstances: GestaltInstancesMap = { [giOut.instanceId]: giOut }
+    updatedGestaltInstances = Util.updateAncestorInstanceVersions(
+      gi.instanceId, updatedGestaltInstances, this.state.gestaltToGestaltInstanceMap)
 
     if (giOut.childrenInstanceIds === null) {
 
@@ -272,16 +215,38 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
       console.assert(typeof gestaltIdsToInstantiate !== undefined);
 
       giOut.childrenInstanceIds = gestaltIdsToInstantiate.map(id => {
-        const newInst: GestaltInstance = this.createGestaltInstance(id, false, allGestalts)
-        newInsts[newInst.instanceId] = newInst
+        const newInst: GestaltInstance = Util.createGestaltInstance(id, false)
+        updatedGestaltInstances[newInst.instanceId] = newInst
         return newInst.instanceId
       })
 
     }
 
     return {
-      ...newInsts
+      ...updatedGestaltInstances
     }
+  }
+
+  updateGestalt = (updatedGestalt: Gestalt) => {
+    const timeInd = this.updateTimes.push(Date.now()) - 1
+
+    const updatedAllGestalts: { [id: string]: Gestalt } = {
+      ...this.state.gestaltsMap,
+      [updatedGestalt.gestaltId]: updatedGestalt
+    }
+
+    const updatedGestaltInstances = _.reduce(this.state.gestaltToGestaltInstanceMap[updatedGestalt.gestaltId] || [],
+      (gestaltInstances, instanceIds) => _.reduce(
+        instanceIds,
+        (innerGestaltInstances, instanceId) =>
+          Util.updateAncestorInstanceVersions(instanceId, innerGestaltInstances, this.state.gestaltToGestaltInstanceMap),
+          gestaltInstances),
+      this.state.gestaltInstancesMap)
+
+    this.setState({ gestaltsMap: updatedAllGestalts, gestaltInstancesMap: updatedGestaltInstances }, () => {
+      this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
+      if (this.updateTimes.length % 10 == 0) console.log("updateGestalt FPS", 1000 / Util.average(this.updateTimes))
+    })
   }
 
   //MUTATOR
@@ -337,14 +302,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
   //     });
   // }
 
-
-
   // futureParentGestalt = {
   //         ...futureParentGestalt,
   //         relatedIds: futureParentGestalt.relatedIds.concat(childInstance.gestaltId)
   //     }
 
-  // return 
+  // return
   // }
 
   // immutable
@@ -439,28 +402,28 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     //  ^^ should work similarly to findGestaltInstance
 
     const existingChildIdIndex: number = _.findIndex(parentGestaltInstance.childrenInstanceIds,
-      childId => this.state.allGestaltInstances[childId].gestaltId == gestaltToExpandId)
+      childId => this.state.gestaltInstancesMap[childId].gestaltId == gestaltToExpandId)
 
     console.assert(existingChildIdIndex !== -1, "child should always be found with current architecture")
 
     const existingChildInstanceId: string = parentGestaltInstance.childrenInstanceIds[existingChildIdIndex]
-    const existingChildInstance: GestaltInstance = this.state.allGestaltInstances[existingChildInstanceId]
+    const existingChildInstance: GestaltInstance = this.state.gestaltInstancesMap[existingChildInstanceId]
 
     let instsToAdd: GestaltInstancesMap
 
     if (existingChildInstance.expanded) //present and expanded
       instsToAdd = { [existingChildInstanceId]: { ...existingChildInstance, expanded: false } }
     // this.collapseGestaltInstance(parentGestaltInstance.children, existingChildIndex)
-    else //present and collapsed 
+    else //present and collapsed
     {
       //#TODO move to front of array when expanding and deepFixGestaltInstanceIds?
-      instsToAdd = this.expandGestaltInstance(existingChildInstance, this.state.allGestalts, this.state.allGestaltInstances)
+      instsToAdd = this.expandGestaltInstance(existingChildInstance, this.state.gestaltsMap, this.state.gestaltInstancesMap)
 
     }
 
 
     this.setState({
-      allGestaltInstances: { ...this.state.allGestaltInstances, ...instsToAdd }
+      gestaltInstancesMap: { ...this.state.gestaltInstancesMap, ...instsToAdd }
     })
 
   }
@@ -470,23 +433,21 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     // TODO: recompute gestalt.textHeight
     const updatedGestalt: Gestalt = {
-      ...this.state.allGestalts[id],
+      ...this.state.gestaltsMap[id],
       text: newText,
       textHeight: Util.computeTextHeight(newText)
     }
 
     const updatedAllGestalts: { [gestaltId: string]: Gestalt } = {
-      ...this.state.allGestalts,
+      ...this.state.gestaltsMap,
       [updatedGestalt.gestaltId]: updatedGestalt
     }
 
-    this.setState({ allGestalts: updatedAllGestalts }, () => {
+    this.setState({ gestaltsMap: updatedAllGestalts }, () => {
       this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
       if (this.updateTimes.length % 10 == 0) console.log("updateGestalt FPS", 1000 / Util.average(this.updateTimes))
     })
   }
-
-
 
   onScrollChange = (firstVisibleElemInd: number, lastVisibleElemInd: number) => {
     this.firstVisibleElemInd = firstVisibleElemInd
@@ -494,20 +455,16 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
   }
 
   render() {
-
     const hydratedRootGestaltInstance = Util.hydrateGestaltInstanceAndChildren(
       this.state.rootGestaltInstanceId,
-      this.state.allGestalts,
-      this.state.allGestaltInstances,
+      this.state.gestaltsMap,
+      this.state.gestaltInstancesMap,
       this.lastHydratedRootGestaltInstance,
       this.firstVisibleElemInd,
       this.lastVisibleElemInd
     )
 
     this.lastHydratedRootGestaltInstance = hydratedRootGestaltInstance
-
-
-
 
     return (
       <div>
