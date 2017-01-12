@@ -51,7 +51,7 @@ export interface Gestalt {
 export interface GestaltInstance {
   instanceId: string // uuid
   gestaltId: string
-  childIds: string[] // initially null if created as a nub, can be non-null and non-expanded if expanded then collapsed
+  childInstanceIds: string[] // initially null if created as a nub, can be non-null and non-expanded if expanded then collapsed
   expanded: boolean // is displayed fully => children instance ids are present vs null,
   version: number
   parentInstanceId: string
@@ -60,12 +60,6 @@ export interface GestaltInstance {
 export interface GestaltToGestaltInstanceMap {
   [gestaltId: string] : string[]
 }
-
-export interface HydratedGestaltInstance extends GestaltInstance {
-  gestalt: Gestalt
-  hydratedChildren: HydratedGestaltInstance[]
-}
-
 
 // export function createGestaltInstance(gestalt: Gestalt) {
   // var newInstance : GestaltInstance = {
