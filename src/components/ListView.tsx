@@ -351,14 +351,6 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
   // immutable
   // if no offset, append
 
-  // immutable
-  removeChildInstance = (parentGestaltInstance: GestaltInstance, offset: number): GestaltInstance => {
-    return {
-      ...parentGestaltInstance,
-      children: Util.immSplice(parentGestaltInstance.childIds, offset, 1),
-    }
-  }
-
 
   // commitIndentChild = (parentInstanceId: string, childIndex: number, dedent: boolean = false) => {
   //     //add child's gestaltId as relatedId to new parent gestalt
@@ -444,7 +436,6 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.state.gestaltToGestaltInstanceMap,
         this.state.rootGestaltInstanceId,
       )
-
     }
 
     this.setState({
@@ -472,17 +463,6 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
   }
 
   render() {
-    const hydratedRootGestaltInstance = Util.hydrateGestaltInstanceAndChildren(
-      this.state.rootGestaltInstanceId,
-      this.state.gestaltsMap,
-      this.state.gestaltInstancesMap,
-      this.lastHydratedRootGestaltInstance,
-      this.firstVisibleElemInd,
-      this.lastVisibleElemInd,
-    )
-
-    this.lastHydratedRootGestaltInstance = hydratedRootGestaltInstance
-
     return (
       <div>
         <div style={{ padding: "45px 60px 10px", width: "700px", background: "white", margin: "0 auto", border: "1px solid #d6d6d6" }}>
@@ -504,7 +484,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             onScrollChange={this.onScrollChange}
             key={this.state.rootGestaltInstanceId}
             index={0}
-            gestaltInstance={hydratedRootGestaltInstance}
+            gestaltInstance={this.state.gestaltInstancesMap[this.state.rootGestaltInstanceId]}
             // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
 
             ref={() => { } }

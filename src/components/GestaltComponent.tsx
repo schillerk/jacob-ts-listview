@@ -2,7 +2,7 @@ import * as React from "react";
 import * as _ from "lodash";
 import { LinkedList, Stack } from "../LinkedList"
 
-import { Gestalt, GestaltsMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
+import { Gestalt, GestaltsMap, GestaltInstance } from '../domain';
 
 import * as Util from '../util';
 
@@ -23,7 +23,7 @@ export interface GestaltComponentState {
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
-  gestaltInstance: HydratedGestaltInstance
+  gestaltInstance: GestaltInstance
 
   index: number
 
