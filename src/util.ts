@@ -186,14 +186,19 @@ export function createGestaltInstance(gestaltId: string, expanded: boolean = tru
 export function updateAncestorInstanceVersions(
     instanceId: string,
     gestaltInstancesMap: GestaltInstancesMap,
-    gestaltToGestaltInstanceMap: GestaltToGestaltInstanceMap
+    gestaltToGestaltInstanceMap: GestaltToGestaltInstanceMap,
+    rootGestaltInstanceId: string
   ): GestaltInstancesMap {
-  if (instanceId === this.state.rootGestaltInstanceId) {
+  if (instanceId === rootGestaltInstanceId) {
     return gestaltInstancesMap
   }
 
   const instance = gestaltInstancesMap[instanceId]
+  if (!instance) {
+    return gestaltInstancesMap
+  }
   instance.version += 1
 
-  return updateAncestorInstanceVersions(instance.parentInstanceId, gestaltInstancesMap, gestaltToGestaltInstanceMap)
+  return updateAncestorInstanceVersions(
+    instance.parentInstanceId, gestaltInstancesMap, gestaltToGestaltInstanceMap, rootGestaltInstanceId)
 }
