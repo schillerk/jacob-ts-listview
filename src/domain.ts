@@ -51,7 +51,7 @@ export interface Gestalt {
 export interface GestaltInstance {
   instanceId: string // uuid
   gestaltId: string
-  childrenInstanceIds: string[] // initially null if created as a nub, can be non-null and non-expanded if expanded then collapsed
+  childIds: string[] // initially null if created as a nub, can be non-null and non-expanded if expanded then collapsed
   expanded: boolean // is displayed fully => children instance ids are present vs null,
   version: number
   parentInstanceId: string

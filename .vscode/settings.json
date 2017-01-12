@@ -1,7 +1,3 @@
 {
-    "typescript.tsdk": "./node_modules/typescript/lib",
-    "eslint.options": { "configFile": "~/.eslintrc" },
-    "tslint.enable": true,
-    "tslint.configFile": "/Users/Dennis/tslint.json",
-    "tslint.autoFixOnSave": true
+    "typescript.tsdk": "./node_modules/typescript/lib"
 }
