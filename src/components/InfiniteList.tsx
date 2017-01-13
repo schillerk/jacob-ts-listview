@@ -1,6 +1,9 @@
 import * as React from "react"
 import * as ReactDOM from 'react-dom'
 
+import { LazyArray } from "../LazyArray"
+
+
 export interface InfiniteListState {
 
 }
@@ -8,8 +11,8 @@ export interface InfiniteListState {
 export interface InfiniteListProps extends React.Props<InfiniteList> {
   containerHeight: number
   elementHeight: number
-  elements: any
-  ElementComponent: any
+  elements: LazyArray<JSX.Element>
+  ElementComponent?: any
   onScroll?: () => void
 }
 
@@ -69,7 +72,7 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
       elements.push(
         // React.createElement(
         //   this.props.ElementComponent,
-          this.props.elements[i]
+          this.props.elements.get(i)
         // )
       )
     }

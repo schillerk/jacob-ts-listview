@@ -1,5 +1,6 @@
 
 import * as Util from './util';
+import { LazyArray } from "./LazyArray"
 
 /*
 Example of the state object:
@@ -58,7 +59,7 @@ export interface GestaltInstance {
 
 export interface HydratedGestaltInstance extends GestaltInstance {
   gestalt: Gestalt  
-  hydratedChildren: HydratedGestaltInstance[]
+  hydratedChildren: HydratedGestaltInstance[] | LazyArray<HydratedGestaltInstance>
 }
 
 

@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { Gestalt, GestaltsMap, GestaltInstance, GestaltInstancesMap, HydratedGestaltInstance } from './domain';
-
+import { LazyArray } from "./LazyArray"
 var count = 0;
 
 let canvasElement = document.createElement('canvas')
@@ -122,36 +122,47 @@ export function hydrateGestaltInstanceAndChildren(
     const currGestalt: Gestalt = allGestalts[currInstance.gestaltId]
     console.assert(typeof currGestalt !== "undefined", `${currInstance.gestaltId} not in allGestalts`)
 
-    let nextHydGesInsts
-    // if (currGestalt.isRoot) {
-    //     // const newlyHydGesInsts: HydratedGestaltInstance[] = currInstance.childrenInstanceIds.slice(startInd, endInd).map((instanceId: string) =>
-    //     //     hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
 
-    //     // nextHydGesInsts = immSplice(lastHydratedRootGestaltInstance.hydratedChildren,
-    //     //     startInd, endInd - startInd, ...newlyHydGesInsts)
-    // }
-    // else {
-    if (currInstance.childrenInstanceIds !== null) {
-        nextHydGesInsts = currInstance.childrenInstanceIds.map((instanceId: string) =>
-            hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+    let nextHydGesInsts
+    if (currGestalt.isRoot) {
+        nextHydGesInsts = new LazyArray<HydratedGestaltInstance>(
+            currInstance.childrenInstanceIds.length,
+            i => hydrateGestaltInstanceAndChildren(
+                currInstance.childrenInstanceIds[i],
+                allGestalts,
+                allGestaltInstances)
+        )
+
+        // currInstance.childrenInstanceIds[i]((instanceId: string) =>
+        //     hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+        //     // const newlyHydGesInsts: HydratedGestaltInstance[] = currInstance.childrenInstanceIds.slice(startInd, endInd).map((instanceId: string) =>
+        //     //     hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+
+        //     // nextHydGesInsts = immSplice(lastHydratedRootGestaltInstance.hydratedChildren,
+        //     //     startInd, endInd - startInd, ...newlyHydGesInsts)
     }
     else {
-        nextHydGesInsts = null
+        if (currInstance.childrenInstanceIds !== null) {
+            nextHydGesInsts = currInstance.childrenInstanceIds.map((instanceId: string) =>
+                hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+        }
+        else {
+            nextHydGesInsts = null
+        }
     }
-    // }
 
-    const hydratedGestaltInstance: HydratedGestaltInstance = {
+    const currHydratedGestaltInstance: HydratedGestaltInstance = {
         ...currInstance,
         gestalt: currGestalt,
-        hydratedChildren: currInstance.childrenInstanceIds === null ?
-            null
-            : nextHydGesInsts
+        hydratedChildren: nextHydGesInsts
     }
 
-    console.assert(!(hydratedGestaltInstance.expanded && hydratedGestaltInstance.hydratedChildren === null),
-        "expanded and hyd==null", hydratedGestaltInstance)
-    return hydratedGestaltInstance
+    console.assert(!(currHydratedGestaltInstance.expanded && currHydratedGestaltInstance.hydratedChildren === null),
+        "expanded and hyd==null", currHydratedGestaltInstance)
+
+    return currHydratedGestaltInstance
 }
+
 
 export function computeTextHeight(text: string): number {
     let width = ctx.measureText(text).width

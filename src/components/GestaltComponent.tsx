@@ -12,6 +12,9 @@ declare module "react" {
   }
 }
 
+import { LazyArray } from "../LazyArray"
+
+
 import { InfiniteList } from "./InfiniteList"
 
 // var Infinite: any = require("react-infinite");
@@ -219,153 +222,188 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
   }
 
+  private renderNubs = () => {
+
+
+  }
+
+  private genGestaltComponentFromInstance = (instance: HydratedGestaltInstance, i: number): JSX.Element => {
+    // const gestaltInstanceId: string = instance.id + "-" + id
+    return (
+      <GestaltComponent
+        key={instance.instanceId}
+        index={i}
+        gestaltInstance={instance}
+        // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
+
+        // ref={(gc: GestaltComponent) => { gc && (this.renderedGestaltComponents[i] = gc) } }
+
+        updateGestaltText={this.props.updateGestaltText}
+        toggleExpand={this.props.toggleExpand}
+        addGestalt={this.props.addGestalt}
+        // commitIndentChild={this.props.commitIndentChild}
+
+        addGestaltAsChild={this.addGestaltAsChild}
+        // indentChild={this.indentChild}
+
+        getOffsetChild={this.getOffsetChild}
+        focus={this.focus}
+
+        />
+    )
+  }
+
   render(): JSX.Element {
     console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.hydratedChildren)
 
-    let hydratedChildren = this.props.gestaltInstance.hydratedChildren
+    let hydratedChildren: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
+      = this.props.gestaltInstance.hydratedChildren
 
-    if (this.props.isRoot)
-      hydratedChildren = Util.filterEntries(hydratedChildren, this.props.filter || "")
-
-    const renderedChildGestaltInstances = hydratedChildren.filter(instance => instance.expanded)
-    this.renderedGestaltComponents = Array(renderedChildGestaltInstances.length)
+    // if (this.props.isRoot)
+    //   hydratedChildren = Util.filterEntries(hydratedChildren, this.props.filter || "")
 
     // warn about tricky edge case
-    _.mapValues(
-      _.groupBy(
-        this.props.gestaltInstance.hydratedChildren,
-        (hydratedChild) => hydratedChild.gestaltId
-      ),
-      (hydratedChildren) => {
-        if (hydratedChildren.length > 1) {
-          console.warn('multiple instances of same gestalt in children', this.props.gestaltInstance);
-        }
-      }
-    );
+    // _.mapValues(
+    //   _.groupBy(
+    //     this.props.gestaltInstance.hydratedChildren,
+    //     (hydratedChild) => hydratedChild.gestaltId
+    //   ),
+    //   (hydratedChildren) => {
+    //     if (hydratedChildren.length > 1) {
+    //       console.warn('multiple instances of same gestalt in children', this.props.gestaltInstance);
+    //     }
+    //   }
+    // );
 
-    const gestaltIdsToNubInstances = _.keyBy(
-      this.props.gestaltInstance.hydratedChildren,
-      (hydratedChild) => hydratedChild.gestaltId
-    );
+    const mainLiStyles = { listStyleType: "none" }
 
-    const mainLiStyles = _.assign({ listStyleType: "none" }, this.props.isRoot ? {} : { height: "34px", borderLeft: "2px solid lightgray", padding: "0px 4px", margin: "8px 0" })
+
+    let gestaltBody: JSX.Element
+    let expandedChildrenListComponent: JSX.Element
+
+    let expandedChildGestaltInstances: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
 
     let myHeight: number = undefined
     let childrenHeights: number[] = undefined
-    if (this.props.isRoot) {
 
 
-      childrenHeights = renderedChildGestaltInstances.map((instance, i): number => (
-        this.calcHeight(instance.gestalt.text)
-      ))
+    if (this.props.isRoot) { //Is Root. hydratedChildren as LazyArray<HydratedGestaltInstance>
+
+      childrenHeights = _.times(this.props.gestaltInstance.hydratedChildren.length, () => 36)
+      // expandedChildGestaltInstances.map((instance, i): number => (
+      //   this.calcHeight(instance.gestalt.text)
+      // ))
       myHeight = window.innerHeight - 160
+
+      gestaltBody = null
+
+      //all are expanded at root
+      expandedChildGestaltInstances = (hydratedChildren as LazyArray<HydratedGestaltInstance>)
+
+      // finalRndComp.slice(100, 110)
+      //onScrollChange={this.props.onScrollChange}
+      // elementHeight={childrenHeights}
+
+      // expandedChildrenListComponent = <div>
+      //   {expandedChildGestaltInstances.map(this.genGestaltComponentFromInstance).toArray()}
+      // </div>
+      expandedChildrenListComponent = <InfiniteList
+        containerHeight={myHeight - 20}
+        elementHeight={36}
+        elements={expandedChildGestaltInstances.map(this.genGestaltComponentFromInstance)}
+        />
+        // ElementComponent={GestaltComponent} />
+
     }
-    else {
+    else { //Not root. hydratedChildren as HydratedGestaltInstance[]
+      _.assign(mainLiStyles,
+        { height: "34px", borderLeft: "2px solid lightgray", padding: "0px 4px", margin: "8px 0" })
+
       myHeight = this.calcHeight(this.props.gestaltInstance.gestalt.text)
 
+      //only some are expanded when deeper than root
+      expandedChildGestaltInstances = (hydratedChildren as HydratedGestaltInstance[])
+        .filter(instance => instance.expanded)
+      // this.renderedGestaltComponents = Array(expandedChildGestaltInstances.length)
+      expandedChildrenListComponent = <div>
+        {expandedChildGestaltInstances.map(this.genGestaltComponentFromInstance)}
+      </div>
+
+      const gestaltIdsToNubInstances = _.keyBy(
+        this.props.gestaltInstance.hydratedChildren as HydratedGestaltInstance[],
+        (hydratedChild) => hydratedChild.gestaltId
+      );
+
+
+      //gestalt body parts
+      const gestaltTextSpan = <span style={{ padding: "2px 4px", height: "36px" }}
+        contentEditable
+        suppressContentEditableWarning
+        ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
+        onKeyDown={this.onKeyDown}
+        onInput={this.onInput}
+        onFocus={this.moveCaretToEnd}
+        >
+        {this.props.gestaltInstance.gestalt.text}
+      </span>
+
+      const relatedGestaltNubs = <ul style={{ display: 'inline' }}>
+        {this.props.isRoot ? null
+          : this.props.gestaltInstance.gestalt.relatedIds.map((relatedId: string) => {
+            const nubGestaltInstance = gestaltIdsToNubInstances[relatedId];
+            const MAX_NUB_LENGTH = 20
+            let nubText = nubGestaltInstance.gestalt.text
+            if (nubText.length > MAX_NUB_LENGTH) {
+              nubText = nubText.slice(0, MAX_NUB_LENGTH)
+              nubText += "..."
+            }
+
+            return (
+              <li key={nubGestaltInstance.gestaltId}
+                className='nub'
+                style={
+                  (nubGestaltInstance.expanded) ?
+                    {
+                      background: "lightgray",
+                      borderColor: "darkblue",
+                    }
+                    :
+                    { background: "white" }
+                }
+                onClick={() => this.props.toggleExpand(nubGestaltInstance.gestaltId, this.props.gestaltInstance)}
+                >
+
+                { //assert nubId in this.props.allGestalts
+                  // (nubGestaltInstance.gestaltId in this.props.allGestalts) ?
+                  nubText || Util.SPECIAL_CHARS_JS.NBSP
+                  // : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
+                }
+              </li>
+            )
+          })}
+      </ul>
+
+      gestaltBody = <div>
+        {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
+        {gestaltTextSpan}
+
+        {/* related gestalts nubs list */}
+        {relatedGestaltNubs}
+      </div>
+
     }
-    // debugger
 
-    const finalRenderedChildrenComponents: JSX.Element[] = renderedChildGestaltInstances.map((instance, i): JSX.Element => {
-      // const gestaltInstanceId: string = instance.id + "-" + id
-      return (
-        <GestaltComponent
-          key={instance.instanceId}
-          index={i}
-          gestaltInstance={instance}
-          // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
 
-          ref={(gc: GestaltComponent) => { gc && (this.renderedGestaltComponents[i] = gc) } }
 
-          updateGestaltText={this.props.updateGestaltText}
-          toggleExpand={this.props.toggleExpand}
-          addGestalt={this.props.addGestalt}
-          // commitIndentChild={this.props.commitIndentChild}
-
-          addGestaltAsChild={this.addGestaltAsChild}
-          // indentChild={this.indentChild}
-
-          getOffsetChild={this.getOffsetChild}
-          focus={this.focus}
-
-          />
-      )
-    })
 
 
     return (
       <li style={{ ...mainLiStyles, height: myHeight }}>
-        {/* gestalt body */}
-        {true && this.props.isRoot ? null
-          :
-          <div>
-            {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
+        {gestaltBody}
 
-            <span style={{ padding: "2px 4px", height: "36px" }}
-              contentEditable
-              suppressContentEditableWarning
-              ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
-              onKeyDown={this.onKeyDown}
-              onInput={this.onInput}
-              onFocus={this.moveCaretToEnd}
-              >
-              {this.props.gestaltInstance.gestalt.text}
-            </span>
-
-
-            {/* related gestalts list */}
-            <ul style={{ display: 'inline' }}>
-              {this.props.isRoot ? null : this.props.gestaltInstance.gestalt.relatedIds.map((relatedId: string) => {
-                const nubGestaltInstance = gestaltIdsToNubInstances[relatedId];
-                const MAX_NUB_LENGTH = 20
-                let nubText = nubGestaltInstance.gestalt.text
-                if (nubText.length > MAX_NUB_LENGTH) {
-                  nubText = nubText.slice(0, MAX_NUB_LENGTH)
-                  nubText += "..."
-                }
-
-                return (
-                  <li key={nubGestaltInstance.gestaltId}
-                    className='nub'
-                    style={
-                      (nubGestaltInstance.expanded) ?
-                        {
-                          background: "lightgray",
-                          borderColor: "darkblue",
-                        }
-                        :
-                        { background: "white" }
-                    }
-                    onClick={() => this.props.toggleExpand(nubGestaltInstance.gestaltId, this.props.gestaltInstance)}
-                    >
-
-                    { //assert nubId in this.props.allGestalts
-                      // (nubGestaltInstance.gestaltId in this.props.allGestalts) ?
-                      nubText || Util.SPECIAL_CHARS_JS.NBSP
-                      // : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
-                    }
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-        }
         {/* render expanded children */}
-
         <ul style={{ paddingLeft: (this.props.isRoot ? 0 : 40) }}>
-          {
-            this.props.isRoot ?
-              // finalRndComp.slice(100, 110)
-              //onScrollChange={this.props.onScrollChange}
-              // elementHeight={childrenHeights}
-
-              <InfiniteList
-                containerHeight={myHeight - 20}
-                elementHeight={36}
-                elements={finalRenderedChildrenComponents} ElementComponent={GestaltComponent} />
-              :
-              finalRenderedChildrenComponents
-          }
+          {expandedChildrenListComponent}
         </ul>
       </li>
     )
