@@ -111,7 +111,9 @@ export function hydrateGestaltInstanceAndChildren(
     gestaltInstanceId: string,
     allGestalts: GestaltsMap,
     allGestaltInstances: GestaltInstancesMap,
-    lastHydratedRootGestaltInstance?: HydratedGestaltInstance, startInd?: number, endInd?: number
+    lastHydratedRootGestaltInstance?: HydratedGestaltInstance,
+    startInd?: number,
+    endInd?: number
 ): HydratedGestaltInstance {
 
     const currInstance: GestaltInstance = allGestaltInstances[gestaltInstanceId]
@@ -121,17 +123,22 @@ export function hydrateGestaltInstanceAndChildren(
     console.assert(typeof currGestalt !== "undefined", `${currInstance.gestaltId} not in allGestalts`)
 
     let nextHydGesInsts
-    if (currGestalt.isRoot) {
-        const newlyHydGesInsts:HydratedGestaltInstance[] = currInstance.childrenInstanceIds.slice(startInd, endInd).map((instanceId: string) =>
-            hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+    // if (currGestalt.isRoot) {
+    //     // const newlyHydGesInsts: HydratedGestaltInstance[] = currInstance.childrenInstanceIds.slice(startInd, endInd).map((instanceId: string) =>
+    //     //     hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
 
-        nextHydGesInsts = immSplice(lastHydratedRootGestaltInstance.hydratedChildren,
-            startInd, endInd - startInd, ...newlyHydGesInsts)
-    }
-    else {
+    //     // nextHydGesInsts = immSplice(lastHydratedRootGestaltInstance.hydratedChildren,
+    //     //     startInd, endInd - startInd, ...newlyHydGesInsts)
+    // }
+    // else {
+    if (currInstance.childrenInstanceIds !== null) {
         nextHydGesInsts = currInstance.childrenInstanceIds.map((instanceId: string) =>
             hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
     }
+    else {
+        nextHydGesInsts = null
+    }
+    // }
 
     const hydratedGestaltInstance: HydratedGestaltInstance = {
         ...currInstance,
