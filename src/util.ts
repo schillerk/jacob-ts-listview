@@ -116,10 +116,10 @@ export function hydrateGestaltInstanceAndChildren(
     endInd?: number
 ): HydratedGestaltInstance {
 
-    const currInstance: GestaltInstance = allGestaltInstances[gestaltInstanceId]
+    const currInstance: GestaltInstance = allGestaltInstances.get(gestaltInstanceId)
     console.assert(typeof currInstance !== "undefined", `${gestaltInstanceId} not in allGestaltInstances`)
 
-    const currGestalt: Gestalt = allGestalts[currInstance.gestaltId]
+    const currGestalt: Gestalt = allGestalts.get(currInstance.gestaltId)
     console.assert(typeof currGestalt !== "undefined", `${currInstance.gestaltId} not in allGestalts`)
 
 

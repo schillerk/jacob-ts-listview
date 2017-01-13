@@ -1,6 +1,8 @@
 
 import * as Util from './util';
 import { LazyArray } from "./LazyArray"
+import * as Immutable from 'immutable'
+
 
 /*
 Example of the state object:
@@ -73,10 +75,9 @@ export interface HydratedGestaltInstance extends GestaltInstance {
   // return newInstance;
 // }
 
-export interface GestaltsMap {
-  [gestaltId: string]: Gestalt
+export interface GestaltsMap extends Immutable.Map<string, Gestalt> {
+  
 }
 
-export interface GestaltInstancesMap {
-    [id: string]: GestaltInstance
+export interface GestaltInstancesMap extends Immutable.Map<string, GestaltInstance>{
 }
