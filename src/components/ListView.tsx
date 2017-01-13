@@ -76,11 +76,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         //finish populating allGestalts
         const generatedGestalts: { [id: string]: Gestalt } = {}
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 40000; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             generatedGestalts[newGestalt.gestaltId] = newGestalt
         }
-        initState.allGestalts = initState.allGestalts.merge(generatedGestalts)
+
+        initState.allGestalts = initState.allGestalts.merge(Immutable.Map(generatedGestalts))
 
         // Object.keys(initState.allGestalts).forEach((id, i) => {
 
@@ -112,24 +113,27 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         //     }
         // })
 
-        initState.allGestaltInstances = initState.allGestaltInstances.merge(
+        initState.allGestaltInstances = initState.allGestaltInstances.merge(Immutable.Map(
             this.expandGestaltInstance(
                 rootGestaltInstance,
                 initState.allGestalts,
                 initState.allGestaltInstances
             )
         )
+        )
+
 
         rootGestaltInstance = initState.allGestaltInstances.get(initState.rootGestaltInstanceId)
 
-debugger
         rootGestaltInstance.childrenInstanceIds
             .forEach((iId: string) => {
-                initState.allGestaltInstances = initState.allGestaltInstances.merge(
+                initState.allGestaltInstances = initState.allGestaltInstances.merge(Immutable.Map(
                     this.expandGestaltInstance(initState.allGestaltInstances.get(iId),
                         initState.allGestalts,
                         initState.allGestaltInstances
                     )
+
+                )
                 )
             }
             )
@@ -227,16 +231,17 @@ debugger
         // rootGestaltInstance.childrenInstanceIds.concat(newInstance.instanceId)
         // this.insertGestaltInstanceIntoParent(rootGestaltInstance, newInstance, offset)
 
-        const newAllGestalts: GestaltsMap = this.state.allGestalts.merge(
+        const newAllGestalts: GestaltsMap = this.state.allGestalts.merge(Immutable.Map(
             _.keyBy(newGestalts, g => g.gestaltId)
+        )
         )
 
         const newAllGestaltInstances: GestaltInstancesMap =
-            this.state.allGestaltInstances.merge(
+            this.state.allGestaltInstances.merge(Immutable.Map(
                 {
                     ...(_.keyBy(newInstances, i => i.instanceId)),
                     [updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance
-                }
+                })
             )
 
         this.setState({
@@ -262,7 +267,6 @@ debugger
     //IMMUTABLE, returns new entries to add to allGestaltInstances
     expandGestaltInstance = (gi: GestaltInstance, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap): GestaltInstancesMap => {
         const gestalt: Gestalt = allGestalts.get(gi.gestaltId);
-
         const giOut: GestaltInstance = { ...gi, expanded: true }
 
         console.assert(typeof giOut.childrenInstanceIds !== "undefined")
@@ -272,13 +276,14 @@ debugger
 
         if (giOut.childrenInstanceIds === null) {
 
-
             let gestaltIdsToInstantiate: string[] =
                 gestalt.isRoot
                     ?
                     allGestalts
-                        .valueSeq().map((g) => g.isRoot ? undefined : g.gestaltId)
-                        .filter(id => id !== undefined).toJS()
+                        .valueSeq().filter(g => !g.isRoot)
+                        .toJS()
+                        .map((g2: Gestalt) => g2.gestaltId)
+
                     :
                     gestalt.relatedIds;
 
@@ -472,7 +477,7 @@ debugger
 
 
         this.setState({
-            allGestaltInstances: this.state.allGestaltInstances.merge(instsToAdd)
+            allGestaltInstances: this.state.allGestaltInstances.merge(Immutable.Map(instsToAdd))
         })
 
     }
@@ -487,8 +492,8 @@ debugger
             textHeight: Util.computeTextHeight(newText)
         }
 
-        const updatedAllGestalts: GestaltsMap = this.state.allGestalts.merge(
-            { [updatedGestalt.gestaltId]: updatedGestalt })
+        const updatedAllGestalts: GestaltsMap = this.state.allGestalts.merge(Immutable.Map(
+        { [updatedGestalt.gestaltId]: updatedGestalt }))
 
 
         this.setState({ allGestalts: updatedAllGestalts }, () => {
