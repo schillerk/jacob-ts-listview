@@ -12,7 +12,10 @@ declare module "react" {
   }
 }
 
-var Infinite: any = require("react-infinite");
+import { InfiniteList } from "./InfiniteList"
+
+// var Infinite: any = require("react-infinite");
+// var InfiniteList: any = require("../src/components/InfiniteList");
 
 export const W_WIDTH = 11.55
 export const LINE_HEIGHT = 23
@@ -37,7 +40,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
   toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
   addGestalt: (text: string, offset: number, parentInstanceId?: string, callback?: () => any) => void
   // commitIndentChild: (parentInstanceId: string, childIndex: number) => void
-  onScrollChange?: (firstVisibleElemInd: number, lastVisibleElemInd: number)=> void
+  onScrollChange?: (firstVisibleElemInd: number, lastVisibleElemInd: number) => void
 
   isRoot?: boolean
   filter?: string
@@ -163,7 +166,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     // }
 
     // return true;
-    return !(_.isEqual(nextProps.gestaltInstance,this.props.gestaltInstance)
+    return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
       && _.isEqual(nextProps.filter, this.props.filter))
 
     // slower by 8fps!
@@ -350,18 +353,19 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         {/* render expanded children */}
 
         <ul style={{ paddingLeft: (this.props.isRoot ? 0 : 40) }}>
-
-
           {
             this.props.isRoot ?
               // finalRndComp.slice(100, 110)
-              <Infinite onScrollChange={this.props.onScrollChange} containerHeight={myHeight - 20} elementHeight={childrenHeights}>
-                {finalRenderedChildrenComponents}
-              </Infinite>
+              //onScrollChange={this.props.onScrollChange}
+              // elementHeight={childrenHeights}
+
+              <InfiniteList
+                containerHeight={myHeight - 20}
+                elementHeight={36}
+                elements={finalRenderedChildrenComponents} ElementComponent={GestaltComponent} />
               :
               finalRenderedChildrenComponents
           }
-
         </ul>
       </li>
     )
