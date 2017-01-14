@@ -26,6 +26,9 @@ export const LINE_WIDTH = 685
 export const GESTALT_PADDING = 8
 
 export interface GestaltComponentState {
+  filteredEntries?: HydratedGestaltInstance[]
+  filter?: string
+  filtering?:number
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
@@ -53,6 +56,11 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
   nodeSpan: HTMLSpanElement
   renderedGestaltComponents: GestaltComponent[]
+
+  constructor(props: GestaltComponentProps) {
+    super(props)
+    this.state = { filteredEntries: undefined,filtering:0 }
+  }
 
   handleArrows = (arrowDir: Util.KEY_CODES) => {
     let compToFocus: GestaltComponent = undefined
@@ -174,7 +182,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     Util.moveCaretToEnd(e.currentTarget)
   }
 
-  shouldComponentUpdate(nextProps: GestaltComponentProps) {
+  shouldComponentUpdate(nextProps: GestaltComponentProps, nextState: GestaltComponentState) {
 
     // if (this.props.gestaltInstance.gestalt.relatedIds.length > 0) {
     //     console.log(this.props.gestaltInstance.gestalt.text, nextProps.gestaltInstance.gestalt.text, "\n",
@@ -182,8 +190,12 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     // }
 
     // return true;
-    return !(_.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
-      && _.isEqual(nextProps.filter, this.props.filter))
+    return !(
+      _.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
+      && _.isEqual(nextProps.filter, this.props.filter)
+      && _.isEqual(nextState, this.state)
+    )
+
 
     // slower by 8fps!
     //   return !(JSON.stringify(this.props.gestaltInstance) === JSON.stringify(nextProps.gestaltInstance) )
@@ -265,6 +277,30 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     )
   }
 
+  textFilterFn = (e: HydratedGestaltInstance) => {
+    return e.gestalt.text.toLowerCase().indexOf(this.props.filter.toLowerCase()) >= 0
+  }
+
+  componentWillReceiveProps(nextProps: GestaltComponentProps) {
+
+    if (nextProps.isRoot) {
+      if (nextProps.filter) {
+        let hydratedChildren: LazyArray<HydratedGestaltInstance> = nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
+
+        this.setState({filtering:this.state.filtering+1})
+        hydratedChildren.asyncFilter(
+          this.textFilterFn,
+          (results) => this.setState({ filtering:this.state.filtering-1, filter:nextProps.filter,filteredEntries: results }))
+      }
+      else { //no filter anymore
+        if (this.state.filteredEntries)
+          this.setState({ filteredEntries: undefined })
+      }
+
+    }
+
+  }
+
   render(): JSX.Element {
     console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.hydratedChildren)
 
@@ -272,10 +308,16 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       = this.props.gestaltInstance.hydratedChildren
 
     if (this.props.isRoot) {
-      if(this.props.filter)
-        hydratedChildren = Util.filterEntries(
-          (hydratedChildren as LazyArray<HydratedGestaltInstance> ).toArray(), 
-          this.props.filter)
+      if (this.props.filter) {
+        if (this.state.filteredEntries) {
+          hydratedChildren = LazyArray.fromArray(this.state.filteredEntries)
+        }
+        // hydratedChildren =
+        // hydratedChildren = (hydratedChildren as LazyArray<HydratedGestaltInstance>).filter(this.textFilterFn)
+        // hydratedChildren = LazyArray.fromArray(Util.filterEntries(
+        //   (hydratedChildren as LazyArray<HydratedGestaltInstance>).toArray(),
+        //   this.props.filter))
+      }
     }
     // warn about tricky edge case
     // _.mapValues(
@@ -360,7 +402,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         onKeyDown={this.onKeyDown}
         onInput={this.onInput}
         onFocus={this.moveCaretToEnd}
-        onBlur={ (e:React.FocusEvent<HTMLElement>) => this._onTextInputBlur(e)}
+        onBlur={(e: React.FocusEvent<HTMLElement>) => this._onTextInputBlur(e)}
         >
         {this.props.gestaltInstance.gestalt.text}
       </span>
@@ -417,6 +459,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     return (
       <li style={{ ...mainLiStyles, height: myHeight }}>
+         {this.state.filtering > 0 ? <div>Filtering... {this.state.filtering} processes</div> : null}
         {gestaltBody}
 
         {/* render expanded children */}

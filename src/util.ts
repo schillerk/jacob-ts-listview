@@ -111,7 +111,7 @@ export function hydrateGestaltInstanceAndChildren(
     gestaltInstanceId: string,
     allGestalts: GestaltsMap,
     allGestaltInstances: GestaltInstancesMap,
-    focusedInstanceId:string,
+    focusedInstanceId: string,
 ): HydratedGestaltInstance {
 
     const currInstance: GestaltInstance = allGestaltInstances.get(gestaltInstanceId)
@@ -144,7 +144,7 @@ export function hydrateGestaltInstanceAndChildren(
     else {
         if (currInstance.childrenInstanceIds !== null) {
             nextHydGesInsts = currInstance.childrenInstanceIds.map((instanceId: string) =>
-                hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances,focusedInstanceId))
+                hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances, focusedInstanceId))
         }
         else {
             nextHydGesInsts = null
@@ -155,7 +155,7 @@ export function hydrateGestaltInstanceAndChildren(
         ...currInstance,
         gestalt: currGestalt,
         hydratedChildren: nextHydGesInsts,
-        shouldFocus: focusedInstanceId===currInstance.instanceId
+        shouldFocus: focusedInstanceId === currInstance.instanceId
     }
 
     console.assert(!(currHydratedGestaltInstance.expanded && currHydratedGestaltInstance.hydratedChildren === null),
