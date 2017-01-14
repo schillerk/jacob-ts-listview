@@ -34,19 +34,19 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
   index: number
 
   getOffsetChild: (prevSelfNext: number, fromIndex: number) => GestaltComponent
-  focus: () => void
 
   addGestaltAsChild: (text: string, offset: number) => void
   // indentChild: (childIndex: number) => void
 
   updateGestaltText: (gestaltId: string, newText: string) => void
   toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
-  addGestalt: (text: string, offset: number, parentInstanceId?: string, callback?: () => any) => void
+  addGestalt: (text: string, offset: number, parentInstanceId?: string, shouldFocus?: boolean) => void
   // commitIndentChild: (parentInstanceId: string, childIndex: number) => void
-  onScrollChange?: (firstVisibleElemInd: number, lastVisibleElemInd: number) => void
 
   isRoot?: boolean
   filter?: string
+
+  gestaltComponentOnBlur: (instanceId: string) => void
 }
 
 // #TODO: order comes out randomly, needs to be an OrderedMap
@@ -67,20 +67,33 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     if (compToFocus)
-      compToFocus.focus()
+      compToFocus._syncTextInputFocus()
   }
 
   addGestaltAsChild = (text: string, offset: number = 0): void => {
-    this.props.addGestalt(text, offset, this.props.gestaltInstance.instanceId,
-      () => { this.renderedGestaltComponents[offset].focus() })
+    this.props.addGestalt(text, offset, this.props.gestaltInstance.instanceId, true)
   }
 
   // indentChild = (childIndex: number) => {
   //     this.props.commitIndentChild(this.props.gestaltInstance.instanceId, childIndex)
   // }
 
-  focus = () => {
-    this.nodeSpan && this.nodeSpan.focus()
+  private _syncTextInputFocus = () => {
+    if (this.props.gestaltInstance.shouldFocus) {
+      if (document.activeElement !== this.nodeSpan)
+        this.nodeSpan && this.nodeSpan.focus()
+    }
+  }
+
+  private _onTextInputBlur = (e: React.FocusEvent<any>) => {
+    e.stopPropagation()
+    this.props.gestaltComponentOnBlur(this.props.gestaltInstance.instanceId)
+  }
+  componentDidUpdate() {
+    this._syncTextInputFocus()
+  }
+  componentDidMount() {
+    this._syncTextInputFocus()
   }
 
   getLastChild = (): GestaltComponent => {
@@ -110,7 +123,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       if (newIndex < 0) //hit top of sublist. return parent
         return this.props.getOffsetChild ? this.props.getOffsetChild(0, this.props.index) : undefined
 
-      //return prev sibling's last child 
+      //return prev sibling's last child
       return this.renderedGestaltComponents[newIndex].getLastChild()
     }
     else { //going down or still
@@ -247,8 +260,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         // indentChild={this.indentChild}
 
         getOffsetChild={this.getOffsetChild}
-        focus={this.focus}
-
+        gestaltComponentOnBlur={this.props.gestaltComponentOnBlur}
         />
     )
   }
@@ -289,7 +301,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     if (this.props.isRoot) { //Is Root. hydratedChildren as LazyArray<HydratedGestaltInstance>
 
-      childrenHeights = _.times(this.props.gestaltInstance.hydratedChildren.length, () => 36)
+      //childrenHeights = _.times(this.props.gestaltInstance.hydratedChildren.length, () => 36)
       // expandedChildGestaltInstances.map((instance, i): number => (
       //   this.calcHeight(instance.gestalt.text)
       // ))
@@ -312,7 +324,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         elementHeight={36}
         elements={expandedChildGestaltInstances.map(this.genGestaltComponentFromInstance)}
         />
-        // ElementComponent={GestaltComponent} />
+      // ElementComponent={GestaltComponent} />
 
     }
     else { //Not root. hydratedChildren as HydratedGestaltInstance[]
@@ -339,10 +351,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       const gestaltTextSpan = <span style={{ padding: "2px 4px", height: "36px" }}
         contentEditable
         suppressContentEditableWarning
-        ref={(nodeSpan: HTMLSpanElement) => this.nodeSpan = nodeSpan}
+        ref={(nodeSpan: HTMLSpanElement) => {
+          this.nodeSpan = nodeSpan
+        } }
         onKeyDown={this.onKeyDown}
         onInput={this.onInput}
         onFocus={this.moveCaretToEnd}
+        onBlur={ (e:React.FocusEvent<any>) => this._onTextInputBlur(e)}
         >
         {this.props.gestaltInstance.gestalt.text}
       </span>

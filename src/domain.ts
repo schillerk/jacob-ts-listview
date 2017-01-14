@@ -20,6 +20,7 @@ export interface GestaltInstance {
 }
 
 export interface HydratedGestaltInstance extends GestaltInstance {
+  shouldFocus?:boolean  
   gestalt: Gestalt
   hydratedChildren: HydratedGestaltInstance[] | LazyArray<HydratedGestaltInstance>
 }

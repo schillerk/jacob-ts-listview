@@ -15,6 +15,7 @@ export interface ListViewState {
     allGestaltInstances?: GestaltInstancesMap
     rootGestaltInstanceId?: string
     filter?: string
+    focusedInstanceId?: string
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -25,14 +26,12 @@ export interface ListViewProps extends React.Props<ListView> {
 export class ListView extends React.Component<ListViewProps, ListViewState> {
     searchAddBox: SearchAddBox;
     updateTimes: number[] = []
-    lastHydratedRootGestaltInstance: HydratedGestaltInstance
-    firstVisibleElemInd: number
-    lastVisibleElemInd: number
 
     constructor(props: ListViewProps) {
         super(props);
 
         const initState: ListViewState = {
+            focusedInstanceId: undefined, //undefined lets the search/add box steal the focus on load
             filter: "",
             allGestaltInstances: Immutable.Map<string, GestaltInstance>(),
             allGestalts: Immutable.Map<string, Gestalt>({
@@ -76,7 +75,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         //finish populating allGestalts
         const generatedGestalts: { [id: string]: Gestalt } = {}
-        for (let i = 0; i < 40000; i++) {
+        for (let i = 0; i < 10; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             generatedGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -188,7 +187,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     // Mutates state
-    addGestalt = (text: string, offset?: number, parentInstanceId?: string, callback?: () => any): void => {
+    addGestalt = (text: string, offset?: number, parentInstanceId?: string, shouldFocus?: boolean): void => {
         const splitTexts: string[] = text.split("\n\n")
         let textsToAdd: string[]
 
@@ -198,11 +197,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         else
             textsToAdd = [text]
 
-        this.addGestalts(textsToAdd, offset, parentInstanceId, callback)
+        this.addGestalts(textsToAdd, offset, parentInstanceId, shouldFocus ? 0 : undefined)
     }
 
 
-    addGestalts = (texts: string[], offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, callback?: () => any): void => {
+    addGestalts = (texts: string[], offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, shouldFocusIdx?: number): void => {
         if (parentInstanceId === this.state.rootGestaltInstanceId)
             console.log("adding at root")
         else  //#TODO 
@@ -247,7 +246,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.setState({
             allGestaltInstances: newAllGestaltInstances,
             allGestalts: newAllGestalts,
-        }, callback)
+            focusedInstanceId: shouldFocusIdx !== undefined ? newInstances[shouldFocusIdx].instanceId : undefined
+        })
     }
 
     //IMMUTABLE
@@ -361,7 +361,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     //         relatedIds: futureParentGestalt.relatedIds.concat(childInstance.gestaltId)
     //     }
 
-    // return 
+    // return
     // }
 
     // immutable
@@ -468,7 +468,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         if (existingChildInstance.expanded) //present and expanded
             instsToAdd = Immutable.Map({ [existingChildInstanceId]: { ...existingChildInstance, expanded: false } })
         // this.collapseGestaltInstance(parentGestaltInstance.children, existingChildIndex)
-        else //present and collapsed 
+        else //present and collapsed
         {
             //#TODO move to front of array when expanding and deepFixGestaltInstanceIds?
             instsToAdd = this.expandGestaltInstance(existingChildInstance, this.state.allGestalts, this.state.allGestaltInstances)
@@ -493,7 +493,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         }
 
         const updatedAllGestalts: GestaltsMap = this.state.allGestalts.merge(Immutable.Map(
-        { [updatedGestalt.gestaltId]: updatedGestalt }))
+            { [updatedGestalt.gestaltId]: updatedGestalt }))
 
 
         this.setState({ allGestalts: updatedAllGestalts }, () => {
@@ -503,11 +503,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
 
-
-    onScrollChange = (firstVisibleElemInd: number, lastVisibleElemInd: number) => {
-        this.firstVisibleElemInd = firstVisibleElemInd
-        this.lastVisibleElemInd = lastVisibleElemInd
+    gestaltComponentOnBlur = (instanceId: string) => {
+        if (this.state.focusedInstanceId === instanceId) 
+        {
+            this.setState({ focusedInstanceId: undefined })
+        }
     }
+
 
     render() {
 
@@ -515,12 +517,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             this.state.rootGestaltInstanceId,
             this.state.allGestalts,
             this.state.allGestaltInstances,
-            this.lastHydratedRootGestaltInstance,
-            this.firstVisibleElemInd,
-            this.lastVisibleElemInd
+            this.state.focusedInstanceId,
         )
 
-        this.lastHydratedRootGestaltInstance = hydratedRootGestaltInstance
 
 
 
@@ -543,7 +542,6 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         />
 
                     <GestaltComponent
-                        onScrollChange={this.onScrollChange}
                         key={this.state.rootGestaltInstanceId}
                         index={0}
                         gestaltInstance={hydratedRootGestaltInstance}
@@ -559,9 +557,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         // indentChild={undefined}
                         addGestaltAsChild={(text) => this.addGestalt(text)}
                         getOffsetChild={undefined}
-                        focus={() => { } }
                         isRoot
                         filter={this.state.filter}
+                        gestaltComponentOnBlur={this.gestaltComponentOnBlur}
                         />
                 </div>
             </div>
