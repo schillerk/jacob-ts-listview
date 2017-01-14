@@ -150,7 +150,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     componentDidMount() {
-        
+
         //unneeded? 
         // setTimeout(
         //     () => this.setState({ hashtags: this.computeHashtagsFromAllGestalts(this.state.allGestalts) }), 0)
@@ -307,9 +307,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 gestalt.isRoot
                     ?
                     allGestalts
-                        .valueSeq().filter(g => !g.isRoot)
-                        .toJS()
-                        .map((g2: Gestalt) => g2.gestaltId)
+                        .valueSeq().skipWhile(g => g.isRoot)
+                        .map((g: Gestalt) => g.gestaltId).toJS()
 
                     :
                     gestalt.relatedIds;
@@ -555,7 +554,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         return (
             <div>
-                
+
                 <div style={{ marginTop: "45px", float: "right", width: "300px", minHeight: "300px" }}>
                     <HashtagsBox hashtags={this.state.hashtags} onClickTag={this.onClickTag} />
                 </div>
