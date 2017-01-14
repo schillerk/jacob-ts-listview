@@ -273,6 +273,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
         getOffsetChild={this.getOffsetChild}
         gestaltComponentOnBlur={this.props.gestaltComponentOnBlur}
+        filter={this.props.filter}
         />
     )
   }
@@ -402,6 +403,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       );
 
 
+      let highlightedText=this.props.gestaltInstance.gestalt.text
+      // if(this.props.filter)
+      //   highlightedText=highlightedText.replace(new RegExp(this.props.filter, 'g'), "<b>" + this.props.filter + "</b>")
+
       //gestalt body parts
       const gestaltTextSpan = <span style={{ padding: "2px 4px", height: "36px" }}
         contentEditable
@@ -413,9 +418,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         onInput={this.onInput}
         onFocus={this.moveCaretToEnd}
         onBlur={(e: React.FocusEvent<HTMLElement>) => this._onTextInputBlur(e)}
+        // dangerouslySetInnerHTML={{ __html: highlightedText }}
         >
-        {this.props.gestaltInstance.gestalt.text}
-      </span>
+        {highlightedText}
+      </span >
 
       const relatedGestaltNubs = <ul style={{ display: 'inline' }}>
         {this.props.isRoot ? null
