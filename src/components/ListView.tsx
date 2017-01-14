@@ -19,7 +19,7 @@ export interface ListViewState {
     rootGestaltInstanceId?: string
     filter?: string
     focusedInstanceId?: string
-    hashtags?: string[]
+    hashtags?: Immutable.OrderedSet<string>
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -37,7 +37,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const initState: ListViewState = {
             focusedInstanceId: undefined, //undefined lets the search/add box steal the focus on load
             filter: "",
-            hashtags: [],
+            hashtags: Immutable.OrderedSet<string>(),
             allGestaltInstances: Immutable.Map<string, GestaltInstance>(),
             allGestalts: Immutable.Map<string, Gestalt>({
                 '0id': {
@@ -153,21 +153,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         //unneeded? 
         // setTimeout(
-        //     () => this.setState({ hashtags: this.computeHashtagsFromAllGestalts(this.state.allGestalts) }), 0)
+        //     () => this.setState({ hashtags: Util.computeHashtagsFromAllGestalts(this.state.allGestalts) }), 0)
 
 
-        this.setState({ hashtags: this.computeHashtagsFromAllGestalts(this.state.allGestalts) })
-    }
-
-    computeHashtagsFromAllGestalts = (allGestalts: GestaltsMap): string[] => {
-        const allHashtags: { [tag: string]: boolean } = {}
-
-        allGestalts.valueSeq().forEach((g) =>
-            Util.extractTags(g.text)
-                .forEach((tag) => {
-                    allHashtags[tag] = true
-                }))
-        return _.keys(allHashtags)
+        this.setState({ hashtags: Immutable.OrderedSet(Util.computeHashtagsFromGestaltsMap(this.state.allGestalts)) })
     }
 
 
@@ -213,6 +202,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return newGestalt
     }
 
+    //#REDUCER
     // Mutates state
     addGestalt = (text: string, offset?: number, parentInstanceId?: string, shouldFocus?: boolean): void => {
         const splitTexts: string[] = text.split("\n\n")
@@ -227,7 +217,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.addGestalts(textsToAdd, offset, parentInstanceId, shouldFocus ? 0 : undefined)
     }
 
-
+    //#REDUCER
     addGestalts = (texts: string[], offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, shouldFocusIdx?: number): void => {
         if (parentInstanceId === this.state.rootGestaltInstanceId)
             console.log("adding at root")
@@ -273,7 +263,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.setState({
             allGestaltInstances: newAllGestaltInstances,
             allGestalts: newAllGestalts,
-            focusedInstanceId: shouldFocusIdx !== undefined ? newInstances[shouldFocusIdx].instanceId : undefined
+            focusedInstanceId: shouldFocusIdx !== undefined ? newInstances[shouldFocusIdx].instanceId : undefined,
+            hashtags: this.state.hashtags.merge(
+                Util.computeHashtagsFromGestaltsArray(newGestalts)
+            )
         })
     }
 
@@ -508,6 +501,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     }
 
+    //#REDUCER
     updateGestaltText = (id: string, newText: string) => {
         const timeInd = this.updateTimes.push(Date.now()) - 1
 
@@ -521,11 +515,21 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const updatedAllGestalts: GestaltsMap = this.state.allGestalts.merge(Immutable.Map(
             { [updatedGestalt.gestaltId]: updatedGestalt }))
 
+        // this.state.hashtags.merge(
+        //                 Util.computeHashtagsFromGestaltsMap(Immutable.Map(_.keyBy(newGestalts, g => g.gestaltId)))
 
-        this.setState({ allGestalts: updatedAllGestalts }, () => {
-            this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
-            if (this.updateTimes.length % 10 == 0) console.log("updateGestalt FPS", 1000 / Util.average(this.updateTimes))
-        })
+
+        this.setState(
+            {
+                allGestalts: updatedAllGestalts,
+                hashtags: this.state.hashtags.merge(
+                    Util.computeHashtagsFromGestaltsArray([updatedGestalt])
+                )
+            },
+            () => {
+                this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
+                if (this.updateTimes.length % 10 == 0) console.log("updateGestalt FPS", 1000 / Util.average(this.updateTimes))
+            })
     }
 
 
@@ -556,7 +560,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             <div>
 
                 <div style={{ marginTop: "45px", float: "right", width: "300px", minHeight: "300px" }}>
-                    <HashtagsBox hashtags={this.state.hashtags} onClickTag={this.onClickTag} />
+                    <HashtagsBox hashtags={this.state.hashtags.toJS()} onClickTag={this.onClickTag} />
                 </div>
 
                 <div className="box" style={{ padding: "45px 60px 10px", width: "700px", margin: "0 auto" }}>

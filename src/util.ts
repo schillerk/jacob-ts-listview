@@ -1,13 +1,16 @@
 import * as _ from "lodash";
 import { Gestalt, GestaltsMap, GestaltInstance, GestaltInstancesMap, HydratedGestaltInstance } from './domain';
 import { LazyArray } from "./LazyArray"
+import * as Immutable from 'immutable'
+
+
 var count = 0;
 
-let canvasElement = document.createElement('canvas')
-document.body.appendChild(canvasElement)
-// var c=document.getElementById("myCanvas");
-var ctx = canvasElement.getContext("2d");
-ctx.font = "16px Helvetica";
+// let canvasElement = document.createElement('canvas')
+// document.body.appendChild(canvasElement)
+// // var c=document.getElementById("myCanvas");
+// var ctx = canvasElement.getContext("2d");
+// ctx.font = "16px Helvetica";
 
 
 export function genGUID() {
@@ -70,6 +73,30 @@ export const encodeHtmlEntity = function (str: string) {
 export const extractTags = (text: string) => {
     return _.uniq(text.match(/#[A-Za-z0-9?*]+/))
 }
+
+export const computeHashtagsFromGestaltsMap = (gestalts: GestaltsMap): Immutable.OrderedSet<string> => {
+    const allHashtags: { [tag: string]: boolean } = {}
+
+    gestalts.valueSeq().forEach((g) =>
+        extractTags(g.text)
+            .forEach((tag) => {
+                allHashtags[tag] = true
+            }))
+    return Immutable.OrderedSet<string>(_.keys(allHashtags))
+}
+
+export const computeHashtagsFromGestaltsArray = (gestalts: Gestalt[]): Immutable.OrderedSet<string> => {
+    const allHashtags: { [tag: string]: boolean } = {}
+
+    gestalts.forEach((g) =>
+        extractTags(g.text)
+            .forEach((tag) => {
+                allHashtags[tag] = true
+            }))
+            
+    return Immutable.OrderedSet<string>(_.keys(allHashtags))
+}
+
 
 export const filterEntries = (entries: HydratedGestaltInstance[], filter: string) => {
     const pdFilter = filter.toLowerCase();
@@ -170,7 +197,7 @@ export function hydrateGestaltInstanceAndChildren(
 
 
 export function computeTextHeight(text: string): number {
-    let width = ctx.measureText(text).width
+    // let width = ctx.measureText(text).width
 
     // width,10,50)
 
