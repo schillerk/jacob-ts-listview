@@ -28,7 +28,7 @@ export const GESTALT_PADDING = 8
 export interface GestaltComponentState {
   filteredEntries?: HydratedGestaltInstance[]
   filter?: string
-  filtering?:number
+  filtering?: number
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
@@ -59,7 +59,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
   constructor(props: GestaltComponentProps) {
     super(props)
-    this.state = { filteredEntries: undefined,filtering:0 }
+    this.state = { filteredEntries: undefined, filtering: 0 }
   }
 
   handleArrows = (arrowDir: Util.KEY_CODES) => {
@@ -277,9 +277,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     )
   }
 
-  textFilterFn = (e: HydratedGestaltInstance) => {
-    return e.gestalt.text.toLowerCase().indexOf(this.props.filter.toLowerCase()) >= 0
-  }
+
 
   componentWillReceiveProps(nextProps: GestaltComponentProps) {
 
@@ -287,10 +285,20 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       if (nextProps.filter) {
         let hydratedChildren: LazyArray<HydratedGestaltInstance> = nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
 
-        this.setState({filtering:this.state.filtering+1})
+
+        this.setState({ filtering: this.state.filtering + 1 })
+
+        const textFilterFn = (e: HydratedGestaltInstance) => {
+          return e.gestalt.text.toLowerCase().indexOf(nextProps.filter.toLowerCase()) >= 0
+        }
+
         hydratedChildren.asyncFilter(
-          this.textFilterFn,
-          (results) => this.setState({ filtering:this.state.filtering-1, filter:nextProps.filter,filteredEntries: results }))
+          textFilterFn,
+          (results) => this.setState({
+            filtering: this.state.filtering - 1,
+            filter: nextProps.filter,
+            filteredEntries: results
+          }))
       }
       else { //no filter anymore
         if (this.state.filteredEntries)
@@ -319,6 +327,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         //   this.props.filter))
       }
     }
+
     // warn about tricky edge case
     // _.mapValues(
     //   _.groupBy(
@@ -371,6 +380,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         />
       // ElementComponent={GestaltComponent} />
 
+      gestaltBody = <div style={{ color: "gray" }}>{this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes" : Util.SPECIAL_CHARS_JS.NBSP}</div>
     }
     else { //Not root. hydratedChildren as HydratedGestaltInstance[]
       _.assign(mainLiStyles,
@@ -459,7 +469,6 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     return (
       <li style={{ ...mainLiStyles, height: myHeight }}>
-         {this.state.filtering > 0 ? <div>Filtering... {this.state.filtering} processes</div> : null}
         {gestaltBody}
 
         {/* render expanded children */}

@@ -91,17 +91,17 @@ export class LazyArray<T>  {
         const CHUNK_SIZE = 1000
 
         let newResults = this.filterRangeReturnsArray(fn, i, i + CHUNK_SIZE)
-        let allResults = resultsSoFar.concat(newResults)
+        resultsSoFar.push(...newResults)
 
         if (i < this.length) {
             this.timeout=setTimeout(
                 () => this.asyncFilterHelper(
-                    resultsSoFar.concat(newResults),
+                    resultsSoFar,
                     i + CHUNK_SIZE, fn, callback)
                 , 0)
         }
         else {
-            callback(allResults)
+            callback(resultsSoFar)
         }
     }
 
