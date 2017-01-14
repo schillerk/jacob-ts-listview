@@ -75,7 +75,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         //finish populating allGestalts
         const generatedGestalts: { [id: string]: Gestalt } = {}
-        for (let i = 0; i < 400000; i++) {
+        for (let i = 0; i < 40000; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             generatedGestalts[newGestalt.gestaltId] = newGestalt
         }

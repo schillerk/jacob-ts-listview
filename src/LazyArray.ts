@@ -94,6 +94,9 @@ export class LazyArray<T>  {
         let allResults = resultsSoFar.concat(newResults)
 
         if (i < this.length) {
+            if("sendData" in callback)
+                callback.onData(newResults)
+            
             this.timeout=setTimeout(
                 () => this.asyncFilterHelper(
                     resultsSoFar.concat(newResults),
@@ -101,7 +104,8 @@ export class LazyArray<T>  {
                 , 0)
         }
         else {
-            callback(allResults)
+                callback.onEnd(newResults)            
+            // callback(allResults)
         }
     }
 

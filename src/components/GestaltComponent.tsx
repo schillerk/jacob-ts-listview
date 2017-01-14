@@ -288,9 +288,15 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         let hydratedChildren: LazyArray<HydratedGestaltInstance> = nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
 
         this.setState({filtering:this.state.filtering+1})
+
+        let listener = {
+          onData:(partialResults:any) => this.setState({ filtering:this.state.filtering-1, filter:nextProps.filter,filteredEntries: results })
+          onEnd: (results:any) => this.setState({ filtering:this.state.filtering-1, filter:nextProps.filter,filteredEntries: results })
+        } 
+
         hydratedChildren.asyncFilter(
-          this.textFilterFn,
-          (results) => this.setState({ filtering:this.state.filtering-1, filter:nextProps.filter,filteredEntries: results }))
+          this.textFilterFn,listener
+          )
       }
       else { //no filter anymore
         if (this.state.filteredEntries)
