@@ -85,7 +85,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
   }
 
-  private _onTextInputBlur = (e: React.FocusEvent<any>) => {
+  private _onTextInputBlur = (e: React.FocusEvent<HTMLElement>) => {
     e.stopPropagation()
     this.props.gestaltComponentOnBlur(this.props.gestaltInstance.instanceId)
   }
@@ -321,7 +321,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       // </div>
       expandedChildrenListComponent = <InfiniteList
         containerHeight={myHeight - 20}
-        elementHeight={36}
+        fixedElementHeight={36}
         elements={expandedChildGestaltInstances.map(this.genGestaltComponentFromInstance)}
         />
       // ElementComponent={GestaltComponent} />
@@ -357,7 +357,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         onKeyDown={this.onKeyDown}
         onInput={this.onInput}
         onFocus={this.moveCaretToEnd}
-        onBlur={ (e:React.FocusEvent<any>) => this._onTextInputBlur(e)}
+        onBlur={ (e:React.FocusEvent<HTMLElement>) => this._onTextInputBlur(e)}
         >
         {this.props.gestaltInstance.gestalt.text}
       </span>

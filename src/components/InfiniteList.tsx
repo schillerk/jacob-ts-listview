@@ -9,11 +9,13 @@ export interface InfiniteListState {
 }
 
 export interface InfiniteListProps extends React.Props<InfiniteList> {
+  
   containerHeight: number
-  elementHeight: number
+  fixedElementHeight?: number
+  multipleElementHeights?: number[] //todo
+  
   elements: LazyArray<JSX.Element>
   ElementComponent?: any
-  onScroll?: () => void
 }
 
 // Required props: elements, ElementComponent, elementHeight, containerHeight
@@ -27,19 +29,19 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
     super(props)
     this.batchSize = 5
     this.scrollTop = 0
-    this.computeVisibleRange()
+    this._computeVisibleRange()
   }
 
   componentWillReceiveProps = (nextProps: InfiniteListProps) => {
-    this.computeVisibleRange(nextProps)
+    this._computeVisibleRange(nextProps)
   }
 
-  computeVisibleRange = (props = this.props) => {
+  private _computeVisibleRange = (props = this.props) => {
     const firstElementIndex = Math.max(Math.floor(Math.floor(
-      this.scrollTop / props.elementHeight
+      this.scrollTop / props.fixedElementHeight
     ) / this.batchSize) * this.batchSize, 0)
     const lastElementIndex = Math.min(Math.ceil(Math.ceil(
-      (this.scrollTop + props.containerHeight) / props.elementHeight
+      (this.scrollTop + props.containerHeight) / props.fixedElementHeight
     ) / this.batchSize) * this.batchSize, props.elements.length - 1)
 
     const shouldPrepend = this.firstElementIndex !== undefined &&
@@ -52,21 +54,21 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
     return shouldPrepend || shouldAppend
   }
 
-  createTopPadding = () => {
-    const topPadding = this.firstElementIndex * this.props.elementHeight
+  private _createTopPadding = () => {
+    const topPadding = this.firstElementIndex * this.props.fixedElementHeight
     return <div
       style={{ height: topPadding }}
       />
   }
 
-  createBottomPadding = () => {
-    const bottomPadding = (this.props.elements.length - 1 - this.lastElementIndex) * this.props.elementHeight
+  private _createBottomPadding = () => {
+    const bottomPadding = (this.props.elements.length - 1 - this.lastElementIndex) * this.props.fixedElementHeight
     return <div
       style={{ height: bottomPadding }}
       />
   }
 
-  createVisibleElements = () => {
+  private _createVisibleElements = () => {
     const elements = []
     for (let i = this.firstElementIndex; i <= this.lastElementIndex; ++i) {
       elements.push(
@@ -79,32 +81,20 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
     return elements
   }
 
-  handleScroll = (e: any) => {
+  private _handleScroll = (e: React.UIEvent<HTMLElement>) => {
     const scrollableNode = ReactDOM.findDOMNode(this.refs['scrollable'])
     this.scrollTop = scrollableNode.scrollTop
 
-    const needToUpdate = this.computeVisibleRange()
+    const needToUpdate = this._computeVisibleRange()
     if (needToUpdate) {
       this.forceUpdate()
     }
 
-    this.props.onScroll && this.props.onScroll()
+    // this.props.onScroll && this.props.onScroll()
   }
 
-  render() {
-    const { elements, ElementComponent, elementHeight, containerHeight } = this.props
-    return <div
-      ref='scrollable'
-      style={{ height: containerHeight, overflowX: 'hidden', overflowY: 'auto' }}
-      onScroll={this.handleScroll}
-      >
-      {this.createTopPadding()}
-      {this.createVisibleElements()}
-      {this.createBottomPadding()}
-    </div>
-  }
 
-  getContainerTopAndBottom = () => {
+  private _getContainerTopAndBottom = () => {
     const { containerHeight } = this.props
 
     const containerTop = this.scrollTop
@@ -113,28 +103,41 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
   }
 
   scrollToRevealElement = (elementIndex: number) => {
-    const { elementHeight, containerHeight } = this.props
+    const { fixedElementHeight, containerHeight } = this.props
 
     const scrollTop = this.scrollTop
-    const elementTop = elementIndex * elementHeight
-    const elementBottom = elementTop + elementHeight
+    const elementTop = elementIndex * fixedElementHeight
+    const elementBottom = elementTop + fixedElementHeight
 
-    let { containerTop, containerBottom } = this.getContainerTopAndBottom()
+    let { containerTop, containerBottom } = this._getContainerTopAndBottom()
     if (containerTop > elementTop) {
       this.scrollTop = elementTop
     }
-    ({ containerTop, containerBottom } = this.getContainerTopAndBottom())
+    ({ containerTop, containerBottom } = this._getContainerTopAndBottom())
     if (containerBottom < elementBottom) {
       this.scrollTop = elementBottom - containerHeight
     }
 
     const scrollableNode = ReactDOM.findDOMNode(this.refs['scrollable'])
     scrollableNode.scrollTop = this.scrollTop
-    const needToUpdate = this.computeVisibleRange()
+    const needToUpdate = this._computeVisibleRange()
     if (needToUpdate) {
       this.forceUpdate()
     }
   }
 
+
+  render() {
+    const { elements, ElementComponent, fixedElementHeight, containerHeight } = this.props
+    return <div
+      ref='scrollable'
+      style={{ height: containerHeight, overflowX: 'hidden', overflowY: 'auto' }}
+      onScroll={this._handleScroll}
+      >
+      {this._createTopPadding()}
+      {this._createVisibleElements()}
+      {this._createBottomPadding()}
+    </div>
+  }
 }
 
