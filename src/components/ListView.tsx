@@ -11,7 +11,7 @@ import * as Util from '../util';
 
 import * as Immutable from 'immutable'
 // import * as ImmutableDiff from 'immutablediff'
-var ImmutableDiff: any = require("immutablediff");
+// var ImmutableDiff: any = require("immutablediff");
 
 export interface ListViewState {
     allGestalts?: GestaltsMap
@@ -42,18 +42,18 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             allGestalts: Immutable.Map<string, Gestalt>({
                 '0id': {
                     gestaltId: '0id',
-                    text: 'hack with jacob!',
+                    text: 'hack with jacob! #todo',
                     relatedIds: [],
                 },
                 '1id': {
                     gestaltId: '1id',
-                    text: 'build ideaflow!',
+                    text: 'build ideaflow!  #todo',
                     relatedIds: ['2id', '0id'],
 
                 },
                 '2id': {
                     gestaltId: '2id',
-                    text: 'bring peace to world!',
+                    text: 'bring peace to world! #goal',
                     relatedIds: ['1id'],
 
                 },
@@ -149,20 +149,26 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     }
 
-    componentWillUpdate(nextProps: ListViewProps, nextState: ListViewState) {
-        if (nextState.allGestalts !== this.state.allGestalts)
-            ImmutableDiff(nextState.allGestalts, this.state.allGestalts)
+    componentDidMount() {
+        
+        //unneeded? 
+        // setTimeout(
+        //     () => this.setState({ hashtags: this.computeHashtagsFromAllGestalts(this.state.allGestalts) }), 0)
+
+
+        this.setState({ hashtags: this.computeHashtagsFromAllGestalts(this.state.allGestalts) })
     }
 
-    // updateHashTags = (state: ListViewState): ListViewState => {
-    //     const allHashtags: { [tag: string]: boolean } = {}
+    computeHashtagsFromAllGestalts = (allGestalts: GestaltsMap): string[] => {
+        const allHashtags: { [tag: string]: boolean } = {}
 
-    //     state.allGestalts.forEach((g) =>
-    //         Util.extractTags(g.text)
-    //             .forEach((tag) => allHashtags[tag] = true))
-
-    //     return { ...state, hashtags: _.keys(allHashtags) }
-    // }
+        allGestalts.valueSeq().forEach((g) =>
+            Util.extractTags(g.text)
+                .forEach((tag) => {
+                    allHashtags[tag] = true
+                }))
+        return _.keys(allHashtags)
+    }
 
 
     // createAndExpandGestaltInstance = (theState: ListViewState, gIP: { gestaltInstanceId: string, gestaltId: string, parentGestaltInstanceId: string, shouldUpdate: boolean }, expand: boolean) => {
@@ -549,10 +555,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         return (
             <div>
-                <div style={{ float: "right", width: "300px", minHeight: "300px" }}>
+                
+                <div style={{ marginTop: "45px", float: "right", width: "300px", minHeight: "300px" }}>
                     <HashtagsBox hashtags={this.state.hashtags} onClickTag={this.onClickTag} />
                 </div>
-                <div style={{ padding: "45px 60px 10px", width: "700px", background: "white", margin: "0 auto", border: "1px solid #d6d6d6" }}>
+
+                <div className="box" style={{ padding: "45px 60px 10px", width: "700px", margin: "0 auto" }}>
+
                     <SearchAddBox
                         autoFocus
                         onAddGestalt={(text) => {

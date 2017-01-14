@@ -15,15 +15,16 @@ export interface HashtagsBoxProps extends React.Props<HashtagsBox> {
 
 
 export class HashtagsBox extends React.Component<HashtagsBoxProps, HashtagsBoxState> {
-    
+
     render() {
+        // minHeight: "300px"
         return (
-            <div style={{border:"1px solid gray",width:"100%",height:"100%"}}>
+            <div className="box" style={{width: "100%", height: "100%" }}>
                 <div>Hashtags</div>
                 {this.props.hashtags
-                    .map((hashtag: string) =>
-                        <a href="#" onClick={() => this.props.onClickTag(hashtag)}>{hashtag}</a>)
-                    .join(" ")}
+                    .map((hashtag: string,i:number) =>
+                        <a href="#" key={i} onClick={() => this.props.onClickTag(hashtag)} style={{marginRight:"4px"}}>{hashtag}</a>)
+                }
             </div>
         )
     }
