@@ -271,9 +271,12 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     let hydratedChildren: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
       = this.props.gestaltInstance.hydratedChildren
 
-    // if (this.props.isRoot)
-    //   hydratedChildren = Util.filterEntries(hydratedChildren, this.props.filter || "")
-
+    if (this.props.isRoot) {
+      if(this.props.filter)
+        hydratedChildren = Util.filterEntries(
+          (hydratedChildren as LazyArray<HydratedGestaltInstance> ).toArray(), 
+          this.props.filter)
+    }
     // warn about tricky edge case
     // _.mapValues(
     //   _.groupBy(

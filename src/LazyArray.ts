@@ -34,7 +34,7 @@ export class LazyArray<T>  {
             (i) => fn(this.get(i), i)
         )
     }
-
+    
     toArray = (): T[] => {
         let out = new Array(this.length)
         for (let i = 0; i < this.length; i++) {
