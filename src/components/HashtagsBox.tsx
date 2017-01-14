@@ -23,7 +23,7 @@ export class HashtagsBox extends React.Component<HashtagsBoxProps, HashtagsBoxSt
                 <div>Hashtags</div>
                 {this.props.hashtags
                     .map((hashtag: string,i:number) =>
-                        <a href="#" key={i} onClick={() => this.props.onClickTag(hashtag)} style={{marginRight:"4px"}}>{hashtag}</a>)
+                        <a href="#" key={i} onClick={() => this.props.onClickTag(hashtag)} style={{marginRight:"4px",display:"inline-block"}}>{hashtag}</a>)
                 }
             </div>
         )

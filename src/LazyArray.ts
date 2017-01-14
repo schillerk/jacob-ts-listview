@@ -4,7 +4,7 @@ import * as _ from "lodash";
 export class LazyArray<T>  {
     genElem: (i: number) => T
     length: number
-    timeout:NodeJS.Timer
+    timeout:number
 
     constructor(length: number, genElem: (i: number) => T) {
         this.length = length
@@ -80,7 +80,7 @@ export class LazyArray<T>  {
         callback: (results: T[]) => any
     ): void => {
         
-        // clearTimeout(this.timeout) //might work? doesn't updated count properly I don't think
+        window.clearTimeout(this.timeout) //might work? doesn't updated count properly I don't think
         this.asyncFilterHelper(
             [], 0, fn, callback)
     }
@@ -94,7 +94,7 @@ export class LazyArray<T>  {
         resultsSoFar.push(...newResults)
 
         if (i < this.length) {
-            this.timeout=setTimeout(
+            this.timeout=window.setTimeout(
                 () => this.asyncFilterHelper(
                     resultsSoFar,
                     i + CHUNK_SIZE, fn, callback)

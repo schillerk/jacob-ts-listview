@@ -30,6 +30,8 @@ export interface ListViewProps extends React.Props<ListView> {
 export class ListView extends React.Component<ListViewProps, ListViewState> {
     searchAddBox: SearchAddBox;
     updateTimes: number[] = []
+    hashtagTimeout: number
+
 
     constructor(props: ListViewProps) {
         super(props);
@@ -518,15 +520,22 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         // this.state.hashtags.merge(
         //                 Util.computeHashtagsFromGestaltsMap(Immutable.Map(_.keyBy(newGestalts, g => g.gestaltId)))
 
-
+        window.clearTimeout(this.hashtagTimeout)
         this.setState(
             {
                 allGestalts: updatedAllGestalts,
-                hashtags: this.state.hashtags.merge(
-                    Util.computeHashtagsFromGestaltsArray([updatedGestalt])
-                )
+                // hashtags: this.state.hashtags.merge(
+                //     Util.computeHashtagsFromGestaltsArray([updatedGestalt])
+                // )
             },
             () => {
+                //only update hashtags if you wait for half a second
+                this.hashtagTimeout = window.setTimeout(
+                    () => this.setState({
+                        hashtags:
+                        Util.computeHashtagsFromGestaltsMap(this.state.allGestalts)
+                    }), 500)
+
                 this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
                 if (this.updateTimes.length % 10 == 0) console.log("updateGestalt FPS", 1000 / Util.average(this.updateTimes))
             })
