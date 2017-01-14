@@ -67,6 +67,10 @@ export const encodeHtmlEntity = function (str: string) {
 };
 
 
+export const extractTags = (text: string) => {
+    return _.uniq(text.match(/#[A-Za-z0-9?*]+/))
+}
+
 export const filterEntries = (entries: HydratedGestaltInstance[], filter: string) => {
     const pdFilter = filter.toLowerCase();
 

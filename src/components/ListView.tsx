@@ -4,11 +4,14 @@ import * as _ from "lodash";
 
 import { GestaltComponent } from './GestaltComponent'
 import { SearchAddBox } from './SearchAddBox'
+import { HashtagsBox } from './HashtagsBox'
 
 import { Gestalt, GestaltsMap, GestaltInstancesMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
 import * as Util from '../util';
 
 import * as Immutable from 'immutable'
+// import * as ImmutableDiff from 'immutablediff'
+var ImmutableDiff: any = require("immutablediff");
 
 export interface ListViewState {
     allGestalts?: GestaltsMap
@@ -16,6 +19,7 @@ export interface ListViewState {
     rootGestaltInstanceId?: string
     filter?: string
     focusedInstanceId?: string
+    hashtags?: string[]
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -33,6 +37,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const initState: ListViewState = {
             focusedInstanceId: undefined, //undefined lets the search/add box steal the focus on load
             filter: "",
+            hashtags: [],
             allGestaltInstances: Immutable.Map<string, GestaltInstance>(),
             allGestalts: Immutable.Map<string, Gestalt>({
                 '0id': {
@@ -75,7 +80,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         //finish populating allGestalts
         const generatedGestalts: { [id: string]: Gestalt } = {}
-        for (let i = 0; i < 40000; i++) {
+        for (let i = 0; i < 400000; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             generatedGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -138,10 +143,26 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             )
 
 
+
         this.state = initState
+
 
     }
 
+    componentWillUpdate(nextProps: ListViewProps, nextState: ListViewState) {
+        if (nextState.allGestalts !== this.state.allGestalts)
+            ImmutableDiff(nextState.allGestalts, this.state.allGestalts)
+    }
+
+    // updateHashTags = (state: ListViewState): ListViewState => {
+    //     const allHashtags: { [tag: string]: boolean } = {}
+
+    //     state.allGestalts.forEach((g) =>
+    //         Util.extractTags(g.text)
+    //             .forEach((tag) => allHashtags[tag] = true))
+
+    //     return { ...state, hashtags: _.keys(allHashtags) }
+    // }
 
 
     // createAndExpandGestaltInstance = (theState: ListViewState, gIP: { gestaltInstanceId: string, gestaltId: string, parentGestaltInstanceId: string, shouldUpdate: boolean }, expand: boolean) => {
@@ -504,10 +525,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
     gestaltComponentOnBlur = (instanceId: string) => {
-        if (this.state.focusedInstanceId === instanceId) 
-        {
+        if (this.state.focusedInstanceId === instanceId) {
             this.setState({ focusedInstanceId: undefined })
         }
+    }
+
+    onClickTag = (hashtag: string): void => {
+        this.setState({ filter: hashtag })
     }
 
 
@@ -523,9 +547,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
 
 
-
         return (
             <div>
+                <div style={{ float: "right", width: "300px", minHeight: "300px" }}>
+                    <HashtagsBox hashtags={this.state.hashtags} onClickTag={this.onClickTag} />
+                </div>
                 <div style={{ padding: "45px 60px 10px", width: "700px", background: "white", margin: "0 auto", border: "1px solid #d6d6d6" }}>
                     <SearchAddBox
                         autoFocus
@@ -562,7 +588,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         gestaltComponentOnBlur={this.gestaltComponentOnBlur}
                         />
                 </div>
-            </div>
+            </div >
         )
     }
 }
