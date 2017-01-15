@@ -27,7 +27,6 @@ export const GESTALT_PADDING = 8
 
 export interface GestaltComponentState {
   filteredEntries?: HydratedGestaltInstance[]
-  filter?: string
   filtering?: number
 }
 
@@ -56,6 +55,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
   nodeSpan: HTMLSpanElement
   renderedGestaltComponents: GestaltComponent[]
+  clearAsyncFilterTimeout: () => void
 
   constructor(props: GestaltComponentProps) {
     super(props)
@@ -282,26 +282,43 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
   componentWillReceiveProps(nextProps: GestaltComponentProps) {
 
-    if (nextProps.isRoot) {
+    //if filter changed
+    if (nextProps.isRoot && nextProps.filter !== this.props.filter) {
+
+      //if there is a running async filter, clear it
+      if (this.clearAsyncFilterTimeout) {
+        this.clearAsyncFilterTimeout()
+        this.clearAsyncFilterTimeout = undefined
+        this.setState((prevState) => { return { filtering: prevState.filtering - 1 } })
+      }
+
+      //filter has some nonempty (new) val, start running it
       if (nextProps.filter) {
         let hydratedChildren: LazyArray<HydratedGestaltInstance> = nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
-
-
-        this.setState({ filtering: this.state.filtering + 1 })
 
         const textFilterFn = (e: HydratedGestaltInstance) => {
           return e.gestalt.text.toLowerCase().indexOf(nextProps.filter.toLowerCase()) >= 0
         }
 
-        hydratedChildren.asyncFilter(
+        this.setState((prevState) => { return { filtering: prevState.filtering + 1 } })
+
+        this.clearAsyncFilterTimeout = hydratedChildren.asyncFilter(
           textFilterFn,
-          (results) => this.setState({
-            filtering: this.state.filtering - 1,
-            filter: nextProps.filter,
-            filteredEntries: results
-          }))
+          (results) => {
+            this.clearAsyncFilterTimeout = undefined
+            this.setState((prevState) => {
+              return {
+                filtering: prevState.filtering - 1,
+                filteredEntries: results
+              }
+            })
+
+            this.forceUpdate()
+          }
+        )
+
       }
-      else { //no filter anymore
+      else { // filter cleared
         if (this.state.filteredEntries)
           this.setState({ filteredEntries: undefined })
       }
@@ -381,7 +398,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         />
       // ElementComponent={GestaltComponent} />
 
-      gestaltBody = <div style={{ color: "gray" }}>{this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes" : Util.SPECIAL_CHARS_JS.NBSP}</div>
+      gestaltBody = <div style={{ color: "gray" }}>{true || this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes" : Util.SPECIAL_CHARS_JS.NBSP}</div>
     }
     else { //Not root. hydratedChildren as HydratedGestaltInstance[]
       _.assign(mainLiStyles,
@@ -403,7 +420,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       );
 
 
-      let highlightedText=this.props.gestaltInstance.gestalt.text
+      let highlightedText = this.props.gestaltInstance.gestalt.text
       // if(this.props.filter)
       //   highlightedText=highlightedText.replace(new RegExp(this.props.filter, 'g'), "<b>" + this.props.filter + "</b>")
 
