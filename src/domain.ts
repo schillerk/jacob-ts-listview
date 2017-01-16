@@ -7,7 +7,7 @@ import * as Immutable from 'immutable'
 export interface Gestalt {
   gestaltId: string
   text: string
-  textHeight?: number
+  gestaltHeight?: number
   relatedIds: string[]
   isRoot?: boolean
 }

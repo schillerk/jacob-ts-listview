@@ -20,10 +20,6 @@ import { InfiniteList } from "./InfiniteList"
 // var Infinite: any = require("react-infinite");
 // var InfiniteList: any = require("../src/components/InfiniteList");
 
-export const W_WIDTH = 11.55
-export const LINE_HEIGHT = 23
-export const LINE_WIDTH = 685
-export const GESTALT_PADDING = 8
 
 export interface GestaltComponentState {
   filteredEntries?: HydratedGestaltInstance[]
@@ -47,6 +43,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 
   isRoot?: boolean
   filter?: string
+  rootChildrenHeights?: number[]
 
   gestaltComponentOnBlur: (instanceId: string) => void
 }
@@ -235,17 +232,6 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     this.props.updateGestaltText(this.props.gestaltInstance.gestaltId, this.nodeSpan.innerText)
   }
 
-  calcHeight = (text: string): number => {
-    // var c=document.getElementById("myCanvas");
-    // var ctx=c.getContext("2d");
-    // ctx.font="30px Arial";
-    // width = ctx.measureText(text))
-
-    // width,10,50)
-
-
-    return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
-  }
 
   private renderNubs = () => {
 
@@ -367,7 +353,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     let expandedChildGestaltInstances: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
 
-    let myHeight: number = undefined
+    let myHeight: number | string = undefined
     let childrenHeights: number[] = undefined
 
 
@@ -404,7 +390,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       _.assign(mainLiStyles,
         { height: "34px", borderLeft: "2px solid lightgray", padding: "0px 4px", margin: "8px 0" })
 
-      myHeight = this.calcHeight(this.props.gestaltInstance.gestalt.text)
+      if (this.props.rootChildrenHeights) {
+        console.assert(typeof this.props.gestaltInstance.gestalt.gestaltHeight !== "undefined")
+        myHeight = this.props.gestaltInstance.gestalt.gestaltHeight
+        // Util.calcHeight(this.props.gestaltInstance.gestalt.text)
+        // myHeight = this.calcHeight(this.props.gestaltInstance.gestalt.text)
+      }
+      myHeight = "auto"
 
       //only some are expanded when deeper than root
       expandedChildGestaltInstances = (hydratedChildren as HydratedGestaltInstance[])

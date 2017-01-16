@@ -2,6 +2,7 @@ import * as React from "react"
 import * as ReactDOM from 'react-dom'
 
 import { LazyArray } from "../LazyArray"
+import * as _ from "lodash";
 
 
 export interface InfiniteListState {
@@ -9,11 +10,13 @@ export interface InfiniteListState {
 }
 
 export interface InfiniteListProps extends React.Props<InfiniteList> {
-  
+
   containerHeight: number
+
+  //needs one of these two
   fixedElementHeight?: number
   multipleElementHeights?: number[] //todo
-  
+
   elements: LazyArray<JSX.Element>
   ElementComponent?: any
 }
@@ -27,6 +30,8 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
 
   constructor(props: InfiniteListProps) {
     super(props)
+    console.assert(!(typeof props.fixedElementHeight === "undefined" && typeof props.multipleElementHeights === "undefined"))
+
     this.batchSize = 5
     this.scrollTop = 0
     this._computeVisibleRange()
@@ -37,12 +42,31 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
   }
 
   private _computeVisibleRange = (props = this.props) => {
-    const firstElementIndex = Math.max(Math.floor(Math.floor(
-      this.scrollTop / props.fixedElementHeight
-    ) / this.batchSize) * this.batchSize, 0)
-    const lastElementIndex = Math.min(Math.ceil(Math.ceil(
-      (this.scrollTop + props.containerHeight) / props.fixedElementHeight
-    ) / this.batchSize) * this.batchSize, props.elements.length - 1)
+    let firstElementIndex
+    let lastElementIndex
+    if (props.multipleElementHeights) { //todo
+      //todo? doesn't integrate batchsize?
+      let heightSoFar = 0
+      for (let i = 0; heightSoFar <= this.scrollTop; i++) {
+        console.assert(i < props.multipleElementHeights.length)
+        heightSoFar += props.multipleElementHeights[i]
+        firstElementIndex = i
+      }
+
+      for (let i = firstElementIndex; heightSoFar <= this.scrollTop + props.containerHeight; i++) {
+        console.assert(i < props.multipleElementHeights.length)
+        heightSoFar += props.multipleElementHeights[i]
+        lastElementIndex = i
+      }
+    }
+    else {
+      firstElementIndex = Math.max(Math.floor(Math.floor(
+        this.scrollTop / props.fixedElementHeight
+      ) / this.batchSize) * this.batchSize, 0)
+      lastElementIndex = Math.min(Math.ceil(Math.ceil(
+        (this.scrollTop + props.containerHeight) / props.fixedElementHeight
+      ) / this.batchSize) * this.batchSize, props.elements.length - 1)
+    }
 
     const shouldPrepend = this.firstElementIndex !== undefined &&
       firstElementIndex < this.firstElementIndex
@@ -55,14 +79,25 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
   }
 
   private _createTopPadding = () => {
-    const topPadding = this.firstElementIndex * this.props.fixedElementHeight
+    let topPadding
+
+    if (this.props.multipleElementHeights)
+      topPadding = _.sum(this.props.multipleElementHeights.slice(0, this.firstElementIndex))
+    else
+      topPadding = this.firstElementIndex * this.props.fixedElementHeight
+
     return <div
       style={{ height: topPadding }}
       />
   }
 
   private _createBottomPadding = () => {
-    const bottomPadding = (this.props.elements.length - 1 - this.lastElementIndex) * this.props.fixedElementHeight
+    let bottomPadding
+    if (this.props.multipleElementHeights)
+      bottomPadding = _.sum(this.props.multipleElementHeights.slice(this.lastElementIndex + 1))
+    else
+      bottomPadding = (this.props.elements.length - 1 - this.lastElementIndex) * this.props.fixedElementHeight
+
     return <div
       style={{ height: bottomPadding }}
       />
@@ -74,7 +109,7 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
       elements.push(
         // React.createElement(
         //   this.props.ElementComponent,
-          this.props.elements.get(i)
+        this.props.elements.get(i)
         // )
       )
     }
@@ -103,11 +138,14 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
   }
 
   scrollToRevealElement = (elementIndex: number) => {
-    const { fixedElementHeight, containerHeight } = this.props
+    const { multipleElementHeights, fixedElementHeight, containerHeight } = this.props
 
     const scrollTop = this.scrollTop
-    const elementTop = elementIndex * fixedElementHeight
-    const elementBottom = elementTop + fixedElementHeight
+    const elementTop = multipleElementHeights ?
+      _.sum(multipleElementHeights.slice(0, elementIndex))
+      : elementIndex * fixedElementHeight
+    const elementBottom = multipleElementHeights ? multipleElementHeights[elementIndex]
+      : elementTop + fixedElementHeight
 
     let { containerTop, containerBottom } = this._getContainerTopAndBottom()
     if (containerTop > elementTop) {

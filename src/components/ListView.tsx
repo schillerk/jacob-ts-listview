@@ -20,6 +20,7 @@ export interface ListViewState {
     filter?: string
     focusedInstanceId?: string
     hashtags?: Immutable.OrderedSet<string>
+    rootChildrenHeights?: number[]
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -144,7 +145,17 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             }
             )
 
+        //load rootChildrenHeights from gestalts
+        initState.rootChildrenHeights = initState.allGestaltInstances.get(initState.rootGestaltInstanceId)
+            .childrenInstanceIds.map(
+            iId => {
+                const g = initState.allGestalts.get(initState.allGestaltInstances.get(iId).gestaltId)
+                if (typeof g.gestaltHeight === "undefined")
+                    g.gestaltHeight = Util.computeGestaltHeight(g.text)
 
+                return g.gestaltHeight
+            }
+            )
 
         this.state = initState
 
@@ -158,7 +169,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         //     () => this.setState({ hashtags: Util.computeHashtagsFromAllGestalts(this.state.allGestalts) }), 0)
 
 
-        this.setState({ hashtags: Immutable.OrderedSet(Util.computeHashtagsFromGestaltsMap(this.state.allGestalts)) })
+        this.setState({
+            hashtags: Util.computeHashtagsFromGestaltsMap(this.state.allGestalts),
+        })
     }
 
 
@@ -511,7 +524,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const updatedGestalt: Gestalt = {
             ...this.state.allGestalts.get(id),
             text: newText,
-            textHeight: Util.computeTextHeight(newText)
+            gestaltHeight: Util.computeGestaltHeight(newText)
         }
 
         const updatedAllGestalts: GestaltsMap = this.state.allGestalts.merge(Immutable.Map(
@@ -606,6 +619,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         getOffsetChild={undefined}
                         isRoot
                         filter={this.state.filter}
+                        rootChildrenHeights={this.state.rootChildrenHeights}
+
                         gestaltComponentOnBlur={this.gestaltComponentOnBlur}
                         />
                 </div>

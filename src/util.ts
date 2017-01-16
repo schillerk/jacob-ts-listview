@@ -196,13 +196,33 @@ export function hydrateGestaltInstanceAndChildren(
 }
 
 
-export function computeTextHeight(text: string): number {
+
+
+export const W_WIDTH = 11.55
+export const LINE_HEIGHT = 23
+export const LINE_WIDTH = 685
+export const GESTALT_PADDING = 8
+
+export function computeGestaltHeight(text: string): number {
     // let width = ctx.measureText(text).width
 
     // width,10,50)
 
+    return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
 
-    return 0 //Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
+    // return 0 //Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
 }
 
 
+
+//   calcHeight = (text: string): number => {
+//     // var c=document.getElementById("myCanvas");
+//     // var ctx=c.getContext("2d");
+//     // ctx.font="30px Arial";
+//     // width = ctx.measureText(text))
+
+//     // width,10,50)
+
+
+//     return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
+//   }
