@@ -380,6 +380,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       expandedChildrenListComponent = <InfiniteList
         containerHeight={myHeight - 20}
         fixedElementHeight={36}
+        // multipleElementHeights={this.props.rootChildrenHeights}
         elements={expandedChildGestaltInstances.map(this.genGestaltComponentFromInstance)}
         />
       // ElementComponent={GestaltComponent} />

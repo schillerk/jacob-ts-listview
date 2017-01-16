@@ -64,7 +64,6 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         };
 
         const rootGestalt: Gestalt = this.createGestalt("root text", true)
-
         initState.allGestalts = initState.allGestalts.set(rootGestalt.gestaltId, rootGestalt)
 
         let rootGestaltInstance: GestaltInstance =
@@ -83,7 +82,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         //finish populating allGestalts
         const generatedGestalts: { [id: string]: Gestalt } = {}
-        for (let i = 0; i < 40000; i++) {
+        for (let i = 0; i < 20; i++) {
             const newGestalt = this.createGestalt(Math.random() + '')
             generatedGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -120,13 +119,12 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         //     }
         // })
 
-        initState.allGestaltInstances = initState.allGestaltInstances.merge(Immutable.Map(
+        initState.allGestaltInstances = initState.allGestaltInstances.merge(
             this.expandGestaltInstance(
                 rootGestaltInstance,
                 initState.allGestalts,
                 initState.allGestaltInstances
             )
-        )
         )
 
 
@@ -146,16 +144,19 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             )
 
         //load rootChildrenHeights from gestalts
-        initState.rootChildrenHeights = initState.allGestaltInstances.get(initState.rootGestaltInstanceId)
-            .childrenInstanceIds.map(
-            iId => {
-                const g = initState.allGestalts.get(initState.allGestaltInstances.get(iId).gestaltId)
-                if (typeof g.gestaltHeight === "undefined")
-                    g.gestaltHeight = Util.computeGestaltHeight(g.text)
+        // initState.rootChildrenHeights = initState.allGestaltInstances.get(initState.rootGestaltInstanceId)
+        //     .childrenInstanceIds.map(
+        //     iId => {
+        //         const g = initState.allGestalts.get(initState.allGestaltInstances.get(iId).gestaltId)
+        //         if (typeof g.gestaltHeight === "undefined")
+        //             g.gestaltHeight = Util.computeGestaltHeight(g.text)
 
-                return g.gestaltHeight
-            }
-            )
+        //         return g.gestaltHeight
+        //     }
+        //     )
+        console.assert(
+            initState.allGestaltInstances.filter((g) => g.gestaltId=='UNIQUE_ID_1').size===1,
+            initState.allGestaltInstances.filter((g) => g.gestaltId=='UNIQUE_ID_1').toJS())
 
         this.state = initState
 
@@ -315,7 +316,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 gestalt.isRoot
                     ?
                     allGestalts
-                        .valueSeq().skipWhile(g => g.isRoot)
+                        .valueSeq().filter(g => !g.isRoot)
                         .map((g: Gestalt) => g.gestaltId).toJS()
 
                     :

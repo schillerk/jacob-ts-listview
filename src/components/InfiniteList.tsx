@@ -47,14 +47,18 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
     if (props.multipleElementHeights) { //todo
       //todo? doesn't integrate batchsize?
       let heightSoFar = 0
-      for (let i = 0; heightSoFar <= this.scrollTop; i++) {
-        console.assert(i < props.multipleElementHeights.length)
+      for (let i = 0;
+        heightSoFar <= this.scrollTop
+        && i < props.multipleElementHeights.length; //needed in case too few elements
+        i++) {
         heightSoFar += props.multipleElementHeights[i]
         firstElementIndex = i
       }
 
-      for (let i = firstElementIndex; heightSoFar <= this.scrollTop + props.containerHeight; i++) {
-        console.assert(i < props.multipleElementHeights.length)
+      for (let i = firstElementIndex;
+        heightSoFar <= this.scrollTop + props.containerHeight
+        && i < props.multipleElementHeights.length; //needed in case too few elements
+        i++) {
         heightSoFar += props.multipleElementHeights[i]
         lastElementIndex = i
       }
