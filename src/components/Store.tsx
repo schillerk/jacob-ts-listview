@@ -156,15 +156,15 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             )
 
         console.assert(
-            initState.allGestaltInstances.filter((g) => g.gestaltId=='UNIQUE_ID_1').size===1,
-            initState.allGestaltInstances.filter((g) => g.gestaltId=='UNIQUE_ID_1').toJS())
+            initState.allGestaltInstances.filter((g) => g.gestaltId == 'UNIQUE_ID_1').size === 1,
+            initState.allGestaltInstances.filter((g) => g.gestaltId == 'UNIQUE_ID_1').toJS())
 
         this.state = initState
 
 
     }
 
-    computeRootChildrenHeights(rootInstance:GestaltInstance, state=this.state,filter=this.state.filter) {
+    computeRootChildrenHeights(rootInstance: GestaltInstance, state = this.state, filter = this.state.filter) {
         state.allGestaltInstances.get(state.rootGestaltInstanceId)
             .childrenInstanceIds.map(
             iId => {
@@ -580,6 +580,54 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.setState({ filter: hashtag })
     }
 
+
+    componentWillReceiveProps(nextProps: ListViewProps) {
+    // componentWillReceiveProps(nextProps: ListViewProps) {
+
+        //if filter changed
+        if (nextProps.filter !== this.props.filter) {
+
+            //if there is a running async filter, clear it
+            if (this.clearAsyncFilterTimeout) {
+                this.clearAsyncFilterTimeout()
+                this.clearAsyncFilterTimeout = undefined
+                this.setState((prevState) => { return { filtering: prevState.filtering - 1 } })
+            }
+
+            //filter has some nonempty (new) val, start running it
+            if (nextProps.filter) {
+                let hydratedChildren: LazyArray<HydratedGestaltInstance> = nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
+
+                const textFilterFn = (e: HydratedGestaltInstance) => {
+                    return e.gestalt.text.toLowerCase().indexOf(nextProps.filter.toLowerCase()) >= 0
+                }
+
+                this.setState((prevState) => { return { filtering: prevState.filtering + 1 } })
+
+                this.clearAsyncFilterTimeout = hydratedChildren.asyncFilter(
+                    textFilterFn,
+                    (results) => {
+                        this.clearAsyncFilterTimeout = undefined
+                        this.setState((prevState) => {
+                            return {
+                                filtering: prevState.filtering - 1,
+                                filteredEntries: results
+                            }
+                        })
+
+                        this.forceUpdate()
+                    }
+                )
+
+            }
+            else { // filter cleared
+                if (this.state.filteredEntries)
+                    this.setState({ filteredEntries: undefined })
+            }
+
+        }
+
+    }
 
     render() {
 
