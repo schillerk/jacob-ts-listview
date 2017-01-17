@@ -22,8 +22,9 @@ import { InfiniteList } from "./InfiniteList"
 
 
 export interface GestaltComponentState {
-  filteredEntries?: HydratedGestaltInstance[]
-  filtering?: number
+    filter?: string
+    filtering?: number
+    filteredEntries?: HydratedGestaltInstance[]
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
@@ -58,6 +59,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     super(props)
     this.state = { filteredEntries: undefined, filtering: 0 }
   }
+
 
   handleArrows = (arrowDir: Util.KEY_CODES) => {
     let compToFocus: GestaltComponent = undefined
@@ -316,21 +318,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
   render(): JSX.Element {
     console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.hydratedChildren)
 
-    let hydratedChildren: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
+    let filteredHydratedChildren: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
       = this.props.gestaltInstance.hydratedChildren
-
-    if (this.props.isRoot) {
-      if (this.props.filter) {
-        if (this.state.filteredEntries) {
-          hydratedChildren = LazyArray.fromArray(this.state.filteredEntries)
-        }
-        // hydratedChildren =
-        // hydratedChildren = (hydratedChildren as LazyArray<HydratedGestaltInstance>).filter(this.textFilterFn)
-        // hydratedChildren = LazyArray.fromArray(Util.filterEntries(
-        //   (hydratedChildren as LazyArray<HydratedGestaltInstance>).toArray(),
-        //   this.props.filter))
-      }
-    }
 
     // warn about tricky edge case
     // _.mapValues(
@@ -349,15 +338,27 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
     let gestaltBody: JSX.Element
-    let expandedChildrenListComponent: JSX.Element
+    let expandedChildrenListComponent: JSX.Element //infinite list
 
     let expandedChildGestaltInstances: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
 
-    let myHeight: number | string = undefined
+    let myHeight: number | string = "auto"
     let childrenHeights: number[] = undefined
 
 
     if (this.props.isRoot) { //Is Root. hydratedChildren as LazyArray<HydratedGestaltInstance>
+      filteredHydratedChildren = filteredHydratedChildren as LazyArray<HydratedGestaltInstance>
+
+      if (this.props.filter) {
+        if (this.state.filteredEntries) {
+          filteredHydratedChildren = LazyArray.fromArray(this.state.filteredEntries)
+        }
+        // hydratedChildren =
+        // hydratedChildren = (hydratedChildren as LazyArray<HydratedGestaltInstance>).filter(this.textFilterFn)
+        // hydratedChildren = LazyArray.fromArray(Util.filterEntries(
+        //   (hydratedChildren as LazyArray<HydratedGestaltInstance>).toArray(),
+        //   this.props.filter))
+      }
 
       //childrenHeights = _.times(this.props.gestaltInstance.hydratedChildren.length, () => 36)
       // expandedChildGestaltInstances.map((instance, i): number => (
@@ -368,7 +369,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       gestaltBody = null
 
       //all are expanded at root
-      expandedChildGestaltInstances = (hydratedChildren as LazyArray<HydratedGestaltInstance>)
+      expandedChildGestaltInstances = (filteredHydratedChildren as LazyArray<HydratedGestaltInstance>)
 
       // finalRndComp.slice(100, 110)
       //onScrollChange={this.props.onScrollChange}
@@ -379,8 +380,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       // </div>
       expandedChildrenListComponent = <InfiniteList
         containerHeight={myHeight - 20}
-        // fixedElementHeight={36}
-        multipleElementHeights={this.props.rootChildrenHeights}
+        fixedElementHeight={36}
+        // multipleElementHeights={this.props.rootChildrenHeights}
         elements={expandedChildGestaltInstances.map(this.genGestaltComponentFromInstance)}
         />
       // ElementComponent={GestaltComponent} />
@@ -400,7 +401,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       myHeight = "auto"
 
       //only some are expanded when deeper than root
-      expandedChildGestaltInstances = (hydratedChildren as HydratedGestaltInstance[])
+      expandedChildGestaltInstances = (filteredHydratedChildren as HydratedGestaltInstance[])
         .filter(instance => instance.expanded)
       // this.renderedGestaltComponents = Array(expandedChildGestaltInstances.length)
       expandedChildrenListComponent = <div>

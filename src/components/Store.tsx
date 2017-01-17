@@ -5,6 +5,7 @@ import * as _ from "lodash";
 import { GestaltComponent } from './GestaltComponent'
 import { SearchAddBox } from './SearchAddBox'
 import { HashtagsBox } from './HashtagsBox'
+import { ListView } from './ListView'
 
 import { Gestalt, GestaltsMap, GestaltInstancesMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
 import * as Util from '../util';
@@ -13,33 +14,31 @@ import * as Immutable from 'immutable'
 // import * as ImmutableDiff from 'immutablediff'
 // var ImmutableDiff: any = require("immutablediff");
 
-export interface ListViewState {
+export interface StoreState {
     allGestalts?: GestaltsMap
     allGestaltInstances?: GestaltInstancesMap
     rootGestaltInstanceId?: string
-    filter?: string
     focusedInstanceId?: string
     hashtags?: Immutable.OrderedSet<string>
     rootChildrenHeights?: number[]
 }
 
-export interface ListViewProps extends React.Props<ListView> {
+export interface StoreProps extends React.Props<Store> {
 
 }
 
 
-export class ListView extends React.Component<ListViewProps, ListViewState> {
-    searchAddBox: SearchAddBox;
+export class Store extends React.Component<StoreProps, StoreState> {
     updateTimes: number[] = []
     hashtagTimeout: number
 
 
-    constructor(props: ListViewProps) {
+    constructor(props: StoreProps) {
         super(props);
 
-        const initState: ListViewState = {
+        const initState: StoreState = {
             focusedInstanceId: undefined, //undefined lets the search/add box steal the focus on load
-            filter: "",
+            // filter: "",
             hashtags: Immutable.OrderedSet<string>(),
             allGestaltInstances: Immutable.Map<string, GestaltInstance>(),
             allGestalts: Immutable.Map<string, Gestalt>({
@@ -63,11 +62,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             })
         };
 
-        const rootGestalt: Gestalt = this.createGestalt("root text", true)
+        const rootGestalt: Gestalt = Store._createGestalt("root text", true)
         initState.allGestalts = initState.allGestalts.set(rootGestalt.gestaltId, rootGestalt)
 
         let rootGestaltInstance: GestaltInstance =
-            this.createGestaltInstance(rootGestalt.gestaltId, false, initState.allGestalts)
+            this._createGestaltInstance(rootGestalt.gestaltId, false, initState.allGestalts)
 
         // rootGestaltInstance.childrenInstanceIds === null at this point
         // rootGestalt.relatedIds === null always
@@ -83,11 +82,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         //finish populating allGestalts
         const generatedGestalts: { [id: string]: Gestalt } = {}
         for (let i = 0; i < 20; i++) {
-            const newGestalt = this.createGestalt(Math.random() + '')
+            const newGestalt = Store._createGestalt(Math.random() + '')
             generatedGestalts[newGestalt.gestaltId] = newGestalt
         }
 
-        initState.allGestalts = initState.allGestalts.merge(Immutable.Map(generatedGestalts))
+        initState.allGestalts = initState.allGestalts.merge(generatedGestalts)
 
         // Object.keys(initState.allGestalts).forEach((id, i) => {
 
@@ -120,7 +119,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         // })
 
         initState.allGestaltInstances = initState.allGestaltInstances.merge(
-            this.expandGestaltInstance(
+            Store._expandGestaltInstance(
                 rootGestaltInstance,
                 initState.allGestalts,
                 initState.allGestaltInstances
@@ -132,13 +131,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
         rootGestaltInstance.childrenInstanceIds
             .forEach((iId: string) => {
-                initState.allGestaltInstances = initState.allGestaltInstances.merge(Immutable.Map(
-                    this.expandGestaltInstance(initState.allGestaltInstances.get(iId),
+                initState.allGestaltInstances = initState.allGestaltInstances.merge(
+                    Store._expandGestaltInstance(initState.allGestaltInstances.get(iId),
                         initState.allGestalts,
                         initState.allGestaltInstances
                     )
-
-                )
                 )
             }
             )
@@ -164,18 +161,21 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     }
 
-    computeRootChildrenHeights(rootInstance: GestaltInstance, state = this.state, filter = this.state.filter) {
-        state.allGestaltInstances.get(state.rootGestaltInstanceId)
-            .childrenInstanceIds.map(
-            iId => {
-                const g = state.allGestalts.get(state.allGestaltInstances.get(iId).gestaltId)
-                if (typeof g.gestaltHeight === "undefined")
-                    g.gestaltHeight = Util.computeGestaltHeight(g.text)
+    //#tt
+    // getRootChildrenHeights(rootInstance: GestaltInstance, state: StoreState = this.state, filter: string = this.props.filter): number[] {
+    //     return (state.allGestaltInstances.get(state.rootGestaltInstanceId)
+    //         .childrenInstanceIds.map(
+    //         iId => {
+    //             const g = state.allGestalts.get(state.allGestaltInstances.get(iId).gestaltId)
+    //             if (typeof g.gestaltHeight === "undefined")
+    //                 g.gestaltHeight = Util.computeGestaltHeight(g.text)
 
-                return g.gestaltHeight
-            }
-            )
-    }
+    //             return g.gestaltHeight
+    //         }
+    //         )
+    //     )
+    // }
+
 
     componentDidMount() {
 
@@ -189,38 +189,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         })
     }
 
-
-    // createAndExpandGestaltInstance = (theState: ListViewState, gIP: { gestaltInstanceId: string, gestaltId: string, parentGestaltInstanceId: string, shouldUpdate: boolean }, expand: boolean) => {
-    //     if (expand) {
-    //         theState.gestaltInstances[gIP.gestaltInstanceId] =
-    //             this.createGestaltInstance(gIP.gestaltInstanceId, gIP.gestaltId, true, gIP.parentGestaltInstanceId, gIP.shouldUpdate)
-
-    //         theState.allGestalts[gIP.gestaltId].instanceAndVisibleNubIds[gIP.gestaltInstanceId] = true
-
-    //         theState.allGestalts[gIP.gestaltId].relatedIds.map((relatedId) => {
-    //             const nubInstanceId = gIP.gestaltInstanceId + '-' + relatedId;
-    //             // initState.allGestalts[id].instanceAndVisibleNubIds[nubInstanceId] = true
-    //             // this.createAndExpandGestaltInstance(initState, {
-    //             //     gestaltInstanceId: nubInstanceId,
-    //             //     gestaltId: relatedId,
-    //             //     parentGestaltInstanceId: instanceId,
-    //             //     shouldUpdate: false,
-    //             // }, true)
-
-    //             theState.gestaltInstances[nubInstanceId] =
-    //                 this.createGestaltInstance(nubInstanceId, relatedId, false, gIP.gestaltInstanceId, false)
-
-    //             theState.allGestalts[relatedId].instanceAndVisibleNubIds[nubInstanceId] = false
-
-    //         })
-    //     } else {
-    //         theState.gestaltInstances[gIP.gestaltInstanceId].expanded = false
-    //         // delete theState.expandedGestaltInstances[gIP.gestaltInstanceId]
-    //         // delete theState.allGestalts[gIP.gestaltId].instanceAndVisibleNubIds[gIP.gestaltInstanceId]
-    //     }
-    // }
-
-    createGestalt = (text: string = '', isRoot?: boolean) => {
+    private static _createGestalt = (text: string = '', isRoot?: boolean) => {
         const uid: string = Util.genGUID()
         const newGestalt: Gestalt = {
             text: text,
@@ -244,11 +213,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         else
             textsToAdd = [text]
 
-        this.addGestalts(textsToAdd, offset, parentInstanceId, shouldFocus ? 0 : undefined)
+        this._addGestalts(textsToAdd, offset, parentInstanceId, shouldFocus ? 0 : undefined)
     }
 
     //#REDUCER
-    addGestalts = (texts: string[], offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, shouldFocusIdx?: number): void => {
+    private _addGestalts = (texts: string[], offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, shouldFocusIdx?: number): void => {
         if (parentInstanceId === this.state.rootGestaltInstanceId)
             console.log("adding at root")
         else  //#TODO 
@@ -257,10 +226,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             return
         }
 
-        const newGestalts: Gestalt[] = texts.map(text => this.createGestalt(text))
-        const newInstances: GestaltInstance[] = newGestalts.map(g => this.createGestaltInstance(g.gestaltId))
+        const newGestalts: Gestalt[] = texts.map(text => Store._createGestalt(text))
+        const newInstances: GestaltInstance[] = newGestalts.map(g => this._createGestaltInstance(g.gestaltId))
 
-        const updatedParentGestaltInstance: GestaltInstance = this.insertChildInstances(
+        const updatedParentGestaltInstance: GestaltInstance = Store._insertChildInstances(
             this.state.allGestaltInstances.get(parentInstanceId),
             newInstances.map(nI => nI.instanceId),
             offset
@@ -277,17 +246,16 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         // rootGestaltInstance.childrenInstanceIds.concat(newInstance.instanceId)
         // this.insertGestaltInstanceIntoParent(rootGestaltInstance, newInstance, offset)
 
-        const newAllGestalts: GestaltsMap = this.state.allGestalts.merge(Immutable.Map(
+        const newAllGestalts: GestaltsMap = this.state.allGestalts.merge(
             _.keyBy(newGestalts, g => g.gestaltId)
-        )
         )
 
         const newAllGestaltInstances: GestaltInstancesMap =
-            this.state.allGestaltInstances.merge(Immutable.Map(
+            this.state.allGestaltInstances.merge(
                 {
                     ...(_.keyBy(newInstances, i => i.instanceId)),
                     [updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance
-                })
+                }
             )
 
         this.setState({
@@ -300,8 +268,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         })
     }
 
-    //IMMUTABLE
-    createGestaltInstance = (gestaltId: string, expanded: boolean = true, allGestalts: GestaltsMap = this.state.allGestalts): GestaltInstance => {
+    //#IMMUTABLE
+    private  _createGestaltInstance = (gestaltId: string, expanded: boolean = true, allGestalts: GestaltsMap = this.state.allGestalts): GestaltInstance => {
         const newInstanceId: string = Util.genGUID()
 
         let newGestaltInstance: GestaltInstance = {
@@ -314,8 +282,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return newGestaltInstance
     }
 
-    //IMMUTABLE, returns new entries to add to allGestaltInstances
-    expandGestaltInstance = (gi: GestaltInstance, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap): GestaltInstancesMap => {
+    //#IMMUTABLE, returns new entries to add to allGestaltInstances
+    private _expandGestaltInstance = (gi: GestaltInstance, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap): GestaltInstancesMap => {
         const gestalt: Gestalt = allGestalts.get(gi.gestaltId);
         const giOut: GestaltInstance = { ...gi, expanded: true }
 
@@ -340,7 +308,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             console.assert(typeof gestaltIdsToInstantiate !== undefined);
 
             giOut.childrenInstanceIds = gestaltIdsToInstantiate.map(id => {
-                const newInst: GestaltInstance = this.createGestaltInstance(id, false, allGestalts)
+                const newInst: GestaltInstance = this._createGestaltInstance(id, false, allGestalts)
                 newInsts = newInsts.set(newInst.instanceId, newInst)
                 return newInst.instanceId
             })
@@ -413,9 +381,9 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     // return
     // }
 
-    // immutable
+    // #immutable
     //if no offset, append
-    insertChildInstances = (parentGestaltInstance: GestaltInstance, instanceIds: string[], offset?: number): GestaltInstance => {
+    private static _insertChildInstances = (parentGestaltInstance: GestaltInstance, instanceIds: string[], offset?: number): GestaltInstance => {
         console.assert(
             parentGestaltInstance.childrenInstanceIds !== null,
             'trying to insert child into nub instance',
@@ -433,13 +401,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         }
     }
 
-    // immutable
-    removeChildInstance = (parentGestaltInstance: GestaltInstance, offset: number): GestaltInstance => {
-        return {
-            ...parentGestaltInstance,
-            childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 1)
-        }
-    }
+    // #immutable
+    // private static removeChildInstance = (parentGestaltInstance: GestaltInstance, offset: number): GestaltInstance => {
+    //     return {
+    //         ...parentGestaltInstance,
+    //         childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 1)
+    //     }
+    // }
 
 
     // commitIndentChild = (parentInstanceId: string, childIndex: number, dedent: boolean = false) => {
@@ -499,7 +467,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     //     // })
     // }
 
-
+    //#REDUCER
     toggleExpand = (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance): void => {
         // NOTE: need to deal with recursive copying of the gestaltInstances object
         //  ^^ should work similarly to findGestaltInstance
@@ -520,13 +488,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         else //present and collapsed
         {
             //#TODO move to front of array when expanding and deepFixGestaltInstanceIds?
-            instsToAdd = this.expandGestaltInstance(existingChildInstance, this.state.allGestalts, this.state.allGestaltInstances)
+            instsToAdd = Store._expandGestaltInstance(existingChildInstance, this.state.allGestalts, this.state.allGestaltInstances)
 
         }
 
 
         this.setState({
-            allGestaltInstances: this.state.allGestaltInstances.merge(Immutable.Map(instsToAdd))
+            allGestaltInstances: this.state.allGestaltInstances.merge(instsToAdd)
         })
 
     }
@@ -542,8 +510,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             gestaltHeight: Util.computeGestaltHeight(newText)
         }
 
-        const updatedAllGestalts: GestaltsMap = this.state.allGestalts.merge(Immutable.Map(
-            { [updatedGestalt.gestaltId]: updatedGestalt }))
+        const updatedAllGestalts: GestaltsMap = this.state.allGestalts.merge(
+            { [updatedGestalt.gestaltId]: updatedGestalt })
 
         // this.state.hashtags.merge(
         //                 Util.computeHashtagsFromGestaltsMap(Immutable.Map(_.keyBy(newGestalts, g => g.gestaltId)))
@@ -569,126 +537,41 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             })
     }
 
-
-    gestaltComponentOnBlur = (instanceId: string) => {
+    //#REDUCER
+    gestaltComponentOnBlur = (instanceId: string): void => {
         if (this.state.focusedInstanceId === instanceId) {
             this.setState({ focusedInstanceId: undefined })
         }
     }
 
-    onClickTag = (hashtag: string): void => {
-        this.setState({ filter: hashtag })
-    }
-
-
-    componentWillReceiveProps(nextProps: ListViewProps) {
-    // componentWillReceiveProps(nextProps: ListViewProps) {
-
-        //if filter changed
-        if (nextProps.filter !== this.props.filter) {
-
-            //if there is a running async filter, clear it
-            if (this.clearAsyncFilterTimeout) {
-                this.clearAsyncFilterTimeout()
-                this.clearAsyncFilterTimeout = undefined
-                this.setState((prevState) => { return { filtering: prevState.filtering - 1 } })
-            }
-
-            //filter has some nonempty (new) val, start running it
-            if (nextProps.filter) {
-                let hydratedChildren: LazyArray<HydratedGestaltInstance> = nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
-
-                const textFilterFn = (e: HydratedGestaltInstance) => {
-                    return e.gestalt.text.toLowerCase().indexOf(nextProps.filter.toLowerCase()) >= 0
-                }
-
-                this.setState((prevState) => { return { filtering: prevState.filtering + 1 } })
-
-                this.clearAsyncFilterTimeout = hydratedChildren.asyncFilter(
-                    textFilterFn,
-                    (results) => {
-                        this.clearAsyncFilterTimeout = undefined
-                        this.setState((prevState) => {
-                            return {
-                                filtering: prevState.filtering - 1,
-                                filteredEntries: results
-                            }
-                        })
-
-                        this.forceUpdate()
-                    }
-                )
-
-            }
-            else { // filter cleared
-                if (this.state.filteredEntries)
-                    this.setState({ filteredEntries: undefined })
-            }
-
-        }
-
-    }
+    //#REDUCER
+    // setFilter = (text: string): void => {
+    //     this.setState({ filter: text })
+    // }
 
     render() {
-
-        const hydratedRootGestaltInstance = Util.hydrateGestaltInstanceAndChildren(
-            this.state.rootGestaltInstanceId,
-            this.state.allGestalts,
-            this.state.allGestaltInstances,
-            this.state.focusedInstanceId,
-        )
-
-
-
-
         return (
-            <div>
+            <ListView
+                allGestalts={this.state.allGestalts}
+                allGestaltInstances={this.state.allGestaltInstances}
+                rootGestaltInstanceId={this.state.rootGestaltInstanceId}
 
-                <div style={{ marginTop: "45px", float: "right", width: "300px", minHeight: "300px" }}>
-                    <HashtagsBox hashtags={this.state.hashtags.toJS()} onClickTag={this.onClickTag} />
-                </div>
+                filter={this.state.filter}
+                // setFilter={this.setFilter}
 
-                <div className="box" style={{ padding: "45px 60px 10px", width: "700px", margin: "0 auto" }}>
 
-                    <SearchAddBox
-                        autoFocus
-                        onAddGestalt={(text) => {
-                            this.addGestalt(text)
-                            this.setState({ filter: "" })
-                        } }
-                        onChangeText={(text) => {
-                            this.setState({ filter: text })
-                        } }
+                focusedInstanceId={this.state.focusedInstanceId}
 
-                        ref={(instance: SearchAddBox) => this.searchAddBox = instance}
-                        value={this.state.filter}
-                        />
+                hashtags={this.state.hashtags}
+                rootChildrenHeights={this.state.rootChildrenHeights}
 
-                    <GestaltComponent
-                        key={this.state.rootGestaltInstanceId}
-                        index={0}
-                        gestaltInstance={hydratedRootGestaltInstance}
-                        // onChange={(newText: string) => this.props.updateGestaltText(instance.gestaltId, newText)}
+                gestaltComponentOnBlur={this.gestaltComponentOnBlur}
+                updateGestaltText={this.updateGestaltText}
 
-                        ref={() => { } }
+                toggleExpand={this.toggleExpand}
+                addGestalt={this.addGestalt}
 
-                        updateGestaltText={this.updateGestaltText}
-                        toggleExpand={this.toggleExpand}
-                        addGestalt={this.addGestalt}
-                        // commitIndentChild={this.commitIndentChild}
-
-                        // indentChild={undefined}
-                        addGestaltAsChild={(text) => this.addGestalt(text)}
-                        getOffsetChild={undefined}
-                        isRoot
-                        filter={this.state.filter}
-                        rootChildrenHeights={this.computeRootChildrenHeights(hydratedRootGestaltInstance)}
-                        // rootChildrenHeights={this.state.rootChildrenHeights}
-
-                        gestaltComponentOnBlur={this.gestaltComponentOnBlur}
-                        />
-                </div>
-            </div >
+                />
         )
     }
 }

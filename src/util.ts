@@ -93,7 +93,7 @@ export const computeHashtagsFromGestaltsArray = (gestalts: Gestalt[]): Immutable
             .forEach((tag) => {
                 allHashtags[tag] = true
             }))
-            
+
     return Immutable.OrderedSet<string>(_.keys(allHashtags))
 }
 
@@ -132,69 +132,8 @@ export const filterEntries = (entries: HydratedGestaltInstance[], filter: string
 
 
 export function average(arr: number[]) {
-    return _.reduce(arr, function (memo, num) {
-        return memo + num;
-    }, 0) / arr.length;
+    return _.sum(arr) / arr.length;
 }
-
-// Includes lastHydratedRootGestaltInstance for faster diffing
-export function hydrateGestaltInstanceAndChildren(
-    gestaltInstanceId: string,
-    allGestalts: GestaltsMap,
-    allGestaltInstances: GestaltInstancesMap,
-    focusedInstanceId: string,
-): HydratedGestaltInstance {
-
-    const currInstance: GestaltInstance = allGestaltInstances.get(gestaltInstanceId)
-    console.assert(typeof currInstance !== "undefined", `${gestaltInstanceId} not in allGestaltInstances`)
-
-    const currGestalt: Gestalt = allGestalts.get(currInstance.gestaltId)
-    console.assert(typeof currGestalt !== "undefined", `${currInstance.gestaltId} not in allGestalts`)
-
-
-    let nextHydGesInsts
-    if (currGestalt.isRoot) {
-        nextHydGesInsts = new LazyArray<HydratedGestaltInstance>(
-            currInstance.childrenInstanceIds.length,
-            i => hydrateGestaltInstanceAndChildren(
-                currInstance.childrenInstanceIds[i],
-                allGestalts,
-                allGestaltInstances,
-                focusedInstanceId
-            )
-        )
-
-        // currInstance.childrenInstanceIds[i]((instanceId: string) =>
-        //     hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
-        //     // const newlyHydGesInsts: HydratedGestaltInstance[] = currInstance.childrenInstanceIds.slice(startInd, endInd).map((instanceId: string) =>
-        //     //     hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
-
-        //     // nextHydGesInsts = immSplice(lastHydratedRootGestaltInstance.hydratedChildren,
-        //     //     startInd, endInd - startInd, ...newlyHydGesInsts)
-    }
-    else {
-        if (currInstance.childrenInstanceIds !== null) {
-            nextHydGesInsts = currInstance.childrenInstanceIds.map((instanceId: string) =>
-                hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances, focusedInstanceId))
-        }
-        else {
-            nextHydGesInsts = null
-        }
-    }
-
-    const currHydratedGestaltInstance: HydratedGestaltInstance = {
-        ...currInstance,
-        gestalt: currGestalt,
-        hydratedChildren: nextHydGesInsts,
-        shouldFocus: focusedInstanceId === currInstance.instanceId
-    }
-
-    console.assert(!(currHydratedGestaltInstance.expanded && currHydratedGestaltInstance.hydratedChildren === null),
-        "expanded and hyd==null", currHydratedGestaltInstance)
-
-    return currHydratedGestaltInstance
-}
-
 
 
 
@@ -226,3 +165,75 @@ export function computeGestaltHeight(text: string): number {
 
 //     return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
 //   }
+
+const textFilterFn = (e: HydratedGestaltInstance) => {
+    return e.gestalt.text.toLowerCase().indexOf(nextProps.filter.toLowerCase()) >= 0
+}
+// Includes lastHydratedRootGestaltInstance for faster diffing
+export function hydrateGestaltInstanceAndChildren(
+    gestaltInstanceId: string,
+    allGestalts: GestaltsMap,
+    allGestaltInstances: GestaltInstancesMap,
+    focusedInstanceId: string,
+): HydratedGestaltInstance {
+
+    const currInstance: GestaltInstance = allGestaltInstances.get(gestaltInstanceId)
+    console.assert(typeof currInstance !== "undefined", `${gestaltInstanceId} not in allGestaltInstances`)
+
+    const currGestalt: Gestalt = allGestalts.get(currInstance.gestaltId)
+    console.assert(typeof currGestalt !== "undefined", `${currInstance.gestaltId} not in allGestalts`)
+
+
+    let nextHydChildren: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
+
+    if (currInstance.childrenInstanceIds === null) { // gestalt is nonexpanded for sure if childrenInstanceIds === null
+        nextHydChildren = null
+
+        console.assert(currInstance.expanded === false, "expanded instance should never have null childrenInstanceIds")
+        console.assert(!currGestalt.isRoot, "root can never be nonexpanded")
+    }
+
+    else { // has childrenInstanceIds. Note: could be nonexpanded if was expanded then collapsed
+
+        if (currGestalt.isRoot) {
+            nextHydChildren = new LazyArray<HydratedGestaltInstance>(
+                currInstance.childrenInstanceIds.length,
+                i => hydrateGestaltInstanceAndChildren(
+                    currInstance.childrenInstanceIds[i],
+                    allGestalts,
+                    allGestaltInstances,
+                    focusedInstanceId
+                )
+            )
+
+            // currInstance.childrenInstanceIds[i]((instanceId: string) =>
+            //     hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+            //     // const newlyHydGesInsts: HydratedGestaltInstance[] = currInstance.childrenInstanceIds.slice(startInd, endInd).map((instanceId: string) =>
+            //     //     hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+
+            //     // nextHydGesInsts = immSplice(lastHydratedRootGestaltInstance.hydratedChildren,
+            //     //     startInd, endInd - startInd, ...newlyHydGesInsts)
+        }
+        else {
+            nextHydChildren = currInstance.childrenInstanceIds.map((instanceId: string) =>
+                hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances, focusedInstanceId))
+        }
+    }
+
+    const currHydratedGestaltInstance: HydratedGestaltInstance = {
+        ...currInstance,
+        gestalt: currGestalt,
+        hydratedChildren: nextHydChildren,
+        shouldFocus: focusedInstanceId === currInstance.instanceId
+    }
+
+    console.assert(!(currHydratedGestaltInstance.expanded && currHydratedGestaltInstance.hydratedChildren === null),
+        "expanded and hydratedChildren===null", currHydratedGestaltInstance)
+    console.assert(!(currHydratedGestaltInstance.expanded && focusedInstanceId === currInstance.instanceId),
+        "never shouldFocus on nonexpanded node")
+
+    return currHydratedGestaltInstance
+}
+
+
+

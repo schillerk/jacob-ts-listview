@@ -23,6 +23,7 @@ export interface HydratedGestaltInstance extends GestaltInstance {
   shouldFocus?:boolean  
   gestalt: Gestalt
   hydratedChildren: HydratedGestaltInstance[] | LazyArray<HydratedGestaltInstance>
+  // childrenHeights?: number[] //assert should be here if isRoot
 }
 
 
