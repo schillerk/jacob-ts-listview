@@ -81,13 +81,13 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
         //finish populating allGestalts
         const generatedGestalts: { [id: string]: Gestalt } = {}
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 5; i++) {
             const newGestalt = Store._createGestalt(Math.random() + '')
             generatedGestalts[newGestalt.gestaltId] = newGestalt
         }
 
-        initState.allGestalts = initState.allGestalts.merge(generatedGestalts)
-
+        initState.allGestalts = initState.allGestalts.merge(Immutable.Map(generatedGestalts))
+debugger
         // Object.keys(initState.allGestalts).forEach((id, i) => {
 
         //     if (id === rootGestalt.gestaltId) {
@@ -119,7 +119,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
         // })
 
         initState.allGestaltInstances = initState.allGestaltInstances.merge(
-            Store._expandGestaltInstance(
+            this._expandGestaltInstance(
                 rootGestaltInstance,
                 initState.allGestalts,
                 initState.allGestaltInstances
@@ -132,7 +132,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
         rootGestaltInstance.childrenInstanceIds
             .forEach((iId: string) => {
                 initState.allGestaltInstances = initState.allGestaltInstances.merge(
-                    Store._expandGestaltInstance(initState.allGestaltInstances.get(iId),
+                    this._expandGestaltInstance(initState.allGestaltInstances.get(iId),
                         initState.allGestalts,
                         initState.allGestaltInstances
                     )
@@ -269,7 +269,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     }
 
     //#IMMUTABLE
-    private  _createGestaltInstance = (gestaltId: string, expanded: boolean = true, allGestalts: GestaltsMap = this.state.allGestalts): GestaltInstance => {
+    private _createGestaltInstance = (gestaltId: string, expanded: boolean = true, allGestalts: GestaltsMap = this.state.allGestalts): GestaltInstance => {
         const newInstanceId: string = Util.genGUID()
 
         let newGestaltInstance: GestaltInstance = {
@@ -283,14 +283,14 @@ export class Store extends React.Component<StoreProps, StoreState> {
     }
 
     //#IMMUTABLE, returns new entries to add to allGestaltInstances
-    private _expandGestaltInstance = (gi: GestaltInstance, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap): GestaltInstancesMap => {
+    private _expandGestaltInstance = (gi: GestaltInstance, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap): { [instanceId: string]: GestaltInstance } => {
         const gestalt: Gestalt = allGestalts.get(gi.gestaltId);
         const giOut: GestaltInstance = { ...gi, expanded: true }
 
         console.assert(typeof giOut.childrenInstanceIds !== "undefined")
         console.assert(typeof gestalt !== "undefined")
 
-        let newInsts: GestaltInstancesMap = Immutable.Map({ [giOut.instanceId]: giOut })
+        let newInsts: { [instanceId: string]: GestaltInstance } = { [giOut.instanceId]: giOut }
 
         if (giOut.childrenInstanceIds === null) {
 
@@ -306,10 +306,10 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
 
             console.assert(typeof gestaltIdsToInstantiate !== undefined);
-
+debugger
             giOut.childrenInstanceIds = gestaltIdsToInstantiate.map(id => {
                 const newInst: GestaltInstance = this._createGestaltInstance(id, false, allGestalts)
-                newInsts = newInsts.set(newInst.instanceId, newInst)
+                newInsts[newInst.instanceId] = newInst
                 return newInst.instanceId
             })
 
@@ -488,7 +488,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
         else //present and collapsed
         {
             //#TODO move to front of array when expanding and deepFixGestaltInstanceIds?
-            instsToAdd = Store._expandGestaltInstance(existingChildInstance, this.state.allGestalts, this.state.allGestaltInstances)
+            instsToAdd = Immutable.Map(this._expandGestaltInstance(existingChildInstance, this.state.allGestalts, this.state.allGestaltInstances))
 
         }
 
@@ -556,14 +556,14 @@ export class Store extends React.Component<StoreProps, StoreState> {
                 allGestaltInstances={this.state.allGestaltInstances}
                 rootGestaltInstanceId={this.state.rootGestaltInstanceId}
 
-                filter={this.state.filter}
+                // filter={this.state.filter}
                 // setFilter={this.setFilter}
 
 
                 focusedInstanceId={this.state.focusedInstanceId}
 
                 hashtags={this.state.hashtags}
-                rootChildrenHeights={this.state.rootChildrenHeights}
+                // rootChildrenHeights={this.state.rootChildrenHeights}
 
                 gestaltComponentOnBlur={this.gestaltComponentOnBlur}
                 updateGestaltText={this.updateGestaltText}

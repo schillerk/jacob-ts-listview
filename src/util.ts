@@ -55,7 +55,7 @@ export function objectToArray<T>(object: { [id: string]: T }) {
 }
 
 
-export function immSplice<T>(arr: T[], start: number, deleteCount: number, ...items: T[]) {
+export function immSplice<T>(arr: ReadonlyArray<T>, start: number, deleteCount: number, ...items: T[]) {
     return [...arr.slice(0, start), ...items, ...arr.slice(start + deleteCount)]
 }
 
@@ -166,9 +166,6 @@ export function computeGestaltHeight(text: string): number {
 //     return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
 //   }
 
-const textFilterFn = (e: HydratedGestaltInstance) => {
-    return e.gestalt.text.toLowerCase().indexOf(nextProps.filter.toLowerCase()) >= 0
-}
 // Includes lastHydratedRootGestaltInstance for faster diffing
 export function hydrateGestaltInstanceAndChildren(
     gestaltInstanceId: string,

@@ -52,6 +52,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     setFilter = (text: string): void => {
         this.setState({ filter: text })
     }
+    
+    onClickTag = (hashtag: string): void => {
+        this.setFilter(hashtag)
+    }
 
     render() {
 
@@ -84,7 +88,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         } }
 
                         ref={(instance: SearchAddBox) => this.searchAddBox = instance}
-                        value={this.props.filter}
+                        value={this.state.filter}
                         />
 
                     <GestaltComponent
@@ -102,7 +106,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         addGestaltAsChild={(text) => this.props.addGestalt(text)}
                         getOffsetChild={undefined}
                         isRoot
-                        filter={this.props.filter}
+                        filter={this.state.filter}
                         //rootChildrenHeights={this.computeRootChildrenHeights(hydratedRootGestaltInstance)}
                         // rootChildrenHeights={this.props.rootChildrenHeights}
 
