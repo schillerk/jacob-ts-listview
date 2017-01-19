@@ -81,7 +81,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
         //finish populating allGestalts
         const generatedGestalts: { [id: string]: Gestalt } = {}
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 4000; i++) {
             const newGestalt = Store._createGestalt(Math.random() + '')
             generatedGestalts[newGestalt.gestaltId] = newGestalt
         }

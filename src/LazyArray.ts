@@ -4,7 +4,7 @@ import * as _ from "lodash";
 export class LazyArray<T>  {
     genElem: (i: number) => T
     length: number
-    timeout:number
+    timeout: number
 
     constructor(length: number, genElem: (i: number) => T) {
         this.length = length
@@ -84,24 +84,27 @@ export class LazyArray<T>  {
         callback: (results: T[]) => any
     ): (() => void) => {
 
-        this.asyncFilterHelper(
+        this._asyncFilterHelper(
             [], 0, fn, callback)
 
         return this.clearAsyncFilterTimeout
     }
 
-    asyncFilterHelper(resultsSoFar: T[], i: number, fn: (elem: T, i: number, array: LazyArray<T>) => boolean,
-        callback: (allResults: T[]) => any): void {
-
+    private _asyncFilterHelper = (
+        resultsSoFar: T[],
+        i: number,
+        fn: (elem: T, i: number, array: LazyArray<T>) => boolean,
+        callback: (allResults: T[]) => any,
+    ): void => {
         const CHUNK_SIZE = 1000
 
         let newResults = this.filterRangeReturnsArray(fn, i, i + CHUNK_SIZE)
         resultsSoFar.push(...newResults)
 
         if (i < this.length) {
-            this.timeout=window.setTimeout(
+            this.timeout = window.setTimeout(
 
-                () => this.asyncFilterHelper(
+                () => this._asyncFilterHelper(
                     resultsSoFar,
                     i + CHUNK_SIZE, fn, callback)
                 , 0)

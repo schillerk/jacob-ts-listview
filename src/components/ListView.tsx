@@ -40,7 +40,6 @@ export interface ListViewProps extends React.Props<ListView> {
 
 export class ListView extends React.Component<ListViewProps, ListViewState> {
     searchAddBox: SearchAddBox;
-    clearAsyncFilterTimeout: () => void = undefined
 
     constructor(props: ListViewProps) {
         super(props)
@@ -52,7 +51,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     setFilter = (text: string): void => {
         this.setState({ filter: text })
     }
-    
+
     onClickTag = (hashtag: string): void => {
         this.setFilter(hashtag)
     }
