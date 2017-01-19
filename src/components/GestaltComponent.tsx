@@ -24,7 +24,7 @@ import { InfiniteList } from "./InfiniteList"
 export interface GestaltComponentState {
     filter?: string
     filtering?: number
-    filteredEntries?: HydratedGestaltInstance[]
+    filteredEntries?: LazyArray<HydratedGestaltInstance> | undefined
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
@@ -300,7 +300,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
         this.clearAsyncFilterTimeout = hydratedChildren.asyncFilter(
           textFilterFn,
-          (results) => {
+          (results: LazyArray<HydratedGestaltInstance>) => {
             this.clearAsyncFilterTimeout = undefined
             this.setState((prevState) => {
               return {
@@ -361,7 +361,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
       if (this.props.filter) {
         if (this.state.filteredEntries) {
-          filteredHydratedChildren = LazyArray.fromArray(this.state.filteredEntries)
+          filteredHydratedChildren = this.state.filteredEntries
         }
         // hydratedChildren =
         // hydratedChildren = (hydratedChildren as LazyArray<HydratedGestaltInstance>).filter(this.textFilterFn)

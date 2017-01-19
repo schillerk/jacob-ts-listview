@@ -81,7 +81,7 @@ export class LazyArray<T>  {
 
     asyncFilter = (
         fn: (elem: T, i: number, array: LazyArray<T>) => boolean,
-        callback: (results: T[]) => any
+        callback: (results: LazyArray<T>) => any
     ): (() => void) => {
 
         this._asyncFilterHelper(
@@ -94,7 +94,7 @@ export class LazyArray<T>  {
         resultsSoFar: T[],
         i: number,
         fn: (elem: T, i: number, array: LazyArray<T>) => boolean,
-        callback: (allResults: T[]) => any,
+        callback: (allResults:  LazyArray<T>) => any,
     ): void => {
         const CHUNK_SIZE = 1000
 
@@ -110,7 +110,7 @@ export class LazyArray<T>  {
                 , 0)
         }
         else {
-            callback(resultsSoFar)
+            callback(LazyArray.fromArray(resultsSoFar))
         }
     }
 
