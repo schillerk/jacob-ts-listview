@@ -7,7 +7,7 @@ import * as Immutable from 'immutable'
 export interface Gestalt {
   readonly gestaltId: string
   readonly text: string
-  gestaltHeight?: number
+  readonly gestaltHeight?: number
   readonly relatedIds: ReadonlyArray<string>
   readonly isRoot?: boolean
 }
@@ -15,7 +15,7 @@ export interface Gestalt {
 export interface GestaltInstance {
   readonly instanceId: string // uuid
   readonly gestaltId: string
-  childrenInstanceIds: ReadonlyArray<string> // initially null if created as a nub, can be non-null and non-expanded if expanded then collapsed
+  readonly childrenInstanceIds: ReadonlyArray<string> // initially null if created as a nub, can be non-null and non-expanded if expanded then collapsed
   readonly expanded: boolean // is displayed fully => children instance ids are present vs null,
 }
 

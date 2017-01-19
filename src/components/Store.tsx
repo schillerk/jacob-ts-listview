@@ -87,7 +87,6 @@ export class Store extends React.Component<StoreProps, StoreState> {
         }
 
         initState.allGestalts = initState.allGestalts.merge(Immutable.Map(generatedGestalts))
-debugger
         // Object.keys(initState.allGestalts).forEach((id, i) => {
 
         //     if (id === rootGestalt.gestaltId) {
@@ -119,24 +118,23 @@ debugger
         // })
 
         initState.allGestaltInstances = initState.allGestaltInstances.merge(
-            this._expandGestaltInstance(
+            Immutable.Map(this._expandGestaltInstance(
                 rootGestaltInstance,
                 initState.allGestalts,
                 initState.allGestaltInstances
-            )
+            ))
         )
-
 
         rootGestaltInstance = initState.allGestaltInstances.get(initState.rootGestaltInstanceId)
 
         rootGestaltInstance.childrenInstanceIds
             .forEach((iId: string) => {
-                initState.allGestaltInstances = initState.allGestaltInstances.merge(
+                initState.allGestaltInstances = initState.allGestaltInstances.merge(Immutable.Map(
                     this._expandGestaltInstance(initState.allGestaltInstances.get(iId),
                         initState.allGestalts,
                         initState.allGestaltInstances
                     )
-                )
+                ))
             }
             )
 
@@ -144,13 +142,15 @@ debugger
         initState.rootChildrenHeights = initState.allGestaltInstances.get(initState.rootGestaltInstanceId)
             .childrenInstanceIds.map(
             iId => {
-                const g = initState.allGestalts.get(initState.allGestaltInstances.get(iId).gestaltId)
-                if (typeof g.gestaltHeight === "undefined")
-                    g.gestaltHeight = Util.computeGestaltHeight(g.text)
-
+                let g:Gestalt = initState.allGestalts.get(initState.allGestaltInstances.get(iId).gestaltId)
+                if (typeof g.gestaltHeight === "undefined") {
+                    g = {
+                        ...g,
+                        gestaltHeight: Util.computeGestaltHeight(g.text)
+                    }
+                }
                 return g.gestaltHeight
-            }
-            )
+            })
 
         console.assert(
             initState.allGestaltInstances.filter((g) => g.gestaltId == 'UNIQUE_ID_1').size === 1,
@@ -179,7 +179,7 @@ debugger
 
     componentDidMount() {
 
-        //unneeded? 
+        //unneeded?
         // setTimeout(
         //     () => this.setState({ hashtags: Util.computeHashtagsFromAllGestalts(this.state.allGestalts) }), 0)
 
@@ -220,7 +220,7 @@ debugger
     private _addGestalts = (texts: string[], offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, shouldFocusIdx?: number): void => {
         if (parentInstanceId === this.state.rootGestaltInstanceId)
             console.log("adding at root")
-        else  //#TODO 
+        else  //#TODO
         {
             console.error("ERR: can only add at root for now")
             return
@@ -247,24 +247,22 @@ debugger
         // this.insertGestaltInstanceIntoParent(rootGestaltInstance, newInstance, offset)
 
         const newAllGestalts: GestaltsMap = this.state.allGestalts.merge(
-            _.keyBy(newGestalts, g => g.gestaltId)
+            Immutable.Map(_.keyBy(newGestalts, g => g.gestaltId))
         )
 
         const newAllGestaltInstances: GestaltInstancesMap =
             this.state.allGestaltInstances.merge(
-                {
+                Immutable.Map({
                     ...(_.keyBy(newInstances, i => i.instanceId)),
                     [updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance
-                }
+                })
             )
 
         this.setState({
             allGestaltInstances: newAllGestaltInstances,
             allGestalts: newAllGestalts,
             focusedInstanceId: shouldFocusIdx !== undefined ? newInstances[shouldFocusIdx].instanceId : undefined,
-            hashtags: this.state.hashtags.merge(
-                Util.computeHashtagsFromGestaltsArray(newGestalts)
-            )
+            hashtags: this.state.hashtags.merge(Immutable.Set(Util.computeHashtagsFromGestaltsArray(newGestalts)))
         })
     }
 
@@ -285,12 +283,12 @@ debugger
     //#IMMUTABLE, returns new entries to add to allGestaltInstances
     private _expandGestaltInstance = (gi: GestaltInstance, allGestalts: GestaltsMap, allGestaltInstances: GestaltInstancesMap): { [instanceId: string]: GestaltInstance } => {
         const gestalt: Gestalt = allGestalts.get(gi.gestaltId);
-        const giOut: GestaltInstance = { ...gi, expanded: true }
+        let giOut: GestaltInstance = { ...gi, expanded: true }
 
         console.assert(typeof giOut.childrenInstanceIds !== "undefined")
         console.assert(typeof gestalt !== "undefined")
 
-        let newInsts: { [instanceId: string]: GestaltInstance } = { [giOut.instanceId]: giOut }
+        let newInsts: { [instanceId: string]: GestaltInstance } = {}
 
         if (giOut.childrenInstanceIds === null) {
 
@@ -306,14 +304,17 @@ debugger
 
 
             console.assert(typeof gestaltIdsToInstantiate !== undefined);
-debugger
-            giOut.childrenInstanceIds = gestaltIdsToInstantiate.map(id => {
-                const newInst: GestaltInstance = this._createGestaltInstance(id, false, allGestalts)
-                newInsts[newInst.instanceId] = newInst
-                return newInst.instanceId
-            })
-
+            giOut = {
+                ...giOut,
+                childrenInstanceIds: gestaltIdsToInstantiate.map(id => {
+                    const newInst: GestaltInstance = this._createGestaltInstance(id, false, allGestalts)
+                    newInsts[newInst.instanceId] = newInst
+                    return newInst.instanceId
+                })
+            }
         }
+
+        newInsts[giOut.instanceId] = giOut
 
         return newInsts
     }
@@ -494,7 +495,7 @@ debugger
 
 
         this.setState({
-            allGestaltInstances: this.state.allGestaltInstances.merge(instsToAdd)
+            allGestaltInstances: this.state.allGestaltInstances.merge(Immutable.Map(instsToAdd))
         })
 
     }
@@ -510,8 +511,7 @@ debugger
             gestaltHeight: Util.computeGestaltHeight(newText)
         }
 
-        const updatedAllGestalts: GestaltsMap = this.state.allGestalts.merge(
-            { [updatedGestalt.gestaltId]: updatedGestalt })
+        const updatedAllGestalts: GestaltsMap = this.state.allGestalts.merge(Immutable.Map({ [updatedGestalt.gestaltId]: updatedGestalt }))
 
         // this.state.hashtags.merge(
         //                 Util.computeHashtagsFromGestaltsMap(Immutable.Map(_.keyBy(newGestalts, g => g.gestaltId)))

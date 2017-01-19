@@ -318,7 +318,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
   render(): JSX.Element {
     console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.hydratedChildren)
 
-    let filteredHydratedChildren: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
+    let filteredHydratedChildren: LazyArray<HydratedGestaltInstance> | ReadonlyArray<HydratedGestaltInstance>
       = this.props.gestaltInstance.hydratedChildren
 
     // warn about tricky edge case
@@ -401,7 +401,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       myHeight = "auto"
 
       //only some are expanded when deeper than root
-      expandedChildGestaltInstances = (filteredHydratedChildren as HydratedGestaltInstance[])
+      expandedChildGestaltInstances = (filteredHydratedChildren as ReadonlyArray<HydratedGestaltInstance>)
         .filter(instance => instance.expanded)
       // this.renderedGestaltComponents = Array(expandedChildGestaltInstances.length)
       expandedChildrenListComponent = <div>
