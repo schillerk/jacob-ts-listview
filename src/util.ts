@@ -36,7 +36,7 @@ export function moveCaretToEnd(el: HTMLSpanElement) {
 
     const innerText = el.childNodes[0]
 
-    if (!innerText) { return }
+    if (!innerText || !innerText.textContent) { return }
 
     range.setStart(innerText, innerText.textContent.length)
     range.collapse(true)
@@ -70,16 +70,16 @@ export const encodeHtmlEntity = function (str: string) {
 };
 
 
-export const extractTags = (text: string) => {
-    return _.uniq(text.match(/#[A-Za-z0-9?*]+/g))
+export const extractTags = (text: string): string[] => {
+    return _.uniq(text.match(/#[A-Za-z0-9?*]+/g) || [])
 }
 
 export const computeHashtagsFromGestaltsMap = (gestalts: GestaltsMap): Immutable.OrderedSet<string> => {
     const allHashtags: { [tag: string]: boolean } = {}
 
-    gestalts.valueSeq().forEach((g) =>
+    gestalts.valueSeq().forEach((g: Gestalt) =>
         extractTags(g.text)
-            .forEach((tag) => {
+            .forEach((tag: string) => {
                 allHashtags[tag] = true
             }))
     return Immutable.OrderedSet<string>(_.keys(allHashtags))
@@ -90,7 +90,7 @@ export const computeHashtagsFromGestaltsArray = (gestalts: Gestalt[]): Immutable
 
     gestalts.forEach((g) =>
         extractTags(g.text)
-            .forEach((tag) => {
+            .forEach((tag: string) => {
                 allHashtags[tag] = true
             }))
 
@@ -171,7 +171,7 @@ export function hydrateGestaltInstanceAndChildren(
     gestaltInstanceId: string,
     allGestalts: GestaltsMap,
     allGestaltInstances: GestaltInstancesMap,
-    focusedInstanceId: string,
+    focusedInstanceId: string | undefined,
 ): HydratedGestaltInstance {
 
     const currInstance: GestaltInstance = allGestaltInstances.get(gestaltInstanceId)
@@ -181,7 +181,7 @@ export function hydrateGestaltInstanceAndChildren(
     console.assert(typeof currGestalt !== "undefined", `${currInstance.gestaltId} not in allGestalts`)
 
 
-    let nextHydChildren: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
+    let nextHydChildren: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[] | null
 
     if (currInstance.childrenInstanceIds === null) { // gestalt is nonexpanded for sure if childrenInstanceIds === null
         nextHydChildren = null
@@ -192,15 +192,19 @@ export function hydrateGestaltInstanceAndChildren(
 
     else { // has childrenInstanceIds. Note: could be nonexpanded if was expanded then collapsed
 
+
         if (currGestalt.isRoot) {
             nextHydChildren = new LazyArray<HydratedGestaltInstance>(
                 currInstance.childrenInstanceIds.length,
-                i => hydrateGestaltInstanceAndChildren(
-                    currInstance.childrenInstanceIds[i],
-                    allGestalts,
-                    allGestaltInstances,
-                    focusedInstanceId
-                )
+                i => {
+                    if (!currInstance.childrenInstanceIds) { throw Error() }
+                    return hydrateGestaltInstanceAndChildren(
+                        currInstance.childrenInstanceIds[i],
+                        allGestalts,
+                        allGestaltInstances,
+                        focusedInstanceId
+                    )
+                }
             )
 
             // currInstance.childrenInstanceIds[i]((instanceId: string) =>

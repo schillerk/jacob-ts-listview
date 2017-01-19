@@ -60,7 +60,11 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
                 },
             })
-        };
+        }
+
+        if (!initState.allGestalts || !initState.allGestaltInstances) {
+            throw Error('All gestalts or other attribute is undefined')
+        }
 
         const rootGestalt: Gestalt = Store._createGestalt("root text", true)
         initState.allGestalts = initState.allGestalts.set(rootGestalt.gestaltId, rootGestalt)
@@ -81,7 +85,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
         //finish populating allGestalts
         const generatedGestalts: { [id: string]: Gestalt } = {}
-        for (let i = 0; i < 4000; i++) {
+        for (let i = 0; i < 3; i++) {
             const newGestalt = Store._createGestalt(Math.random() + '')
             generatedGestalts[newGestalt.gestaltId] = newGestalt
         }
@@ -127,8 +131,13 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
         rootGestaltInstance = initState.allGestaltInstances.get(initState.rootGestaltInstanceId)
 
+        if (!rootGestaltInstance.childrenInstanceIds) { throw Error() }
+
         rootGestaltInstance.childrenInstanceIds
             .forEach((iId: string) => {
+                if (!initState.allGestalts || !initState.allGestaltInstances) {
+                    throw Error('All gestalts or other attributes are undefined')
+                }
                 initState.allGestaltInstances = initState.allGestaltInstances.merge(Immutable.Map(
                     this._expandGestaltInstance(initState.allGestaltInstances.get(iId),
                         initState.allGestalts,
@@ -138,23 +147,28 @@ export class Store extends React.Component<StoreProps, StoreState> {
             }
             )
 
+        if (!initState.allGestaltInstances || !initState.rootGestaltInstanceId) { throw Error() }
+        if (!rootGestaltInstance || !rootGestaltInstance.childrenInstanceIds) {throw Error()}
         //load rootChildrenHeights from gestalts
-        initState.rootChildrenHeights = initState.allGestaltInstances.get(initState.rootGestaltInstanceId)
-            .childrenInstanceIds.map(
-            iId => {
-                let g:Gestalt = initState.allGestalts.get(initState.allGestaltInstances.get(iId).gestaltId)
-                if (typeof g.gestaltHeight === "undefined") {
-                    g = {
-                        ...g,
-                        gestaltHeight: Util.computeGestaltHeight(g.text)
+        initState.rootChildrenHeights = rootGestaltInstance.childrenInstanceIds.map(
+                iId => {
+                    if (!initState.allGestalts || !initState.allGestaltInstances) {
+                        throw Error('All gestalts or other attributes are undefined')
                     }
-                }
-                return g.gestaltHeight
-            })
+                    let g:Gestalt = initState.allGestalts.get(initState.allGestaltInstances.get(iId).gestaltId)
+                    if (typeof g.gestaltHeight === "undefined") {
+                        g = {
+                            ...g,
+                            gestaltHeight: Util.computeGestaltHeight(g.text)
+                        }
+                    }
+                    if (typeof g.gestaltHeight === "undefined") { throw Error() }
+                    return g.gestaltHeight
+                })
 
         console.assert(
-            initState.allGestaltInstances.filter((g) => g.gestaltId == 'UNIQUE_ID_1').size === 1,
-            initState.allGestaltInstances.filter((g) => g.gestaltId == 'UNIQUE_ID_1').toJS())
+            initState.allGestaltInstances.filter((g: GestaltInstance) => g.gestaltId == 'UNIQUE_ID_1').size === 1,
+            initState.allGestaltInstances.filter((g: GestaltInstance) => g.gestaltId == 'UNIQUE_ID_1').toJS())
 
         this.state = initState
 
@@ -184,8 +198,11 @@ export class Store extends React.Component<StoreProps, StoreState> {
         //     () => this.setState({ hashtags: Util.computeHashtagsFromAllGestalts(this.state.allGestalts) }), 0)
 
 
+        if (!this.state.allGestalts) {
+          throw Error()
+        }
         this.setState({
-            hashtags: Util.computeHashtagsFromGestaltsMap(this.state.allGestalts),
+            hashtags: Util.computeHashtagsFromGestaltsMap(this.state.allGestalts)
         })
     }
 
@@ -217,13 +234,25 @@ export class Store extends React.Component<StoreProps, StoreState> {
     }
 
     //#REDUCER
-    private _addGestalts = (texts: string[], offset: number = 0, parentInstanceId: string = this.state.rootGestaltInstanceId, shouldFocusIdx?: number): void => {
+    // default value for parentInstanceId is this.state.rootGestaltInstanceId
+    // shouldFocusIdx has no default
+    private _addGestalts = (texts: string[], offset: number = 0, parentInstanceId?: string, shouldFocusIdx?: number): void => {
+        if (typeof parentInstanceId === "undefined") {
+            if (!this.state.rootGestaltInstanceId) {
+                throw Error()
+            }
+            parentInstanceId = this.state.rootGestaltInstanceId
+        }
         if (parentInstanceId === this.state.rootGestaltInstanceId)
             console.log("adding at root")
         else  //#TODO
         {
             console.error("ERR: can only add at root for now")
             return
+        }
+
+        if (!this.state.allGestaltInstances || !this.state.allGestalts || !this.state.hashtags) {
+            throw Error()
         }
 
         const newGestalts: Gestalt[] = texts.map(text => Store._createGestalt(text))
@@ -233,10 +262,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
             this.state.allGestaltInstances.get(parentInstanceId),
             newInstances.map(nI => nI.instanceId),
             offset
-        );
-
-
-
+        )
 
         // else
         //     this.addRelation(parentGestaltInstance.gestaltId, newGestalts.gestaltId) //#todo
@@ -267,7 +293,11 @@ export class Store extends React.Component<StoreProps, StoreState> {
     }
 
     //#IMMUTABLE
-    private _createGestaltInstance = (gestaltId: string, expanded: boolean = true, allGestalts: GestaltsMap = this.state.allGestalts): GestaltInstance => {
+    // allGestalts is this.state.allGestalts by default
+    private _createGestaltInstance = (gestaltId: string, expanded: boolean = true, allGestalts?: GestaltsMap): GestaltInstance => {
+        if (!allGestalts) {
+            allGestalts = this.state.allGestalts
+        }
         const newInstanceId: string = Util.genGUID()
 
         let newGestaltInstance: GestaltInstance = {
@@ -296,7 +326,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
                 gestalt.isRoot
                     ?
                     allGestalts
-                        .valueSeq().filter(g => !g.isRoot)
+                        .valueSeq().filter((g: Gestalt) => !g.isRoot)
                         .map((g: Gestalt) => g.gestaltId).toJS()
 
                     :
@@ -389,7 +419,9 @@ export class Store extends React.Component<StoreProps, StoreState> {
             parentGestaltInstance.childrenInstanceIds !== null,
             'trying to insert child into nub instance',
             parentGestaltInstance
-        );
+        )
+        if (!parentGestaltInstance.childrenInstanceIds) { throw Error('trying to insert child into nub instance') }
+
         if (typeof offset === "undefined")
             offset = parentGestaltInstance.childrenInstanceIds.length
 
@@ -473,9 +505,15 @@ export class Store extends React.Component<StoreProps, StoreState> {
         // NOTE: need to deal with recursive copying of the gestaltInstances object
         //  ^^ should work similarly to findGestaltInstance
 
-        const existingChildIdIndex: number = _.findIndex(parentGestaltInstance.childrenInstanceIds,
-            childId => this.state.allGestaltInstances.get(childId).gestaltId == gestaltToExpandId)
+        if (!parentGestaltInstance.childrenInstanceIds) { throw Error() }
 
+        const existingChildIdIndex: number = _.findIndex(parentGestaltInstance.childrenInstanceIds,
+            childId => {
+                if (!this.state.allGestaltInstances) {throw Error()}
+                return this.state.allGestaltInstances.get(childId).gestaltId == gestaltToExpandId
+            })
+
+        if (!this.state.allGestaltInstances || !this.state.allGestalts) {throw Error()}
         console.assert(existingChildIdIndex !== -1, "child should always be found with current architecture")
 
         const existingChildInstanceId: string = parentGestaltInstance.childrenInstanceIds[existingChildIdIndex]
@@ -503,6 +541,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     //#REDUCER
     updateGestaltText = (id: string, newText: string) => {
         const timeInd = this.updateTimes.push(Date.now()) - 1
+        if (!this.state.allGestaltInstances || !this.state.allGestalts) {throw Error()}
 
         // TODO: recompute gestalt.textHeight
         const updatedGestalt: Gestalt = {
@@ -525,9 +564,10 @@ export class Store extends React.Component<StoreProps, StoreState> {
                 // )
             },
             () => {
+                if (!this.state.allGestaltInstances || !this.state.allGestalts) {throw Error()}
                 //only update hashtags if you wait for half a second
                 this.hashtagTimeout = window.setTimeout(
-                    () => this.setState({
+                    () => this.state.allGestalts && this.setState({
                         hashtags:
                         Util.computeHashtagsFromGestaltsMap(this.state.allGestalts)
                     }), 500)
@@ -550,6 +590,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     // }
 
     render() {
+        if (!this.state.allGestaltInstances || !this.state.allGestalts || !this.state.rootGestaltInstanceId || !this.state.hashtags) {throw Error()}
         return (
             <ListView
                 allGestalts={this.state.allGestalts}

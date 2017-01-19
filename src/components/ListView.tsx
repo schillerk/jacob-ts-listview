@@ -27,7 +27,7 @@ export interface ListViewProps extends React.Props<ListView> {
     // filter: string
     // setFilter: (text: string) => void
 
-    focusedInstanceId: string
+    focusedInstanceId: string | undefined
     hashtags: Immutable.OrderedSet<string>
 
     gestaltComponentOnBlur: (instanceId: string) => void
@@ -87,7 +87,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         } }
 
                         ref={(instance: SearchAddBox) => this.searchAddBox = instance}
-                        value={this.state.filter}
+                        value={this.state.filter || ""}
                         />
 
                     <GestaltComponent

@@ -8,21 +8,21 @@ export interface Gestalt {
   readonly gestaltId: string
   readonly text: string
   readonly gestaltHeight?: number
-  readonly relatedIds: ReadonlyArray<string>
+  readonly relatedIds: ReadonlyArray<string> | undefined // undefined in the case of root
   readonly isRoot?: boolean
 }
 
 export interface GestaltInstance {
   readonly instanceId: string // uuid
   readonly gestaltId: string
-  readonly childrenInstanceIds: ReadonlyArray<string> // initially null if created as a nub, can be non-null and non-expanded if expanded then collapsed
+  readonly childrenInstanceIds: ReadonlyArray<string> | null // initially null if created as a nub, can be non-null and non-expanded if expanded then collapsed
   readonly expanded: boolean // is displayed fully => children instance ids are present vs null,
 }
 
 export interface HydratedGestaltInstance extends GestaltInstance {
   readonly shouldFocus?: boolean
   readonly gestalt: Gestalt
-  readonly hydratedChildren: ReadonlyArray<HydratedGestaltInstance> | LazyArray<HydratedGestaltInstance>
+  readonly hydratedChildren: ReadonlyArray<HydratedGestaltInstance> | LazyArray<HydratedGestaltInstance> | null
   // readonly childrenHeights?: number[] //assert should be here if isRoot
 }
 

@@ -32,7 +32,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 
   index: number
 
-  getOffsetChild: (prevSelfNext: number, fromIndex: number) => GestaltComponent
+  getOffsetChild: ((prevSelfNext: number, fromIndex: number) => GestaltComponent | undefined) | undefined
 
   addGestaltAsChild: (text: string, offset: number) => void
   // indentChild: (childIndex: number) => void
@@ -53,7 +53,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
   nodeSpan: HTMLSpanElement
   renderedGestaltComponents: GestaltComponent[]
-  clearAsyncFilterTimeout: () => void
+  clearAsyncFilterTimeout: (() => void) | undefined
 
   constructor(props: GestaltComponentProps) {
     super(props)
@@ -62,7 +62,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
   handleArrows = (arrowDir: Util.KEY_CODES) => {
-    let compToFocus: GestaltComponent = undefined
+    let compToFocus: GestaltComponent | undefined = undefined
     switch (arrowDir) {
       case Util.KEY_CODES.UP:
         compToFocus = this.getPrev()
@@ -110,20 +110,20 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       return this
   }
 
-  getNext = (): GestaltComponent => {
+  getNext = (): GestaltComponent | undefined => {
     if (this.renderedGestaltComponents.length) //return first child
       return this.renderedGestaltComponents[0]
     else //return next sibling or node after parent
       return this.props.getOffsetChild ? this.props.getOffsetChild(1, this.props.index) : undefined
   }
 
-  getPrev = (): GestaltComponent => {
+  getPrev = (): GestaltComponent | undefined => {
     return this.props.getOffsetChild ? this.props.getOffsetChild(-1, this.props.index) : undefined
   }
 
   //returns prevSelfNext child relative to child at fromIndex
   //prevSelfNext = -1, 0, 1
-  getOffsetChild = (prevSelfNext: number, fromIndex: number): GestaltComponent => {
+  getOffsetChild = (prevSelfNext: number, fromIndex: number): GestaltComponent | undefined => {
     const newIndex = fromIndex + prevSelfNext
 
     if (prevSelfNext < 0) { //going up
@@ -284,8 +284,16 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       if (nextProps.filter) {
         let hydratedChildren: LazyArray<HydratedGestaltInstance> = nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
 
-        const textFilterFn = (e: HydratedGestaltInstance) => {
-          return e.gestalt.text.toLowerCase().indexOf(nextProps.filter.toLowerCase()) >= 0
+        const textFilterFn = (e: HydratedGestaltInstance): boolean => {
+          if (typeof nextProps.filter === "string") {
+            return e.gestalt.text.toLowerCase().indexOf(nextProps.filter.toLowerCase()) >= 0
+          }
+          else {
+            // means there's no filter
+            // Should never happen in this context
+            console.error("Should never happen")
+            return true
+          }
         }
 
         this.setState((prevState) => { return { filtering: prevState.filtering + 1 } })
@@ -316,7 +324,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
   }
 
   render(): JSX.Element {
-    console.assert(this.props.gestaltInstance.expanded && !!this.props.gestaltInstance.hydratedChildren)
+    if (!this.props.gestaltInstance.hydratedChildren) {
+      throw Error('Node with null hydratedChildren should never be rendered')
+    }
 
     let filteredHydratedChildren: LazyArray<HydratedGestaltInstance> | ReadonlyArray<HydratedGestaltInstance>
       = this.props.gestaltInstance.hydratedChildren
@@ -337,13 +347,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     const mainLiStyles = { listStyleType: "none" }
 
 
-    let gestaltBody: JSX.Element
+    let gestaltBody: JSX.Element | null
     let expandedChildrenListComponent: JSX.Element //infinite list
 
     let expandedChildGestaltInstances: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
 
     let myHeight: number | string = "auto"
-    let childrenHeights: number[] = undefined
+    let childrenHeights: number[] | undefined = undefined
 
 
     if (this.props.isRoot) { //Is Root. hydratedChildren as LazyArray<HydratedGestaltInstance>
@@ -394,7 +404,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
       if (this.props.rootChildrenHeights) {
         console.assert(typeof this.props.gestaltInstance.gestalt.gestaltHeight !== "undefined")
-        myHeight = this.props.gestaltInstance.gestalt.gestaltHeight
+        myHeight = this.props.gestaltInstance.gestalt.gestaltHeight || 36 // #HACK
         // Util.calcHeight(this.props.gestaltInstance.gestalt.text)
         // myHeight = this.calcHeight(this.props.gestaltInstance.gestalt.text)
       }
@@ -417,6 +427,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       let highlightedText = this.props.gestaltInstance.gestalt.text
       // if(this.props.filter)
       //   highlightedText=highlightedText.replace(new RegExp(this.props.filter, 'g'), "<b>" + this.props.filter + "</b>")
+
+      if (!this.props.gestaltInstance.gestalt.relatedIds) {
+        throw Error()
+      }
 
       //gestalt body parts
       const gestaltTextSpan = <span style={{ padding: "2px 4px", height: "36px" }}
