@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as _ from "lodash";
-import {Autocomplete} from "./autocomplete"
+import { Autocomplete } from "./autocomplete"
 import { Gestalt, GestaltsMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
 
 import * as Util from '../util';
@@ -21,9 +21,9 @@ import { InfiniteList } from "./InfiniteList"
 
 
 export interface GestaltComponentState {
-    filter?: string
-    filtering?: number
-    filteredEntries?: LazyArray<HydratedGestaltInstance> | undefined
+  filter?: string
+  filtering?: number
+  filteredEntries?: LazyArray<HydratedGestaltInstance> | undefined
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
@@ -485,7 +485,19 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       gestaltBody = <div>
         {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
         {gestaltTextSpan}
+        <AddRelatedForm
+          note={this.props.note}
+          rawRelations={this.props.rawRelations}
+          relatedNotes={this.props.relatedNotes}
+          relateToCurrentIdea={(targetId) => this.props.addRelation(id, targetId)}
+          stateData={this.state}
+          addNote={this.props.addNote}
+          allNotes={this.props.allNotes}
 
+          addRelation={this.props.addRelation}
+          editNote={this.props.editNote}
+          relations={this.props.relations}
+          />
         {/* related gestalts nubs list */}
         {relatedGestaltNubs}
       </div>

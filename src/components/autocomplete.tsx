@@ -1,6 +1,5 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import * as Draft from 'draft-js';
 import {TextInput, TextInputProps} from './textInput';
 import * as $ from "jquery";
 import * as Util from '../../util';
