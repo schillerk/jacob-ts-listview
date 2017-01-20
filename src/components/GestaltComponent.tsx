@@ -1,7 +1,6 @@
 import * as React from "react";
 import * as _ from "lodash";
-import { LinkedList, Stack } from "../LinkedList"
-
+import {Autocomplete} from "./autocomplete"
 import { Gestalt, GestaltsMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
 
 import * as Util from '../util';
@@ -309,7 +308,6 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
               }
             })
 
-            this.forceUpdate()
           }
         )
 
