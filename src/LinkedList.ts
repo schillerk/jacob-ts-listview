@@ -2,15 +2,15 @@
 
 export interface Stack<T> {
         push(v: T): void
-        pop(): T
+        pop(): T | undefined
         toArray():T[]
 }
 
 class LLNode<T> {
-    next: LLNode<T> = null
+    next: LLNode<T> | null = null
     val: T
 
-    constructor(val: T, next: LLNode<T> = null) {
+    constructor(val: T, next: LLNode<T> | null = null) {
         this.val = val
         this.next = next
 
@@ -22,7 +22,7 @@ class LLNode<T> {
 }
 
 export class LinkedList<T> implements Stack<T> {
-    head: LLNode<T> = null
+    head: LLNode<T> | null = null
 
     push(v: T): void {
         let n: LLNode<T> = new LLNode<T>(v)
@@ -30,9 +30,12 @@ export class LinkedList<T> implements Stack<T> {
         this.head = n
     }
 
-    pop(): T {
-        let o: LLNode<T> = this.head
+    pop(): T | undefined {
+
+        let o: LLNode<T> | null = this.head
         if(o!==null) {
+            if (this.head === null) { throw Error() }
+
             this.head=this.head.next
             return o.val
         }
@@ -68,7 +71,7 @@ export class LinkedList<T> implements Stack<T> {
 
     //prints results in reverse insertion order
     toString(): string {
-        let n: LLNode<T> = this.head
+        let n: LLNode<T> | null = this.head
         let o: string = ""
         while (n !== null) {
             o += n.toString() + "->"
@@ -81,7 +84,7 @@ export class LinkedList<T> implements Stack<T> {
 
     //prints results in reverse insertion order
     toArray(): T[] {
-        let n: LLNode<T> = this.head
+        let n: LLNode<T> | null = this.head
         let o: T[] = []
         while (n !== null) {
             o.push(n.val)

@@ -54,8 +54,9 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
         heightSoFar += props.multipleElementHeights[i]
         firstElementIndex = i
       }
+      if (firstElementIndex === undefined) { throw Error() }
 
-      for (let i = firstElementIndex;
+      for (let i: number = firstElementIndex;
         heightSoFar <= this.scrollTop + props.containerHeight
         && i < props.multipleElementHeights.length; //needed in case too few elements
         i++) {
@@ -71,6 +72,7 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
         (this.scrollTop + props.containerHeight) / props.fixedElementHeight
       ) / this.batchSize) * this.batchSize, props.elements.length - 1)
     }
+    if (lastElementIndex === undefined) { throw Error() }
 
     const shouldPrepend = this.firstElementIndex !== undefined &&
       firstElementIndex < this.firstElementIndex
