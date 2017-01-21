@@ -6,9 +6,10 @@ import { GestaltComponent } from './GestaltComponent'
 import { SearchAddBox } from './SearchAddBox'
 import { HashtagsBox } from './HashtagsBox'
 
-import { Gestalt, GestaltsMap, GestaltInstancesMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
+import { Gestalt, GestaltsMap, GestaltInstancesMap, GestaltInstance, HydratedGestalt, HydratedGestaltInstance } from '../domain';
 import * as Util from '../util';
 import { LazyArray } from "../LazyArray"
+
 
 
 import * as Immutable from 'immutable'
@@ -16,7 +17,7 @@ import * as Immutable from 'immutable'
 // var ImmutableDiff: any = require("immutablediff");
 
 export interface ListViewState {
-    filter?:string
+    filter?: string
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -33,7 +34,7 @@ export interface ListViewProps extends React.Props<ListView> {
     gestaltComponentOnBlur: (instanceId: string) => void
     updateGestaltText: (id: string, newText: string) => void
     toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
-    addGestalt: (text: string, offset?: number, parentInstanceId?: string, shouldFocus?: boolean) => void
+    addGestalt: (text: string, parentInstanceId?: string, offset?: number, shouldFocus?: boolean) => void
 
 }
 
@@ -56,16 +57,84 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         this.setFilter(hashtag)
     }
 
+    // Includes lastHydratedRootGestaltInstance for faster diffing
+    private static _HydrateGestaltInstanceAndChildren = (
+        gestaltInstanceId: string,
+        allGestalts: GestaltsMap,
+        allGestaltInstances: GestaltInstancesMap,
+        focusedInstanceId: string | undefined,
+    ): HydratedGestaltInstance => {
+        console.assert(typeof gestaltInstanceId === "string")
+
+        const currInstance: GestaltInstance = allGestaltInstances.get(gestaltInstanceId)
+        console.assert(typeof currInstance !== "undefined", `${gestaltInstanceId} not in allGestaltInstances`)
+
+        let nextHydChildren: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
+
+
+        let hydCurrGestalt: HydratedGestalt | undefined
+
+        //if root
+        if (currInstance.gestaltId === undefined) {
+            hydCurrGestalt = undefined
+            nextHydChildren = new LazyArray<HydratedGestaltInstance>(
+                currInstance.childrenInstanceIds.length,
+                (i: number) => {
+                    if (!currInstance.childrenInstanceIds) { throw Error() }
+                    return ListView._HydrateGestaltInstanceAndChildren(
+                        currInstance.childrenInstanceIds[i],
+                        allGestalts,
+                        allGestaltInstances,
+                        focusedInstanceId
+                    )
+                }
+            )
+
+            // currInstance.childrenInstanceIds[i]((instanceId: string) =>
+            //     _HydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+            //     // const newlyHydGesInsts: HydratedGestaltInstance[] = currInstance.childrenInstanceIds.slice(startInd, endInd).map((instanceId: string) =>
+            //     //     _HydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
+
+            //     // nextHydGesInsts = immSplice(lastHydratedRootGestaltInstance.hydratedChildren,
+            //     //     startInd, endInd - startInd, ...newlyHydGesInsts)
+        }
+        else {
+            const currGestalt: Gestalt | undefined = allGestalts.get(currInstance.gestaltId)
+            console.assert(typeof currGestalt !== "undefined", `${currInstance.gestaltId} not in allGestalts`)
+
+            hydCurrGestalt = {
+                ...currGestalt,
+                relatedGestalts: currGestalt.relatedIds.map((id: string) => allGestalts.get(id))
+            }
+
+            nextHydChildren = currInstance.childrenInstanceIds.map((instanceId: string) =>
+                ListView._HydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances, focusedInstanceId))
+        }
+
+
+        const currHydratedGestaltInstance: HydratedGestaltInstance = {
+            ...currInstance,
+            gestalt: hydCurrGestalt,
+            hydratedChildren: nextHydChildren,
+            shouldFocus: focusedInstanceId === currInstance.instanceId
+        }
+
+        console.assert(!(currHydratedGestaltInstance.expanded && currHydratedGestaltInstance.hydratedChildren === null),
+            "expanded and hydratedChildren===null", currHydratedGestaltInstance)
+        console.assert(!(currHydratedGestaltInstance.expanded && focusedInstanceId === currInstance.instanceId),
+            "never shouldFocus on nonexpanded node")
+
+        return currHydratedGestaltInstance
+    }
+
     render() {
 
-        const hydratedRootGestaltInstance = Util.hydrateGestaltInstanceAndChildren(
+        const hydratedRootGestaltInstance: HydratedGestaltInstance = ListView._HydrateGestaltInstanceAndChildren(
             this.props.rootGestaltInstanceId,
             this.props.allGestalts,
             this.props.allGestaltInstances,
             this.props.focusedInstanceId,
         )
-
-
 
         return (
             <div>

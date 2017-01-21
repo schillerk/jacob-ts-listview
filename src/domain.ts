@@ -8,20 +8,24 @@ export interface Gestalt {
   readonly gestaltId: string
   readonly text: string
   readonly gestaltHeight?: number
-  readonly relatedIds: ReadonlyArray<string> | undefined // undefined in the case of root
-  readonly isRoot?: boolean
+  readonly relatedIds: ReadonlyArray<string>
+  // readonly dateCreated: number
 }
 
 export interface GestaltInstance {
   readonly instanceId: string // uuid
-  readonly gestaltId: string
-  readonly childrenInstanceIds: ReadonlyArray<string> | null // initially null if created as a nub, can be non-null and non-expanded if expanded then collapsed
+  readonly gestaltId: string | undefined //undefined if root
+  readonly childrenInstanceIds: ReadonlyArray<string>
   readonly expanded: boolean // is displayed fully => children instance ids are present vs null,
+}
+
+export interface HydratedGestalt extends Gestalt {
+  readonly relatedGestalts: ReadonlyArray<Gestalt>
 }
 
 export interface HydratedGestaltInstance extends GestaltInstance {
   readonly shouldFocus?: boolean
-  readonly gestalt: Gestalt
+  readonly gestalt: HydratedGestalt | undefined //undefined if root
   readonly hydratedChildren: ReadonlyArray<HydratedGestaltInstance> | LazyArray<HydratedGestaltInstance> | null
   // readonly childrenHeights?: number[] //assert should be here if isRoot
 }

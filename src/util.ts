@@ -1,6 +1,5 @@
 import * as _ from "lodash";
 import { Gestalt, GestaltsMap, GestaltInstance, GestaltInstancesMap, HydratedGestaltInstance } from './domain';
-import { LazyArray } from "./LazyArray"
 import * as Immutable from 'immutable'
 
 
@@ -102,8 +101,12 @@ export const filterEntries = (entries: HydratedGestaltInstance[], filter: string
     const pdFilter = filter.toLowerCase();
 
     let fNotes = entries
-    if (filter !== '')
-        fNotes = entries.filter((currNote) => currNote.gestalt.text.toLowerCase().indexOf(pdFilter) !== -1)
+    if (filter !== '') {
+        fNotes = entries.filter((currNote) => {
+            if (!currNote.gestalt) { throw Error() }
+            return currNote.gestalt.text.toLowerCase().indexOf(pdFilter) !== -1
+        })
+    }
 
     // const openPlaceHolder = "4309jfei8jnasdf"
     // const closePlaceHolder = "0jf0893489j01q"
@@ -166,75 +169,7 @@ export function computeGestaltHeight(text: string): number {
 //     return Math.max(1, Math.ceil(text.length * W_WIDTH / LINE_WIDTH)) * LINE_HEIGHT + GESTALT_PADDING
 //   }
 
-// Includes lastHydratedRootGestaltInstance for faster diffing
-export function hydrateGestaltInstanceAndChildren(
-    gestaltInstanceId: string,
-    allGestalts: GestaltsMap,
-    allGestaltInstances: GestaltInstancesMap,
-    focusedInstanceId: string | undefined,
-): HydratedGestaltInstance {
 
-    const currInstance: GestaltInstance = allGestaltInstances.get(gestaltInstanceId)
-    console.assert(typeof currInstance !== "undefined", `${gestaltInstanceId} not in allGestaltInstances`)
-
-    const currGestalt: Gestalt = allGestalts.get(currInstance.gestaltId)
-    console.assert(typeof currGestalt !== "undefined", `${currInstance.gestaltId} not in allGestalts`)
-
-
-    let nextHydChildren: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[] | null
-
-    if (currInstance.childrenInstanceIds === null) { // gestalt is nonexpanded for sure if childrenInstanceIds === null
-        nextHydChildren = null
-
-        console.assert(currInstance.expanded === false, "expanded instance should never have null childrenInstanceIds")
-        console.assert(!currGestalt.isRoot, "root can never be nonexpanded")
-    }
-
-    else { // has childrenInstanceIds. Note: could be nonexpanded if was expanded then collapsed
-
-
-        if (currGestalt.isRoot) {
-            nextHydChildren = new LazyArray<HydratedGestaltInstance>(
-                currInstance.childrenInstanceIds.length,
-                i => {
-                    if (!currInstance.childrenInstanceIds) { throw Error() }
-                    return hydrateGestaltInstanceAndChildren(
-                        currInstance.childrenInstanceIds[i],
-                        allGestalts,
-                        allGestaltInstances,
-                        focusedInstanceId
-                    )
-                }
-            )
-
-            // currInstance.childrenInstanceIds[i]((instanceId: string) =>
-            //     hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
-            //     // const newlyHydGesInsts: HydratedGestaltInstance[] = currInstance.childrenInstanceIds.slice(startInd, endInd).map((instanceId: string) =>
-            //     //     hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances))
-
-            //     // nextHydGesInsts = immSplice(lastHydratedRootGestaltInstance.hydratedChildren,
-            //     //     startInd, endInd - startInd, ...newlyHydGesInsts)
-        }
-        else {
-            nextHydChildren = currInstance.childrenInstanceIds.map((instanceId: string) =>
-                hydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances, focusedInstanceId))
-        }
-    }
-
-    const currHydratedGestaltInstance: HydratedGestaltInstance = {
-        ...currInstance,
-        gestalt: currGestalt,
-        hydratedChildren: nextHydChildren,
-        shouldFocus: focusedInstanceId === currInstance.instanceId
-    }
-
-    console.assert(!(currHydratedGestaltInstance.expanded && currHydratedGestaltInstance.hydratedChildren === null),
-        "expanded and hydratedChildren===null", currHydratedGestaltInstance)
-    console.assert(!(currHydratedGestaltInstance.expanded && focusedInstanceId === currInstance.instanceId),
-        "never shouldFocus on nonexpanded node")
-
-    return currHydratedGestaltInstance
-}
 
 
 

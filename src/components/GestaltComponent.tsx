@@ -38,7 +38,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 
   updateGestaltText: (gestaltId: string, newText: string) => void
   toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
-  addGestalt: (text: string, offset: number, parentInstanceId?: string, shouldFocus?: boolean) => void
+  addGestalt: (text: string, parentInstanceId?: string, offset?: number, shouldFocus?: boolean) => void
   // commitIndentChild: (parentInstanceId: string, childIndex: number) => void
 
   isRoot?: boolean
@@ -77,7 +77,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
   }
 
   addGestaltAsChild = (text: string, offset: number = 0): void => {
-    this.props.addGestalt(text, offset, this.props.gestaltInstance.instanceId, true)
+    this.props.addGestalt(text, this.props.gestaltInstance.instanceId, offset, true)
   }
 
   // indentChild = (childIndex: number) => {
@@ -230,6 +230,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
   }
 
   onInput = () => {
+    if (!this.props.gestaltInstance.gestaltId) { throw Error() }
     this.props.updateGestaltText(this.props.gestaltInstance.gestaltId, this.nodeSpan.innerText)
   }
 
@@ -284,7 +285,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         let hydratedChildren: LazyArray<HydratedGestaltInstance> = nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
 
         const textFilterFn = (e: HydratedGestaltInstance): boolean => {
-          if (typeof nextProps.filter === "string") {
+          if (nextProps.filter) {
+            if (!e.gestalt) { throw Error("should never be called on root instance itself") }
             return e.gestalt.text.toLowerCase().indexOf(nextProps.filter.toLowerCase()) >= 0
           }
           else {
@@ -397,6 +399,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       gestaltBody = <div style={{ color: "gray" }}>{true || this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes" : Util.SPECIAL_CHARS_JS.NBSP}</div>
     }
     else { //Not root. hydratedChildren as HydratedGestaltInstance[]
+      if (!this.props.gestaltInstance.gestalt) { throw Error("implies root instance") }
+
       _.assign(mainLiStyles,
         { height: "34px", borderLeft: "2px solid lightgray", padding: "0px 4px", margin: "8px 0" })
 
@@ -417,13 +421,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       </div>
 
       console.assert(this.props.gestaltInstance.hydratedChildren instanceof Array)
+
       const gestaltIdsToNubInstances: { [id: string]: HydratedGestaltInstance } = _.keyBy(
         this.props.gestaltInstance.hydratedChildren as HydratedGestaltInstance[],
         (hydratedChild: HydratedGestaltInstance) => hydratedChild.gestaltId
       );
 
-
-      let highlightedText = this.props.gestaltInstance.gestalt.text
+      let highlightedText: string = this.props.gestaltInstance.gestalt.text
       // if(this.props.filter)
       //   highlightedText=highlightedText.replace(new RegExp(this.props.filter, 'g'), "<b>" + this.props.filter + "</b>")
 
@@ -432,7 +436,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       }
 
       //gestalt body parts
-      const gestaltTextSpan = <span style={{ padding: "2px 4px", height: "36px" }}
+      const gestaltTextSpan: JSX.Element = <span style={{ padding: "2px 4px", height: "36px" }}
         contentEditable
         suppressContentEditableWarning
         ref={(nodeSpan: HTMLSpanElement) => {
@@ -447,24 +451,24 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         {highlightedText}
       </span >
 
-      const relatedGestaltNubs = <ul style={{ display: 'inline' }}>
-        {this.props.isRoot ? null
-          : this.props.gestaltInstance.gestalt.relatedIds.map((relatedId: string) => {
-            const nubGestaltInstance = gestaltIdsToNubInstances[relatedId];
+      const relatedGestaltNubs: JSX.Element = <ul style={{ display: 'inline' }}>
+        {
+          this.props.gestaltInstance.gestalt.relatedGestalts.map((nubGestalt: Gestalt) => {
             const MAX_NUB_LENGTH = 20
-            debugger
-            console.log(relatedId)
-            let nubText = nubGestaltInstance.gestalt.text
+
+            let nubText = nubGestalt.text
             if (nubText.length > MAX_NUB_LENGTH) {
               nubText = nubText.slice(0, MAX_NUB_LENGTH)
               nubText += "..."
             }
 
+            const nubInstance: GestaltInstance | undefined = gestaltIdsToNubInstances[nubGestalt.gestaltId]
+
             return (
-              <li key={nubGestaltInstance.gestaltId}
+              <li key={nubGestalt.gestaltId}
                 className='nub'
                 style={
-                  (nubGestaltInstance.expanded) ?
+                  (nubInstance && nubInstance.expanded) ?
                     {
                       background: "lightgray",
                       borderColor: "darkblue",
@@ -472,13 +476,16 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                     :
                     { background: "white" }
                 }
-                onClick={() => this.props.toggleExpand(nubGestaltInstance.gestaltId, this.props.gestaltInstance)}
+                onClick={() => {
+                  if (!nubGestalt.gestaltId) { throw Error() }
+                  this.props.toggleExpand(nubGestalt.gestaltId, this.props.gestaltInstance)
+                } }
                 >
 
                 { //assert nubId in this.props.allGestalts
-                  // (nubGestaltInstance.gestaltId in this.props.allGestalts) ?
+                  // (nubGestalt.gestaltId in this.props.allGestalts) ?
                   nubText || Util.SPECIAL_CHARS_JS.NBSP
-                  // : (console.error('Invalid id', nubGestaltInstance, this.props.allGestalts) || "")
+                  // : (console.error('Invalid id', nubGestalt, this.props.allGestalts) || "")
                 }
               </li>
             )
