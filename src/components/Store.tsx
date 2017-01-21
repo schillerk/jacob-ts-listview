@@ -37,7 +37,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     constructor(props: StoreProps) {
         super(props);
 
-        const NUM_EXTRA_GESTALTS_TO_GEN:number=500000
+        const NUM_EXTRA_GESTALTS_TO_GEN: number = 3
 
         let initState: StoreState = {
             focusedInstanceId: undefined, //undefined lets the search/add box steal the focus on load
@@ -453,12 +453,12 @@ export class Store extends React.Component<StoreProps, StoreState> {
         if (typeof offset === "undefined")
             offset = parentGestaltInstance.childrenInstanceIds.length
 
-        const newChildrenInstanceIds = parentGestaltInstance.childrenInstanceIds.slice(0,offset)
-            .concat(instanceIds)
-            .concat(parentGestaltInstance.childrenInstanceIds.slice(offset+instanceIds.length))
+//         const newChildrenInstanceIds = parentGestaltInstance.childrenInstanceIds.slice(0,offset)
+//             .concat(instanceIds)
+//             .concat(parentGestaltInstance.childrenInstanceIds.slice(offset+instanceIds.length))
 
-            //below leads to call stack size exceeded error with 200k instanceIds
-            // Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 0, ...instanceIds)
+        //below leads to call stack size exceeded error with 200k instanceIds
+        const newChildrenInstanceIds = Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 0, ...instanceIds)
 
         return {
             ...parentGestaltInstance,
@@ -545,7 +545,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
         let nextChildrenInstanceIds: string[]
         let instance: GestaltInstance
-        debugger
+        
         //not found, then create new expanded gestalt instance
         if (existingChildIdIndex === -1) {
             instance = Store._CreateGestaltInstance(gestaltToExpandId, true, this.state.allGestalts)
