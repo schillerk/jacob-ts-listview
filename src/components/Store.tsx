@@ -37,7 +37,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     constructor(props: StoreProps) {
         super(props);
 
-        const NUM_EXTRA_GESTALTS_TO_GEN: number = 200000
+        const NUM_EXTRA_GESTALTS_TO_GEN: number = 3
 
         let initState: StoreState = {
             focusedInstanceId: undefined, //undefined lets the search/add box steal the focus on load
