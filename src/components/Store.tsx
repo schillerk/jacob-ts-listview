@@ -37,7 +37,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     constructor(props: StoreProps) {
         super(props);
 
-        const NUM_EXTRA_GESTALTS_TO_GEN: number = 3
+        const NUM_EXTRA_GESTALTS_TO_GEN: number = 200000
 
         let initState: StoreState = {
             focusedInstanceId: undefined, //undefined lets the search/add box steal the focus on load
@@ -453,12 +453,12 @@ export class Store extends React.Component<StoreProps, StoreState> {
         if (typeof offset === "undefined")
             offset = parentGestaltInstance.childrenInstanceIds.length
 
-//         const newChildrenInstanceIds = parentGestaltInstance.childrenInstanceIds.slice(0,offset)
-//             .concat(instanceIds)
-//             .concat(parentGestaltInstance.childrenInstanceIds.slice(offset+instanceIds.length))
+        // const newChildrenInstanceIds = parentGestaltInstance.childrenInstanceIds.slice(0,offset)
+        //     .concat(instanceIds)
+        //     .concat(parentGestaltInstance.childrenInstanceIds.slice(offset))
 
         //below leads to call stack size exceeded error with 200k instanceIds
-        const newChildrenInstanceIds = Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 0, ...instanceIds)
+        const newChildrenInstanceIds = Util.immSpliceFast(parentGestaltInstance.childrenInstanceIds, offset, 0, instanceIds)
 
         return {
             ...parentGestaltInstance,
@@ -470,7 +470,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     // private static removeChildInstance = (parentGestaltInstance: GestaltInstance, offset: number): GestaltInstance => {
     //     return {
     //         ...parentGestaltInstance,
-    //         childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 1)
+    //         childrenInstanceIds: Util.immSpliceFast(parentGestaltInstance.childrenInstanceIds, offset, 1)
     //     }
     // }
 
@@ -514,7 +514,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     //     // //delete from old list
     //     // parentGestaltInstance = {
     //     //     ...parentGestaltInstance,
-    //     //     childrenInstanceIds: Util.immSplice(parentGestaltInstance.childrenInstanceIds, childIndex, 1)
+    //     //     childrenInstanceIds: Util.immSpliceFast(parentGestaltInstance.childrenInstanceIds, childIndex, 1)
     //     // }
 
 
@@ -575,7 +575,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
             })
 
             //move to beginning of array
-            nextChildrenInstanceIds = Util.immSplice(parentGestaltInstance.childrenInstanceIds, existingChildIdIndex, 1)
+            nextChildrenInstanceIds = Util.immSpliceFast(parentGestaltInstance.childrenInstanceIds, existingChildIdIndex, 1)
             nextChildrenInstanceIds.unshift(instance.instanceId)
 
         }

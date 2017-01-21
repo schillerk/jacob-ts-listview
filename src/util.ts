@@ -54,10 +54,16 @@ export function objectToArray<T>(object: { [id: string]: T }) {
 }
 
 
-export function immSplice<T>(arr: ReadonlyArray<T>, start: number, deleteCount: number, ...items: T[]) {
+// export function immSplice<T>(arr: ReadonlyArray<T>, start: number, deleteCount: number, ...items: T[]) {
+//     return [...arr.slice(0, start), ...items, ...arr.slice(start + deleteCount)]
+// }
+
+export function immSpliceFast<T>(arr: ReadonlyArray<T>, start: number, deleteCount: number, items?: T[]) {
+    if(!items) {
+        items=[]
+    }
     return [...arr.slice(0, start), ...items, ...arr.slice(start + deleteCount)]
 }
-
 
 
 export const encodeHtmlEntity = function (str: string) {
