@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as _ from "lodash";
 // import { Autocomplete } from "./autocomplete"
+// import { AddRelatedForm } from "./autocomplete-jacob"
 import { Gestalt, GestaltsMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
 
 import * as Util from '../util';
@@ -495,7 +496,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       gestaltBody = <div>
         {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
         {gestaltTextSpan}
-        {/* <AddRelatedForm
+        {/*<AddRelatedForm
           note={this.props.note}
           rawRelations={this.props.rawRelations}
           relatedNotes={this.props.relatedNotes}
@@ -507,8 +508,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
           addRelation={this.props.addRelation}
           editNote={this.props.editNote}
           relations={this.props.relations}
-          />
-          */}
+          />*/}
         {/* related gestalts nubs list */}
         {relatedGestaltNubs}
       </div>

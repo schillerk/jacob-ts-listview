@@ -248,22 +248,12 @@ export class Store extends React.Component<StoreProps, StoreState> {
     //returns new partial StoreState
     private static _AddGestalts = (state: StoreState, texts: string[], parentInstanceId?: string, instanceOffset: number = 0, shouldFocusIdx?: number): StoreState => {
         if (typeof parentInstanceId === "undefined") {
-            if (!state.rootGestaltInstanceId) {
-                throw Error()
-            }
+            if (!state.rootGestaltInstanceId) { throw Error() }
             parentInstanceId = state.rootGestaltInstanceId
         }
-        if (parentInstanceId === state.rootGestaltInstanceId) {
-            console.log("adding at root")
-        }
-        else  //#TODO
-        {
-            throw Error("ERR: can only add at root for now")
-        }
-
-        if (!state.allGestaltInstances || !state.allGestalts || !state.hashtags) {
-            throw Error()
-        }
+        if (parentInstanceId === state.rootGestaltInstanceId) { console.log("adding at root") }
+        else { throw Error("ERR: can only add at root for now") } //#TODO
+        if (!state.allGestaltInstances || !state.allGestalts || !state.hashtags) { throw Error() }
 
         const newGestalts: Gestalt[] = texts.map(text => Store._CreateGestalt(text))
         const newInstances: GestaltInstance[] = newGestalts.map(g => Store._CreateGestaltInstance(g.gestaltId))
@@ -360,6 +350,12 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
     //     return newInsts
     // }
+
+    createAndRelate = (srcGestaltId: string, expandAndFocusInstanceId?: string) => {
+        
+        const tgtGestalt: Gestalt = this.addGes
+        this.addRelation(srcGestaltId, tgtGestaltId, expandAndFocusInstanceId)
+    }
 
     //#REDUCER
     addRelation = (srcGestaltId: string, tgtGestaltId: string, expandAndFocusInstanceId?: string) => {

@@ -1,24 +1,24 @@
 import * as React from "react";
-
+import { Gestalt } from "../domain"
 
 export interface AddRelatedFormProps extends React.Props<AddRelatedForm> {
-  options: AddRelatedFormOption[];
-  onChange: (value: string) => void;
-  itemClickHandler: (name: string) => void;
-  value: string;
-
-  relateToCurrentIdea:(targetId:string) => void
+  // options: AddRelatedFormOption[];
+  // onChange: (value: string) => void;
+  // itemClickHandler: (name: string) => void;
+  // value: string;
+  createAndRelate: (text: string) => void;
+  relateToCurrentIdea: (targetId: string) => void
 
 }
 
 export interface AddRelatedFormState {
-  inputVal: string;
-  suggestingRelations: boolean;
+  inputVal?: string;
+  suggestingRelations?: boolean;
 }
 
-export default class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRelatedFormState> {
+export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRelatedFormState> {
 
-  constructor(props:AddRelatedFormProps) {
+  constructor(props: AddRelatedFormProps) {
     super(props);
     this.state = {
       suggestingRelations: false,
@@ -26,17 +26,17 @@ export default class AddRelatedForm extends React.Component<AddRelatedFormProps,
     }
   }
 
-  relateToCurrentIdea = (targetId:string) => {
+  relateToCurrentIdea = (targetId: string) => {
     this.props.relateToCurrentIdea(targetId)
   }
 
-  addRelated = (id:string) => {
-    this.setState({ suggestingRelations: false });
-    this.relateToCurrentIdea(id);
+  // addRelated = (id: string) => {
+  //   this.setState({ suggestingRelations: false });
+  //   this.relateToCurrentIdea(id);
 
-    // this.refs.addRelated.focus()
-    setTimeout(() => this.refs.addRelated.focus(), 10); //#hack
-  }
+  //   // this.refs.addRelated.focus()
+  //   // setTimeout(() => this.refs.addRelated.focus(), 10); //#hack
+  // }
 
 
   //#question should i make this a pure function of props?
@@ -61,10 +61,8 @@ export default class AddRelatedForm extends React.Component<AddRelatedFormProps,
 
 
 
-  createAndRelate = (text:string) => {
-    const newNoteId = this.props.addGestalt(text);
-    this.addRelated(newNoteId)
-
+  createAndRelate = (text: string) => {
+    this.props.createAndRelate(text);
     this.setState({ inputVal: '' })
   }
 
@@ -80,8 +78,7 @@ export default class AddRelatedForm extends React.Component<AddRelatedFormProps,
 
   render() {
     // if (this.props.rawRelations == true) return this.renderRaw();
-    const {note, allNotes, relatedNotes} = this.props;
-
+    if (typeof this.state.inputVal === "undefined") { throw Error() }
     return (
       <span style={{ position: "relative", margin: "0 40px", }}>
 
@@ -97,7 +94,7 @@ export default class AddRelatedForm extends React.Component<AddRelatedFormProps,
             style={{ position: "absolute", left: "0px", width: "120px" }}
             type="text"
             placeholder="+ Add Related"
-            onChange={(e) => this.setState({ inputVal: e.target.value })}
+            onChange={(e) => this.setState({ inputVal: e.currentTarget.value })}
             value={this.state.inputVal}
             ref="addRelated" />
 
@@ -107,20 +104,20 @@ export default class AddRelatedForm extends React.Component<AddRelatedFormProps,
             display: (this.state.suggestingRelations ? "block" : "none")
           }}>
             {this.filteredSuggestions()
-              .map((suggestion) => {
+              .map((suggestion: Gestalt) => {
                 return <li
                   className="suggestion"
-                  onMouseDown={() => this.addRelated(suggestion.id)}
-                  key={suggestion.id}
-                  dangerouslySetInnerHTML={{ __html: suggestion.txt }}
-                  >
-                  { /* #hack */}
-
+                  onMouseDown={() => this.addRelated(suggestion.gestaltId)}
+                  key={suggestion.gestaltId}>
+                  {suggestion.text}
                 </li>
               })}
             <li
               className="suggestion"
-              onMouseDown={() => this.createAndRelate(this.state.inputVal)}
+              onMouseDown={() => {
+                if (typeof this.state.inputVal === "undefined") { throw Error() }
+                this.createAndRelate(this.state.inputVal)
+              } }
               >
               {this.state.inputVal.length > 0 ?
                 <span><span style={{ color: "gray" }}>+ add &quot;</span>{this.state.inputVal}<span style={{ color: "gray" }}>&quot; as new idea and relate </span></span>
