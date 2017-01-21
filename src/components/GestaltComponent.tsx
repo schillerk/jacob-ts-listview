@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as _ from "lodash";
-import { Autocomplete } from "./autocomplete"
+// import { Autocomplete } from "./autocomplete"
 import { Gestalt, GestaltsMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
 
 import * as Util from '../util';
@@ -187,12 +187,12 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     //         this.props.gestaltInstance, nextProps.gestaltInstance);
     // }
 
-    // return true;
-    return !(
-      _.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
-      && _.isEqual(nextProps.filter, this.props.filter)
-      && _.isEqual(nextState, this.state)
-    )
+    return true;
+    // return !(
+    //   _.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
+    //   && _.isEqual(nextProps.filter, this.props.filter)
+    //   && _.isEqual(nextState, this.state)
+    // )
 
 
     // slower by 8fps!
@@ -416,9 +416,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         {expandedChildGestaltInstances.map(this.genGestaltComponentFromInstance)}
       </div>
 
-      const gestaltIdsToNubInstances = _.keyBy(
+      console.assert(this.props.gestaltInstance.hydratedChildren instanceof Array)
+      const gestaltIdsToNubInstances: { [id: string]: HydratedGestaltInstance } = _.keyBy(
         this.props.gestaltInstance.hydratedChildren as HydratedGestaltInstance[],
-        (hydratedChild) => hydratedChild.gestaltId
+        (hydratedChild: HydratedGestaltInstance) => hydratedChild.gestaltId
       );
 
 
@@ -451,6 +452,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
           : this.props.gestaltInstance.gestalt.relatedIds.map((relatedId: string) => {
             const nubGestaltInstance = gestaltIdsToNubInstances[relatedId];
             const MAX_NUB_LENGTH = 20
+            debugger
+            console.log(relatedId)
             let nubText = nubGestaltInstance.gestalt.text
             if (nubText.length > MAX_NUB_LENGTH) {
               nubText = nubText.slice(0, MAX_NUB_LENGTH)
@@ -485,7 +488,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       gestaltBody = <div>
         {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
         {gestaltTextSpan}
-        <AddRelatedForm
+        {/* <AddRelatedForm
           note={this.props.note}
           rawRelations={this.props.rawRelations}
           relatedNotes={this.props.relatedNotes}
@@ -498,6 +501,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
           editNote={this.props.editNote}
           relations={this.props.relations}
           />
+          */}
         {/* related gestalts nubs list */}
         {relatedGestaltNubs}
       </div>

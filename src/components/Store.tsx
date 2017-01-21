@@ -148,23 +148,23 @@ export class Store extends React.Component<StoreProps, StoreState> {
             )
 
         if (!initState.allGestaltInstances || !initState.rootGestaltInstanceId) { throw Error() }
-        if (!rootGestaltInstance || !rootGestaltInstance.childrenInstanceIds) {throw Error()}
+        if (!rootGestaltInstance || !rootGestaltInstance.childrenInstanceIds) { throw Error() }
         //load rootChildrenHeights from gestalts
         initState.rootChildrenHeights = rootGestaltInstance.childrenInstanceIds.map(
-                iId => {
-                    if (!initState.allGestalts || !initState.allGestaltInstances) {
-                        throw Error('All gestalts or other attributes are undefined')
+            iId => {
+                if (!initState.allGestalts || !initState.allGestaltInstances) {
+                    throw Error('All gestalts or other attributes are undefined')
+                }
+                let g: Gestalt = initState.allGestalts.get(initState.allGestaltInstances.get(iId).gestaltId)
+                if (typeof g.gestaltHeight === "undefined") {
+                    g = {
+                        ...g,
+                        gestaltHeight: Util.computeGestaltHeight(g.text)
                     }
-                    let g:Gestalt = initState.allGestalts.get(initState.allGestaltInstances.get(iId).gestaltId)
-                    if (typeof g.gestaltHeight === "undefined") {
-                        g = {
-                            ...g,
-                            gestaltHeight: Util.computeGestaltHeight(g.text)
-                        }
-                    }
-                    if (typeof g.gestaltHeight === "undefined") { throw Error() }
-                    return g.gestaltHeight
-                })
+                }
+                if (typeof g.gestaltHeight === "undefined") { throw Error() }
+                return g.gestaltHeight
+            })
 
         console.assert(
             initState.allGestaltInstances.filter((g: GestaltInstance) => g.gestaltId == 'UNIQUE_ID_1').size === 1,
@@ -199,7 +199,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
 
         if (!this.state.allGestalts) {
-          throw Error()
+            throw Error()
         }
         this.setState({
             hashtags: Util.computeHashtagsFromGestaltsMap(this.state.allGestalts)
@@ -220,7 +220,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
     //#REDUCER
     // Mutates state
-    addGestalt = (text: string, offset?: number, parentInstanceId?: string, shouldFocus?: boolean): void => {
+    addGestalt = (text: string, instanceOffset?: number, parentInstanceId?: string, shouldFocus?: boolean): void => {
         const splitTexts: string[] = text.split("\n\n")
         let textsToAdd: string[]
 
@@ -230,13 +230,13 @@ export class Store extends React.Component<StoreProps, StoreState> {
         else
             textsToAdd = [text]
 
-        this._addGestalts(textsToAdd, offset, parentInstanceId, shouldFocus ? 0 : undefined)
+        this._addGestalts(textsToAdd, instanceOffset, parentInstanceId, shouldFocus ? 0 : undefined)
     }
 
     //#REDUCER
     // default value for parentInstanceId is this.state.rootGestaltInstanceId
     // shouldFocusIdx has no default
-    private _addGestalts = (texts: string[], offset: number = 0, parentInstanceId?: string, shouldFocusIdx?: number): void => {
+    private _addGestalts = (texts: string[], instanceOffset: number = 0, parentInstanceId?: string, shouldFocusIdx?: number): void => {
         if (typeof parentInstanceId === "undefined") {
             if (!this.state.rootGestaltInstanceId) {
                 throw Error()
@@ -261,7 +261,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
         const updatedParentGestaltInstance: GestaltInstance = Store._insertChildInstances(
             this.state.allGestaltInstances.get(parentInstanceId),
             newInstances.map(nI => nI.instanceId),
-            offset
+            instanceOffset
         )
 
         // else
@@ -349,58 +349,71 @@ export class Store extends React.Component<StoreProps, StoreState> {
         return newInsts
     }
 
-    //MUTATOR
-    // addRelation = (srcGestaltId: string, tgtGestaltId: string, expandInstanceId: string = undefined) => {
-    //     //add rel to gestalt
-    //     const srcGestalt: Gestalt = this.state.allGestalts[srcGestaltId];
-    //     const newSrcGestalt: Gestalt = _.assign({}, srcGestalt)
-    //     if (_.find(srcGestalt.relatedIds, (id) => this.state.allGestalts[id].gestaltId === tgtGestaltId))
-    //         _.assign(newSrcGestalt,
-    //             { relatedIds: srcGestalt.relatedIds.concat(tgtGestaltId) });
+    //#REDUCER
+    addRelation = (srcGestaltId: string, tgtGestaltId: string, expandAndFocusInstanceId?: string) => {
+        if (!this.state.allGestalts || !this.state.allGestaltInstances || !this.state.rootGestaltInstanceId) { throw Error() }
+        //can't relate to root gestalt -- #todo refactor and remove root gestalt
+        console.assert(srcGestaltId
+            !== this.state.allGestaltInstances.get(this.state.rootGestaltInstanceId).gestaltId)
 
-    //     //add new GestaltInstances to all relevant existing GestaltInstances
+        //add rel to gestalt
+        const srcGestalt: Gestalt = this.state.allGestalts.get(srcGestaltId);
+        if (!srcGestalt.relatedIds) { throw Error('no relatedIds -- this should only be case on rootGestalt?') }
 
-    //     const instancesOfNewlyRelatedGestaltsAndTheirNubs: GestaltInstancesMap = {};
-    //     const relevantInstanceIdsToNewInstances: { [relevantInstanceId: string]: GestaltInstance } = {};
+        let newSrcGestalt: Gestalt = _.assign({}, srcGestalt)
 
-    //     for (const currGestaltInstance of _.values(this.state.allGestaltInstances)) {
-    //         if (currGestaltInstance.gestaltId === srcGestaltId && currGestaltInstance.childrenInstanceIds !== null) { // find relevant gestalt instances, determine it isn't a nub w null children
-    //             const currInstanceId = currGestaltInstance.instanceId;
-    //             const shouldExpand = currInstanceId === expandInstanceId;
-    //             let instanceOfNewlyRelatedGestalt = this.createGestaltInstance(tgtGestaltId, shouldExpand);
+        //if not already there, add new relation
+        if (!_.find(srcGestalt.relatedIds, (id: string) => id === tgtGestaltId)) {
+            newSrcGestalt = _.assign({}, newSrcGestalt,
+                { relatedIds: srcGestalt.relatedIds.concat(tgtGestaltId) });
+        }
+        else {
+            console.warn("Gestalt already related", srcGestaltId, tgtGestaltId)
+        }
 
-    //             if (shouldExpand) {
-    //                 const newInstanceAndNubs: GestaltInstancesMap = this.expandGestaltInstance(instanceOfNewlyRelatedGestalt, this.state.allGestalts, this.state.allGestaltInstances);
-    //                 instanceOfNewlyRelatedGestalt = newInstanceAndNubs[instanceOfNewlyRelatedGestalt.instanceId];
-    //                 _.assign(instancesOfNewlyRelatedGestaltsAndTheirNubs, newInstanceAndNubs)
-    //             }
-    //             instancesOfNewlyRelatedGestaltsAndTheirNubs[instanceOfNewlyRelatedGestalt.instanceId] = instanceOfNewlyRelatedGestalt;
-    //             relevantInstanceIdsToNewInstances[currGestaltInstance.instanceId] = instanceOfNewlyRelatedGestalt;
-    //         }
-    //     }
+        //add new GestaltInstances to all relevant existing GestaltInstances
+        // const instancesOfNewlyRelatedGestaltsAndTheirNubs: GestaltInstancesMap = {};
+        // const relevantInstanceIdsToNewInstances: { [relevantInstanceId: string]: GestaltInstance } = {};
 
-    //     const newAllGestaltInstances: GestaltInstancesMap = _.assign(
-    //         {},
-    //         instancesOfNewlyRelatedGestaltsAndTheirNubs,
-    //         _.mapValues(this.state.allGestaltInstances, (currGestaltInstance) => {
-    //             if (currGestaltInstance.gestaltId === srcGestaltId && currGestaltInstance.childrenInstanceIds !== null) { // if relevant gestalt instance; it isn't a nub w null children
-    //                 const relevantInstanceId = currGestaltInstance.instanceId;
-    //                 const newlyRelatedInstanceId = relevantInstanceIdsToNewInstances[relevantInstanceId].instanceId;
-    //                 return this.insertChildInstances(currGestaltInstance, newlyRelatedInstanceId);
-    //             } else {
-    //                 return currGestaltInstance;
-    //             }
-    //         })
-    //     );
+        // for (const currGestaltInstance of _.values(this.state.allGestaltInstances)) {
+        //     if (currGestaltInstance.gestaltId === srcGestaltId && currGestaltInstance.childrenInstanceIds !== null) { // find relevant gestalt instances, determine it isn't a nub w null children
+        //         const currInstanceId = currGestaltInstance.instanceId;
+        //         const shouldExpand = currInstanceId === expandAndFocusInstanceId;
+        //         let instanceOfNewlyRelatedGestalt = this.createGestaltInstance(tgtGestaltId, shouldExpand);
 
-    //     this.setState({
-    //         allGestaltInstances: newAllGestaltInstances,
-    //         allGestalts: {
-    //             ...this.state.allGestalts,
-    //             [srcGestaltId]: newSrcGestalt // replace srcGestaltId
-    //         },
-    //     });
-    // }
+        //         if (shouldExpand) {
+        //             const newInstanceAndNubs: GestaltInstancesMap = this.expandGestaltInstance(instanceOfNewlyRelatedGestalt, this.state.allGestalts, this.state.allGestaltInstances);
+        //             instanceOfNewlyRelatedGestalt = newInstanceAndNubs[instanceOfNewlyRelatedGestalt.instanceId];
+        //             _.assign(instancesOfNewlyRelatedGestaltsAndTheirNubs, newInstanceAndNubs)
+        //         }
+        //         instancesOfNewlyRelatedGestaltsAndTheirNubs[instanceOfNewlyRelatedGestalt.instanceId] = instanceOfNewlyRelatedGestalt;
+        //         relevantInstanceIdsToNewInstances[currGestaltInstance.instanceId] = instanceOfNewlyRelatedGestalt;
+        //     }
+        // }
+
+        // const newAllGestaltInstances: GestaltInstancesMap = _.assign(
+        //     {},
+        //     instancesOfNewlyRelatedGestaltsAndTheirNubs,
+        //     _.mapValues(this.state.allGestaltInstances, (currGestaltInstance) => {
+        //         if (currGestaltInstance.gestaltId === srcGestaltId && currGestaltInstance.childrenInstanceIds !== null) { // if relevant gestalt instance; it isn't a nub w null children
+        //             const relevantInstanceId = currGestaltInstance.instanceId;
+        //             const newlyRelatedInstanceId = relevantInstanceIdsToNewInstances[relevantInstanceId].instanceId;
+        //             return this.insertChildInstances(currGestaltInstance, newlyRelatedInstanceId);
+        //         } else {
+        //             return currGestaltInstance;
+        //         }
+        //     })
+        // );
+
+        this.setState({
+            // allGestaltInstances: newAllGestaltInstances,
+            allGestalts: this.state.allGestalts.set(srcGestaltId,newSrcGestalt)
+            // {
+            //     ...this.state.allGestalts,
+            //     [srcGestaltId]: newSrcGestalt // replace srcGestaltId
+            // },
+        });
+    }
 
 
 
@@ -509,11 +522,11 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
         const existingChildIdIndex: number = _.findIndex(parentGestaltInstance.childrenInstanceIds,
             childId => {
-                if (!this.state.allGestaltInstances) {throw Error()}
+                if (!this.state.allGestaltInstances) { throw Error() }
                 return this.state.allGestaltInstances.get(childId).gestaltId == gestaltToExpandId
             })
 
-        if (!this.state.allGestaltInstances || !this.state.allGestalts) {throw Error()}
+        if (!this.state.allGestaltInstances || !this.state.allGestalts) { throw Error() }
         console.assert(existingChildIdIndex !== -1, "child should always be found with current architecture")
 
         const existingChildInstanceId: string = parentGestaltInstance.childrenInstanceIds[existingChildIdIndex]
@@ -541,7 +554,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     //#REDUCER
     updateGestaltText = (id: string, newText: string) => {
         const timeInd = this.updateTimes.push(Date.now()) - 1
-        if (!this.state.allGestaltInstances || !this.state.allGestalts) {throw Error()}
+        if (!this.state.allGestaltInstances || !this.state.allGestalts) { throw Error() }
 
         // TODO: recompute gestalt.textHeight
         const updatedGestalt: Gestalt = {
@@ -564,7 +577,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
                 // )
             },
             () => {
-                if (!this.state.allGestaltInstances || !this.state.allGestalts) {throw Error()}
+                if (!this.state.allGestaltInstances || !this.state.allGestalts) { throw Error() }
                 //only update hashtags if you wait for half a second
                 this.hashtagTimeout = window.setTimeout(
                     () => this.state.allGestalts && this.setState({
@@ -590,7 +603,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     // }
 
     render() {
-        if (!this.state.allGestaltInstances || !this.state.allGestalts || !this.state.rootGestaltInstanceId || !this.state.hashtags) {throw Error()}
+        if (!this.state.allGestaltInstances || !this.state.allGestalts || !this.state.rootGestaltInstanceId || !this.state.hashtags) { throw Error() }
         return (
             <ListView
                 allGestalts={this.state.allGestalts}
