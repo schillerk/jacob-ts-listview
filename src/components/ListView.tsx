@@ -58,6 +58,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     }
 
     // Includes lastHydratedRootGestaltInstance for faster diffing
+    //#todo needlessly hydrates nonexpanded nodes
     private static _HydrateGestaltInstanceAndChildren = (
         gestaltInstanceId: string,
         allGestalts: GestaltsMap,

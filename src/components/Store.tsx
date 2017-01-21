@@ -198,14 +198,14 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
         //unneeded?
         // setTimeout(
-        //     () => this.setState({ hashtags: Util.computeHashtagsFromAllGestalts(this.state.allGestalts) }), 0)
+        //     () => this.setState((prevState)=>{ return { hashtags: Util.computeHashtagsFromAllGestalts(this.state.allGestalts) }}), 0)
 
 
-        if (!this.state.allGestalts) {
-            throw Error()
-        }
-        this.setState({
-            hashtags: Util.computeHashtagsFromGestaltsMap(this.state.allGestalts)
+        this.setState((prevState) => {
+            if (!prevState.allGestalts) { throw Error() }
+            return {
+                hashtags: Util.computeHashtagsFromGestaltsMap(prevState.allGestalts)
+            }
         })
     }
 
@@ -232,9 +232,11 @@ export class Store extends React.Component<StoreProps, StoreState> {
         else
             textsToAdd = [text]
 
-        this.setState({
-            ...this.state,
-            ...Store._AddGestalts(this.state, textsToAdd, parentInstanceId, instanceOffset, shouldFocus ? 0 : undefined)
+        this.setState((prevState) => {
+            return {
+                ...prevState,
+                ...Store._AddGestalts(prevState, textsToAdd, parentInstanceId, instanceOffset, shouldFocus ? 0 : undefined)
+            }
         })
     }
 
@@ -413,13 +415,16 @@ export class Store extends React.Component<StoreProps, StoreState> {
         //     })
         // );
 
-        this.setState({
-            // allGestaltInstances: newAllGestaltInstances,
-            allGestalts: this.state.allGestalts.set(srcGestaltId, newSrcGestalt)
-            // {
-            //     ...this.state.allGestalts,
-            //     [srcGestaltId]: newSrcGestalt // replace srcGestaltId
-            // },
+        this.setState((prevState) => {
+            if (!prevState.allGestalts) { throw Error() }
+            return {
+                // allGestaltInstances: newAllGestaltInstances,
+                allGestalts: prevState.allGestalts.set(srcGestaltId, newSrcGestalt)
+                // {
+                //     ...this.state.allGestalts,
+                //     [srcGestaltId]: newSrcGestalt // replace srcGestaltId
+                // },
+            }
         });
     }
 
@@ -508,7 +513,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
 
 
-    //     // this.setState({
+    //     // this.setState((prevState)=>{ return {
     //     //     allGestaltInstances: {
     //     //         ...this.state.allGestaltInstances,
     //     //         [parentInstanceId]: parentGestaltInstance,
@@ -518,7 +523,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     //     //         ...this.state.allGestalts,
     //     //         [futureParentGestalt.gestaltId]: futureParentGestalt
     //     //     },
-    //     // })
+    //     // }})
     // }
 
     //#REDUCER
@@ -532,32 +537,51 @@ export class Store extends React.Component<StoreProps, StoreState> {
                 return this.state.allGestaltInstances.get(childId).gestaltId == gestaltToExpandId
             })
 
-
+        let nextChildrenInstanceIds: string[]
         let instance: GestaltInstance
-
+        debugger
         //not found, then create new expanded gestalt instance
         if (existingChildIdIndex === -1) {
             instance = Store._CreateGestaltInstance(gestaltToExpandId, true, this.state.allGestalts)
+            nextChildrenInstanceIds = [instance.instanceId]
+                .concat(parentGestaltInstance.childrenInstanceIds as string[])
+
             //add newly created instance to registry
-            this.setState({
-                allGestaltInstances: this.state.allGestaltInstances.set(instance.instanceId, instance)
+            this.setState((prevState) => {
+                if (!prevState.allGestaltInstances) { throw Error() }
+                return {
+                    allGestaltInstances: prevState.allGestaltInstances
+                        .set(instance.instanceId, instance)
+                }
             })
         }
         else { //else toggle expanded on found one
             const instanceId = parentGestaltInstance.childrenInstanceIds[existingChildIdIndex]
             instance = this.state.allGestaltInstances.get(instanceId)
             instance = { ...instance, expanded: !instance.expanded }
-        }
 
+            this.setState((prevState) => {
+                if (!prevState.allGestaltInstances) { throw Error() }
+                return {
+                    allGestaltInstances: prevState.allGestaltInstances
+                        .set(instance.instanceId, instance)
+                }
+            })
+
+            //move to beginning of array
+            nextChildrenInstanceIds = Util.immSplice(parentGestaltInstance.childrenInstanceIds, existingChildIdIndex, 1)
+            nextChildrenInstanceIds.unshift(instance.instanceId)
+
+        }
+        
         this.setState((prevState: StoreState) => {
             if (!prevState.allGestaltInstances) { throw Error() }
             return {
-                allGestaltInstances:
-                prevState.allGestaltInstances.set(parentGestaltInstance.instanceId,
+                allGestaltInstances: prevState.allGestaltInstances
+                    .set(parentGestaltInstance.instanceId,
                     {
-                        ...parentGestaltInstance,
-                        childrenInstanceIds: parentGestaltInstance.childrenInstanceIds
-                            .concat(instance.instanceId)
+                        ...prevState.allGestaltInstances.get(parentGestaltInstance.instanceId),
+                        childrenInstanceIds: nextChildrenInstanceIds
                     })
             }
         })
@@ -582,20 +606,24 @@ export class Store extends React.Component<StoreProps, StoreState> {
         //                 Util.computeHashtagsFromGestaltsMap(Immutable.Map(_.keyBy(newGestalts, g => g.gestaltId)))
 
         window.clearTimeout(this.hashtagTimeout)
-        this.setState(
-            {
+        this.setState((prevState) => {
+            return {
                 allGestalts: updatedAllGestalts,
                 // hashtags: this.state.hashtags.merge(
                 //     Util.computeHashtagsFromGestaltsArray([updatedGestalt])
                 // )
-            },
+            }
+        },
             () => {
                 if (!this.state.allGestaltInstances || !this.state.allGestalts) { throw Error() }
                 //only update hashtags if you wait for half a second
                 this.hashtagTimeout = window.setTimeout(
-                    () => this.state.allGestalts && this.setState({
-                        hashtags:
-                        Util.computeHashtagsFromGestaltsMap(this.state.allGestalts)
+                    () => this.state.allGestalts && this.setState((prevState) => {
+                        if (!prevState.allGestalts) { throw Error() }
+                        return {
+                            hashtags:
+                            Util.computeHashtagsFromGestaltsMap(prevState.allGestalts)
+                        }
                     }), 500)
 
                 this.updateTimes[timeInd] = Date.now() - this.updateTimes[timeInd]
@@ -606,7 +634,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     //#REDUCER
     gestaltComponentOnBlur = (instanceId: string): void => {
         if (this.state.focusedInstanceId === instanceId) {
-            this.setState({ focusedInstanceId: undefined })
+            this.setState((prevState) => { return { focusedInstanceId: undefined } })
         }
     }
 
@@ -614,7 +642,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
     //#REDUCER
     // setFilter = (text: string): void => {
-    //     this.setState({ filter: text })
+    //     this.setState((prevState)=>{ return { filter: text }})
     // }
 
     render() {
