@@ -11,13 +11,11 @@ interface LLVizState {
     lastPopped: string | undefined
 }
 
-
 export class LLViz extends React.Component<undefined, LLVizState> {
 
-
   constructor(props:undefined) {
-    super(props);
-    this.state = { theList: new LinkedList<string>(), lastPopped: "" };
+    super(props)
+    this.state = { theList: new LinkedList<string>(), lastPopped: "" }
   }
 
     render() {
