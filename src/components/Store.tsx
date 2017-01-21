@@ -37,6 +37,8 @@ export class Store extends React.Component<StoreProps, StoreState> {
     constructor(props: StoreProps) {
         super(props);
 
+        const NUM_EXTRA_GESTALTS_TO_GEN:number=500000
+
         let initState: StoreState = {
             focusedInstanceId: undefined, //undefined lets the search/add box steal the focus on load
             // filter: "",
@@ -101,7 +103,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
         //finish populating allGestalts
         const generatedGestalts: string[] = []
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < NUM_EXTRA_GESTALTS_TO_GEN; i++) {
             const newGestaltTxt = Math.random() + ''
             generatedGestalts.push(newGestaltTxt)
         }
@@ -451,8 +453,12 @@ export class Store extends React.Component<StoreProps, StoreState> {
         if (typeof offset === "undefined")
             offset = parentGestaltInstance.childrenInstanceIds.length
 
-        const newChildrenInstanceIds =
-            Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 0, ...instanceIds)
+        const newChildrenInstanceIds = parentGestaltInstance.childrenInstanceIds.slice(0,offset)
+            .concat(instanceIds)
+            .concat(parentGestaltInstance.childrenInstanceIds.slice(offset+instanceIds.length))
+
+            //below leads to call stack size exceeded error with 200k instanceIds
+            // Util.immSplice(parentGestaltInstance.childrenInstanceIds, offset, 0, ...instanceIds)
 
         return {
             ...parentGestaltInstance,
@@ -573,7 +579,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
             nextChildrenInstanceIds.unshift(instance.instanceId)
 
         }
-        
+
         this.setState((prevState: StoreState) => {
             if (!prevState.allGestaltInstances) { throw Error() }
             return {
