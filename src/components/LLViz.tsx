@@ -8,13 +8,13 @@ import {LinkedList, Stack} from "../LinkedList"
 
 interface LLVizState {
     theList: Stack<string>
-    lastPopped: string
+    lastPopped: string | undefined
 }
 
 
 export class LLViz extends React.Component<undefined, LLVizState> {
 
-    
+
   constructor(props:undefined) {
     super(props);
     this.state = { theList: new LinkedList<string>(), lastPopped: "" };
@@ -22,7 +22,7 @@ export class LLViz extends React.Component<undefined, LLVizState> {
 
     render() {
         return <div>
-            Stack: 
+            Stack:
             <div>
                 "{this.state.theList.toString() || "\u00a0"}"
             </div>
@@ -31,7 +31,12 @@ export class LLViz extends React.Component<undefined, LLVizState> {
             </div>
             <button onClick={(): void  => { this.state.theList.push("yo"+Math.round(Math.random()*10)); this.forceUpdate()} }>push</button>
             <br />
-            <button onClick={(): void =>  { this.state.lastPopped=this.state.theList.pop(); this.forceUpdate(); return }  }>pop</button><span>{this.state.lastPopped}</span>
+            <button onClick={(): void =>  {
+                this.state.lastPopped=this.state.theList.pop()
+                this.forceUpdate()
+                return
+              }
+            }>pop</button><span>{this.state.lastPopped}</span>
         </div>
     }
 

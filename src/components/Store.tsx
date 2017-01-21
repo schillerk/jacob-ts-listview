@@ -1,16 +1,19 @@
-import * as React from "react";
+import * as React from "react"
 import * as ReactDOM from "react-dom"
-import * as _ from "lodash";
+import * as _ from "lodash"
+const Datastore = require("nedb")
+const db = new Datastore({ filename: './database.db', autoload: true })
 
 import { GestaltComponent } from './GestaltComponent'
 import { SearchAddBox } from './SearchAddBox'
 import { HashtagsBox } from './HashtagsBox'
 import { ListView } from './ListView'
 
-import { Gestalt, GestaltsMap, GestaltInstancesMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
-import * as Util from '../util';
+import { Gestalt, GestaltsMap, GestaltInstancesMap, GestaltInstance, HydratedGestaltInstance } from '../domain'
+import * as Util from '../util'
 
 import * as Immutable from 'immutable'
+
 // import * as ImmutableDiff from 'immutablediff'
 // var ImmutableDiff: any = require("immutablediff");
 

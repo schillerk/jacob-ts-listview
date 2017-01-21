@@ -25,8 +25,8 @@ export interface InfiniteListProps extends React.Props<InfiniteList> {
 export class InfiniteList extends React.Component<InfiniteListProps, InfiniteListState> {
   batchSize: number
   scrollTop: number
-  firstElementIndex: number
-  lastElementIndex: number
+  firstElementIndex: number | undefined
+  lastElementIndex: number | undefined
 
   constructor(props: InfiniteListProps) {
     super(props)
@@ -55,12 +55,14 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
         firstElementIndex = i
       }
 
-      for (let i = firstElementIndex;
-        heightSoFar <= this.scrollTop + props.containerHeight
-        && i < props.multipleElementHeights.length; //needed in case too few elements
-        i++) {
-        heightSoFar += props.multipleElementHeights[i]
-        lastElementIndex = i
+      if (firstElementIndex !== undefined) {
+        for (let i = firstElementIndex;
+          heightSoFar <= this.scrollTop + props.containerHeight
+          && i < props.multipleElementHeights.length; //needed in case too few elements
+          i++) {
+          heightSoFar += props.multipleElementHeights[i]
+          lastElementIndex = i
+        }
       }
     }
     else {
@@ -109,6 +111,7 @@ export class InfiniteList extends React.Component<InfiniteListProps, InfiniteLis
 
   private _createVisibleElements = () => {
     const elements = []
+    if (this.firstElementIndex === undefined) { return [] }
     for (let i = this.firstElementIndex; i <= this.lastElementIndex; ++i) {
       elements.push(
         // React.createElement(
