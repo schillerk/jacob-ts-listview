@@ -90,7 +90,7 @@ export const computeHashtagsFromGestaltsMap = (gestalts: GestaltsMap): Immutable
     return Immutable.OrderedSet<string>(_.keys(allHashtags))
 }
 
-export const computeHashtagsFromGestaltsArray = (gestalts: Gestalt[]): Immutable.OrderedSet<string> => {
+export const computeHashtagsFromGestaltsArray = (gestalts: ReadonlyArray<Gestalt>): Immutable.OrderedSet<string> => {
     const allHashtags: { [tag: string]: boolean } = {}
 
     gestalts.forEach((g) =>

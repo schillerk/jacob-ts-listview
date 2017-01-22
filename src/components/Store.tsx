@@ -32,12 +32,13 @@ export interface StoreProps extends React.Props<Store> {
 export class Store extends React.Component<StoreProps, StoreState> {
     updateTimes: number[] = []
     hashtagTimeout: number
+    
+    NUM_EXTRA_GESTALTS_TO_GEN: number = 3
 
 
     constructor(props: StoreProps) {
         super(props);
 
-        const NUM_EXTRA_GESTALTS_TO_GEN: number = 3
 
         let initState: StoreState = {
             focusedInstanceId: undefined, //undefined lets the search/add box steal the focus on load
@@ -101,17 +102,6 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
 
 
-        //finish populating allGestalts
-        const generatedGestalts: string[] = []
-        for (let i = 0; i < NUM_EXTRA_GESTALTS_TO_GEN; i++) {
-            const newGestaltTxt = Math.random() + ''
-            generatedGestalts.push(newGestaltTxt)
-        }
-        initState = {
-            ...initState,
-            ...Store._MergePartialStateImm(initState,
-                Store._AddGestalts(generatedGestalts, rootGestaltInstance))
-        }
 
         if (!initState.allGestalts || !initState.allGestaltInstances || !initState.rootGestaltInstanceId) {
             throw Error('All gestalts or other attribute is undefined')
@@ -148,7 +138,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
 
 
-        rootGestaltInstance = initState.allGestaltInstances.get(initState.rootGestaltInstanceId)
+        // rootGestaltInstance = initState.allGestaltInstances.get(initState.rootGestaltInstanceId)
 
 
         // if (!initState.allGestaltInstances || !initState.rootGestaltInstanceId) { throw Error() }
@@ -202,6 +192,15 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
     componentDidMount() {
 
+
+        //finish populating allGestalts
+        const generatedGestaltTxts: string[] = []
+        for (let i = 0; i < this.NUM_EXTRA_GESTALTS_TO_GEN; i++) {
+            const newGestaltTxt = Math.random() + ''
+            generatedGestaltTxts.push(newGestaltTxt)
+        }
+        this._addGestalts(generatedGestaltTxts)
+
         //unneeded?
         // setTimeout(
         //     () => this.setState((prevState)=>{ return { hashtags: Util.computeHashtagsFromAllGestalts(this.state.allGestalts) }}), 0)
@@ -228,76 +227,62 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
     // #REDUCER
     // Mutates state
-    addGestaltFromText = (text: string, parentInstanceId?: string, instanceOffset?: number, shouldFocus?: boolean): void => {
+    // @returns newly created gestalts
+    addGestaltsFromText = (text: string, parentInstanceId?: string, instanceOffset?: number, shouldFocus?: boolean): ReadonlyArray<Gestalt> => {
         if (!this.state.allGestaltInstances || !this.state.rootGestaltInstanceId || !this.state.allGestalts || !this.state.hashtags) { throw Error() }
 
-        if (typeof parentInstanceId === "undefined") {
-            if (!this.state.rootGestaltInstanceId) { throw Error() }
-            parentInstanceId = this.state.rootGestaltInstanceId
-        }
-
-        const parentInstance: GestaltInstance = this.state.allGestaltInstances.get(parentInstanceId)
-
-        this.setState((prevState) => Store._MergePartialStateImm(prevState,
-            Store._AddGestaltFromTextStatic(text, parentInstance, instanceOffset, shouldFocus)
-        ))
-    }
-
-    //returns new partial StoreState    
-    private static _AddGestaltFromTextStatic = (text: string, parentInstance: GestaltInstance, instanceOffset?: number, shouldFocus?: boolean): StoreState => {
         const splitTexts: string[] = text.split("\n\n")
         let textsToAdd: string[]
 
         if (splitTexts.length > 1 && window.confirm("Split by double linebreak?")) {
             textsToAdd = splitTexts
         }
-        else
+        else {
             textsToAdd = [text]
+        }
 
-        return Store._AddGestalts(textsToAdd, parentInstance, instanceOffset, shouldFocus ? 0 : undefined)
+        return this._addGestalts(textsToAdd, parentInstanceId, instanceOffset, shouldFocus ? 0 : undefined)
+
     }
-
-
-
-    //  if (typeof parentInstance === "undefined") {
-    //             if (!state.rootGestaltInstanceId) { throw Error() }
-    //             parentInstance = state.rootGestaltInstanceId
-    //         }
-    //         if (parentInstance === state.rootGestaltInstanceId) { console.log("adding at root") }
-    //         else { throw Error("ERR: can only add at root for now") } //#TODO
-    //         if (!state.allGestaltInstances || !state.allGestalts || !state.hashtags) { throw Error() }
 
     //returns partial state 
-    private static _MergePartialStateImm(state: StoreState, diff: StoreState): StoreState {
-        if (!state.allGestaltInstances || !state.allGestalts || !state.hashtags) { throw Error() }
-        if (!diff.allGestaltInstances || !diff.allGestalts || !diff.hashtags) { throw Error() }
+    // private static _MergePartialStateImm(state: StoreState, diff: StoreState): StoreState {
+    //     if (!state.allGestaltInstances || !state.allGestalts || !state.hashtags) { throw Error() }
+    //     if (!diff.allGestaltInstances || !diff.allGestalts || !diff.hashtags) { throw Error() }
 
-        const outState: StoreState = {}
-        Object.keys(diff).forEach((key: string) => {
-            const val: any = (diff as any)[key]
+    //     const outState: StoreState = {}
+    //     Object.keys(diff).forEach((key: string) => {
+    //         const val: any = (diff as any)[key]
 
-            if (val!==undefined && (val instanceof Immutable.Map || val instanceof Immutable.Set)) {
-                (outState as any)[key] = val.merge((diff as any)[key])
-            }
-            else {
-                (outState as any)[key] = (diff as any)[key]
+    //         if (val!==undefined && (val instanceof Immutable.Map || val instanceof Immutable.Set)) {
+    //             (outState as any)[key] = val.merge((diff as any)[key])
+    //         }
+    //         else {
+    //             (outState as any)[key] = (diff as any)[key]
 
-                
-                console.assert(val===undefined || !(val instanceof Immutable.Iterable), "shouldn't be an immutablejs object if it's doing dumb overwrite. Amend above If statement")
-                    
-            }
-        })
-        return outState
-    }
 
-    //#IMMUTABLE
+    //             console.assert(val===undefined || !(val instanceof Immutable.Iterable), "shouldn't be an immutablejs object if it's doing dumb overwrite. Amend above If statement")
+
+    //         }
+    //     })
+    //     return outState
+    // }
+
     // default value for parentInstanceId is this.state.rootGestaltInstanceId
     // shouldFocusIdx has no default
     //returns partial StoreState containing new objects to merge into StoreState
-    private static _AddGestalts = (texts: string[], parentInstance: GestaltInstance, instanceOffset: number = 0, shouldFocusIdx?: number): StoreState => {
+    private _addGestalts = (texts: string[], parentInstanceId?: string, instanceOffset: number = 0, shouldFocusIdx?: number): ReadonlyArray<Gestalt> => {
 
-        const newGestalts: Gestalt[] = texts.map(text => Store._CreateGestalt(text))
-        const newInstances: GestaltInstance[] = newGestalts.map(g => Store._CreateGestaltInstance(g.gestaltId))
+        const newGestalts: ReadonlyArray<Gestalt> = texts.map(text => Store._CreateGestalt(text))
+        const newInstances: ReadonlyArray<GestaltInstance> = newGestalts.map(g => Store._CreateGestaltInstance(g.gestaltId))
+
+        if (typeof parentInstanceId === "undefined") {
+            if (!this.state.rootGestaltInstanceId) { throw Error() }
+            parentInstanceId = this.state.rootGestaltInstanceId
+        }
+
+        if (!this.state.allGestaltInstances) { throw Error() }
+        const parentInstance: GestaltInstance = this.state.allGestaltInstances.get(parentInstanceId)
 
         const updatedParentGestaltInstance: GestaltInstance = Store._InsertChildInstanceIds(
             parentInstance,
@@ -317,13 +302,23 @@ export class Store extends React.Component<StoreProps, StoreState> {
                 [updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance
             })
 
-        return {
-            allGestaltInstances: newGestaltInstancesImm,
-            allGestalts: newGestaltsImm,
-            focusedInstanceId: shouldFocusIdx !== undefined ? newInstances[shouldFocusIdx].instanceId : undefined,
-            hashtags: Immutable.Set(Util.computeHashtagsFromGestaltsArray(newGestalts))
-        }
+        this.setState((prevState) => {
+            if (!prevState.allGestaltInstances || !prevState.rootGestaltInstanceId || !prevState.allGestalts || !prevState.hashtags) { throw Error() }
 
+            const outStatePartial: StoreState = {
+                allGestaltInstances: prevState.allGestaltInstances.merge(newGestaltInstancesImm),
+                allGestalts: prevState.allGestalts.merge(newGestaltsImm),
+                hashtags: prevState.hashtags.merge(Immutable.Set(Util.computeHashtagsFromGestaltsArray(newGestalts))),
+            }
+
+            if (typeof shouldFocusIdx !== "undefined") {
+                outStatePartial.focusedInstanceId = newInstances[shouldFocusIdx].instanceId
+            }
+
+            return outStatePartial
+        })
+
+        return newGestalts
     }
 
     //#IMMUTABLE
@@ -390,14 +385,13 @@ export class Store extends React.Component<StoreProps, StoreState> {
         return this.state.allGestaltInstances.get(this.state.rootGestaltInstanceId)
     }
 
+    //#todo expandAndFocusInstanceId
     createAndRelate = (srcGestaltId: string, text: string, expandAndFocusInstanceId?: string) => {
+        if(expandAndFocusInstanceId) { throw Error("#TODO implement expandAndFocusInstanceId")}
 
-        const stateDiff: StoreState = Store._AddGestaltFromTextStatic(text, this.getRootGestaltInstance())
-        if (!stateDiff.allGestalts || !stateDiff.rootGestaltInstanceId) { throw Error() }
-
-        stateDiff.allGestalts.forEach((g: Gestalt) => {
-            if (typeof g === "undefined") { throw Error() }
-
+        const newGestalts: ReadonlyArray<Gestalt> = this.addGestaltsFromText(text)
+        
+        newGestalts.forEach((g: Gestalt) => {
             this.addRelation(srcGestaltId, g.gestaltId, expandAndFocusInstanceId)
         })
     }
@@ -713,7 +707,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
                 updateGestaltText={this.updateGestaltText}
 
                 toggleExpand={this.toggleExpand}
-                addGestalt={this.addGestaltFromText}
+                addGestalt={this.addGestaltsFromText}
 
                 />
         )
