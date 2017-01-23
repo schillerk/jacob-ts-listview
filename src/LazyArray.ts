@@ -1,4 +1,5 @@
 import * as _ from "lodash";
+import * as Immutable from "immutable";
 
 
 export class LazyArray<T>  {
@@ -14,6 +15,11 @@ export class LazyArray<T>  {
 
     public static fromArray = <T>(fromArray: T[]): LazyArray<T> => {
         return new LazyArray<T>(fromArray.length, (i: number) => fromArray[i])
+    }
+
+    public static fromImmMap = <T>(fromMap: Immutable.Map<string,T> ): LazyArray<T> => {
+        //#todo check if slow
+        return new LazyArray<T>(fromMap.size, (i: number) => fromMap.toList().get(i))
     }
 
 

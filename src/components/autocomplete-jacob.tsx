@@ -1,11 +1,15 @@
 import * as React from "react";
 import { Gestalt } from "../domain"
+import { LazyArray } from "../LazyArray"
+import { FilteredInfiniteList } from "./FilteredInfiniteList"
 
 export interface AddRelatedFormProps extends React.Props<AddRelatedForm> {
   // options: AddRelatedFormOption[];
   // onChange: (value: string) => void;
   // itemClickHandler: (name: string) => void;
   // value: string;
+  filterOptions: LazyArray<Gestalt>
+
   createAndRelate: (text: string) => void;
   relateToCurrentIdea: (targetId: string) => void
 
@@ -30,6 +34,11 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
     this.props.relateToCurrentIdea(targetId)
   }
 
+  createAndRelate = (text: string) => {
+    this.props.createAndRelate(text);
+    this.setState({ inputVal: '' })
+  }
+
   // addRelated = (id: string) => {
   //   this.setState({ suggestingRelations: false });
   //   this.relateToCurrentIdea(id);
@@ -39,32 +48,8 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
   // }
 
 
-  //#question should i make this a pure function of props?
-  filteredSuggestions = () => {
-    if (!this.state.suggestingRelations) return [];
-
-    const {note, allNotes, relatedNotes} = this.props;
 
 
-    let suggestions = allNotes.filter((currNote) =>
-      true
-      && note
-      && currNote.id !== note.id
-      && !relatedNotes.find(n => n.id === currNote.id)
-    )
-
-    suggestions = filterEntries(suggestions, this.state.inputVal)
-
-    return suggestions
-
-  }
-
-
-
-  createAndRelate = (text: string) => {
-    this.props.createAndRelate(text);
-    this.setState({ inputVal: '' })
-  }
 
   // renderRaw() {
   //   const { relatedNotes } = this.props;
@@ -79,6 +64,11 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
   render() {
     // if (this.props.rawRelations == true) return this.renderRaw();
     if (typeof this.state.inputVal === "undefined") { throw Error() }
+
+    //#todo do this more safely 
+    //https://github.com/Microsoft/TypeScript/issues/3960 @mrThomasTeller This approach is not a good solution IMHO since it needs an any cast. For instance, the constructor parameters are not declared...
+    const GestaltFilteredInfiniteList: (new () => FilteredInfiniteList<Gestalt>) = FilteredInfiniteList as any
+
     return (
       <span style={{ position: "relative", margin: "0 40px", }}>
 
@@ -99,31 +89,46 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
             ref="addRelated" />
 
           {/* add relations dropdown*/}
-          <ul style={{
-            position: "absolute", left: "0px", top: "20px", padding: "0 3px", zIndex: 999, backgroundColor: "white", width: "120px",
-            display: (this.state.suggestingRelations ? "block" : "none")
-          }}>
-            {this.filteredSuggestions()
-              .map((suggestion: Gestalt) => {
-                return <li
+          {!this.state.suggestingRelations ? null :
+            <ul style={{
+              position: "absolute", left: "0px", top: "20px", padding: "0 3px", zIndex: 999, backgroundColor: "white", width: "120px",
+              display: (this.state.suggestingRelations ? "block" : "none")
+            }}>
+              <GestaltFilteredInfiniteList
+                containerHeight={100}
+                fixedElementHeight={36}
+
+                data={this.props.filterOptions}
+                filter={this.state.inputVal}
+
+                textFilterFn={(filter: string) => (
+                  (g: Gestalt) =>
+                    (g.text.toLowerCase().indexOf(filter.toLowerCase()) !== -1)
+                )
+                }
+
+                elemGenerator={(suggestion: Gestalt) => <li
                   className="suggestion"
-                  onMouseDown={() => this.addRelated(suggestion.gestaltId)}
+                  onMouseDown={() => this.relateToCurrentIdea(suggestion.gestaltId)}
                   key={suggestion.gestaltId}>
                   {suggestion.text}
                 </li>
-              })}
-            <li
-              className="suggestion"
-              onMouseDown={() => {
-                if (typeof this.state.inputVal === "undefined") { throw Error() }
-                this.createAndRelate(this.state.inputVal)
-              } }
-              >
-              {this.state.inputVal.length > 0 ?
-                <span><span style={{ color: "gray" }}>+ add &quot;</span>{this.state.inputVal}<span style={{ color: "gray" }}>&quot; as new idea and relate </span></span>
-                : ''}
-            </li>
-          </ul>
+                }
+                />
+
+              <li
+                className="suggestion"
+                onMouseDown={() => {
+                  if (typeof this.state.inputVal === "undefined") { throw Error() }
+                  this.createAndRelate(this.state.inputVal)
+                } }
+                >
+                {this.state.inputVal.length > 0 ?
+                  <span><span style={{ color: "gray" }}>+ add &quot;</span>{this.state.inputVal}<span style={{ color: "gray" }}>&quot; as new idea and relate </span></span>
+                  : ''}
+              </li>
+            </ul>
+          }
 
         </span>
       </span>
@@ -131,16 +136,3 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
     );
   }
 }
-
-AddRelatedForm.propTypes = {
-  allNotes: React.PropTypes.array.isRequired,
-  // rawRelations: React.PropTypes.bool.isRequired,
-  relatedNotes: React.PropTypes.array.isRequired,
-  relateToCurrentIdea: React.PropTypes.func.isRequired,
-  addNote: React.PropTypes.func.isRequired,
-  note: React.PropTypes.object.isRequired,
-
-  addRelation: React.PropTypes.func.isRequired,
-  relations: React.PropTypes.array.isRequired,
-  editNote: React.PropTypes.func.isRequired
-};

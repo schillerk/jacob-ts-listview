@@ -36,6 +36,9 @@ export interface ListViewProps extends React.Props<ListView> {
     toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
     addGestalt: (text: string, parentInstanceId?: string, offset?: number, shouldFocus?: boolean) => void
 
+    createAndRelate: (srcGestaltId: string, text: string, expandAndFocusInstanceId?: string) => void
+    addRelation: (srcGestaltId: string, tgtGestaltId: string, expandAndFocusInstanceId?: string) => void
+
 }
 
 
@@ -180,6 +183,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         // rootChildrenHeights={this.props.rootChildrenHeights}
 
                         gestaltComponentOnBlur={this.props.gestaltComponentOnBlur}
+
+                        //for AddRelatedForm
+                        filterOptions={LazyArray.fromImmMap(this.props.allGestalts)}
+                        createAndRelate={this.props.createAndRelate}
+                        addRelation={this.props.addRelation}
                         />
                 </div>
             </div >

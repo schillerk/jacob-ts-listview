@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as _ from "lodash";
 // import { Autocomplete } from "./autocomplete"
-// import { AddRelatedForm } from "./autocomplete-jacob"
+import { AddRelatedForm } from "./autocomplete-jacob"
 import { Gestalt, GestaltsMap, GestaltInstance, HydratedGestaltInstance } from '../domain';
 
 import * as Util from '../util';
@@ -41,6 +41,12 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
   toggleExpand: (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance) => void
   addGestalt: (text: string, parentInstanceId?: string, offset?: number, shouldFocus?: boolean) => void
   // commitIndentChild: (parentInstanceId: string, childIndex: number) => void
+
+  //for AddRelatedForm
+  filterOptions: LazyArray<Gestalt>
+  createAndRelate: (srcGestaltId: string, text: string, expandAndFocusInstanceId?: string) => void
+  addRelation: (srcGestaltId: string, tgtGestaltId: string, expandAndFocusInstanceId?: string) => void
+
 
   isRoot?: boolean
   filter?: string
@@ -241,7 +247,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
   }
 
-  private genGestaltComponentFromInstance = (instance: HydratedGestaltInstance, i: number): JSX.Element => {
+  private _genGestaltComponentFromInstance = (instance: HydratedGestaltInstance, i: number): JSX.Element => {
     // const gestaltInstanceId: string = instance.id + "-" + id
     return (
       <GestaltComponent
@@ -263,6 +269,12 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         getOffsetChild={this.getOffsetChild}
         gestaltComponentOnBlur={this.props.gestaltComponentOnBlur}
         filter={this.props.filter}
+
+        //for AddRelatedForm
+        filterOptions={this.props.filterOptions}
+        createAndRelate={this.props.createAndRelate}
+        addRelation={this.props.addRelation}
+
         />
     )
   }
@@ -393,7 +405,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         containerHeight={myHeight - 20}
         fixedElementHeight={36}
         // multipleElementHeights={this.props.rootChildrenHeights}
-        elements={expandedChildGestaltInstances.map(this.genGestaltComponentFromInstance)}
+        elements={expandedChildGestaltInstances.map(this._genGestaltComponentFromInstance)}
         />
       // ElementComponent={GestaltComponent} />
 
@@ -418,7 +430,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         .filter(instance => instance.expanded)
       // this.renderedGestaltComponents = Array(expandedChildGestaltInstances.length)
       expandedChildrenListComponent = <div>
-        {expandedChildGestaltInstances.map(this.genGestaltComponentFromInstance)}
+        {expandedChildGestaltInstances.map(this._genGestaltComponentFromInstance)}
       </div>
 
       console.assert(this.props.gestaltInstance.hydratedChildren instanceof Array)
@@ -496,19 +508,17 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       gestaltBody = <div>
         {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
         {gestaltTextSpan}
-        {/*<AddRelatedForm
-          note={this.props.note}
-          rawRelations={this.props.rawRelations}
-          relatedNotes={this.props.relatedNotes}
-          relateToCurrentIdea={(targetId) => this.props.addRelation(id, targetId)}
-          stateData={this.state}
-          addNote={this.props.addNote}
-          allNotes={this.props.allNotes}
-
-          addRelation={this.props.addRelation}
-          editNote={this.props.editNote}
-          relations={this.props.relations}
-          />*/}
+        <AddRelatedForm
+          filterOptions={this.props.filterOptions}
+          createAndRelate={(text: string) => {
+            if (!this.props.gestaltInstance.gestaltId) { throw Error() }
+            return this.props.createAndRelate(this.props.gestaltInstance.gestaltId, text)
+          } }
+          relateToCurrentIdea={(targetId: string) => {
+            if (!this.props.gestaltInstance.gestaltId) { throw Error() }            
+            return this.props.addRelation(this.props.gestaltInstance.gestaltId, targetId)
+          } }
+          />
         {/* related gestalts nubs list */}
         {relatedGestaltNubs}
       </div>
