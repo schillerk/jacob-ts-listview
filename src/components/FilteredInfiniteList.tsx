@@ -6,6 +6,8 @@ import * as _ from "lodash";
 
 
 import { InfiniteList } from "./InfiniteList"
+import * as Util from '../util';
+
 
 
 export interface FilteredInfiniteListState<T> {
@@ -107,12 +109,15 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
     // ))
 
 
-    return <InfiniteList
-      containerHeight={this.props.containerHeight}
-      fixedElementHeight={this.props.fixedElementHeight}
-      // mthis.props.//}
-      elements={filteredData.map(this.props.elemGenerator)}
-      />
+    return <div>
+      <div style={{ color: "gray" }}>{true || this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes" : Util.SPECIAL_CHARS_JS.NBSP}</div>
+      <InfiniteList
+        containerHeight={this.props.containerHeight}
+        fixedElementHeight={this.props.fixedElementHeight}
+        // mthis.props.//}
+        elements={filteredData.map(this.props.elemGenerator)}
+        />
+    </div>
   }
 }
 

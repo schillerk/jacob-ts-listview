@@ -143,11 +143,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return (
             <div>
 
-                <div style={{ marginTop: "45px", float: "right", width: "300px", minHeight: "300px" }}>
+                <div style={{ margin: "45px 10px 10px 10px",  float: "right", width: "300px" }}>
                     <HashtagsBox hashtags={this.props.hashtags.toJS()} onClickTag={this.onClickTag} />
                 </div>
 
-                <div className="box" style={{ padding: "45px 60px 10px", width: "700px", margin: "0 auto" }}>
+                <div className="box" style={{ float: "right", padding: "45px 60px 10px", width: "700px", margin: "0 40px 0 auto" }}>
 
                     <SearchAddBox
                         autoFocus
