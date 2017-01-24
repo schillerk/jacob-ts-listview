@@ -17,10 +17,10 @@ export class LazyArray<T>  {
         return new LazyArray<T>(fromArray.length, (i: number) => fromArray[i])
     }
 
-    public static fromImmMap = <T>(fromMap: Immutable.Map<string,T> ): LazyArray<T> => {
-        //#todo check if slow
-        return new LazyArray<T>(fromMap.size, (i: number) => fromMap.toList().get(i))
-    }
+    // public static fromImmMap = <T>(fromMap: Immutable.Map<string,T> ): LazyArray<T> => {
+    //     // IT IS SLOWWWWWW
+    //     return new LazyArray<T>(fromMap.size, (i: number) => fromMap.toList().get(i))
+    // }
 
 
     slice = (start: number = 0, end: number = this.length) => {

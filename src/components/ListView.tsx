@@ -185,7 +185,11 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         gestaltComponentOnBlur={this.props.gestaltComponentOnBlur}
 
                         //for AddRelatedForm
-                        filterOptions={LazyArray.fromImmMap(this.props.allGestalts)}
+                        filterOptions={(hydratedRootGestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>).map((gi: HydratedGestaltInstance) => {
+                            if (!gi.gestalt) { throw Error() }
+                            return gi.gestalt
+                        })}
+                        // filterOptions={LazyArray.fromImmMap(this.props.allGestalts)}
                         createAndRelate={this.props.createAndRelate}
                         addRelation={this.props.addRelation}
                         />

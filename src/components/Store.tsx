@@ -33,7 +33,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     updateTimes: number[] = []
     hashtagTimeout: number
 
-    NUM_EXTRA_GESTALTS_TO_GEN: number = 4
+    NUM_EXTRA_GESTALTS_TO_GEN: number = 100000
 
 
     constructor(props: StoreProps) {
