@@ -9,7 +9,6 @@ import { InfiniteList } from "./InfiniteList"
 
 
 export interface FilteredInfiniteListState<T> {
-  filter?: string
   filtering?: number
   filteredEntries?: LazyArray<T> | undefined
 }
@@ -26,7 +25,7 @@ export interface FilteredInfiniteListProps<T> extends React.Props<FilteredInfini
   data: LazyArray<T>
   filter: string
 
-  textFilterFn: (filter:string)=>((e:T) => boolean)
+  textFilterFn: (filter: string) => ((e: T) => boolean)
   elemGenerator: (model: T, i: number) => JSX.Element
 
 }
@@ -37,6 +36,9 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
 
   constructor(props: FilteredInfiniteListProps<T>) {
     super(props)
+    this.state = {
+      filtering: 0
+    }
     console.assert(!(typeof props.fixedElementHeight === "undefined" && typeof props.multipleElementHeights === "undefined"))
   }
 
@@ -49,20 +51,19 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
       if (this.clearAsyncFilterTimeout) {
         this.clearAsyncFilterTimeout()
         this.clearAsyncFilterTimeout = undefined
-        this.setState((prevState) => { return { filtering: prevState.filtering - 1 } })
+        this.setState((prevState: FilteredInfiniteListState<T>) => { return { filtering: prevState.filtering - 1 } })
       }
 
       //filter has some nonempty (new) val, start running it
       if (nextProps.filter) {
         let data: LazyArray<T> = this.props.data
 
-        this.setState((prevState) => { return { filtering: prevState.filtering + 1 } })
-
+        this.setState((prevState: FilteredInfiniteListState<T>) => { return { filtering: prevState.filtering + 1 } })
         this.clearAsyncFilterTimeout = data.asyncFilter(
           this.props.textFilterFn(nextProps.filter),
           (results: LazyArray<T>) => {
             this.clearAsyncFilterTimeout = undefined
-            this.setState((prevState) => {
+            this.setState((prevState: FilteredInfiniteListState<T>) => {
               return {
                 filtering: prevState.filtering - 1,
                 filteredEntries: results
@@ -74,8 +75,9 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
 
       }
       else { // filter cleared
-        if (this.state.filteredEntries)
+        if (this.state.filteredEntries) {
           this.setState({ filteredEntries: this.props.data })
+        }
       }
 
     }
@@ -88,7 +90,7 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
     let filteredData: LazyArray<T> = this.props.data
 
     if (this.props.filter) {
-      
+
       if (this.state.filteredEntries) {
         filteredData = this.state.filteredEntries
       }

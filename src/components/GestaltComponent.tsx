@@ -290,7 +290,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       if (this.clearAsyncFilterTimeout) {
         this.clearAsyncFilterTimeout()
         this.clearAsyncFilterTimeout = undefined
-        this.setState((prevState) => { return { filtering: prevState.filtering - 1 } })
+        this.setState((prevState: GestaltComponentState) => { return { filtering: prevState.filtering - 1 } })
       }
 
       //filter has some nonempty (new) val, start running it
@@ -310,13 +310,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
           }
         }
 
-        this.setState((prevState) => { return { filtering: prevState.filtering + 1 } })
+        this.setState((prevState: GestaltComponentState) => { return { filtering: prevState.filtering + 1 } })
 
         this.clearAsyncFilterTimeout = hydratedChildren.asyncFilter(
           textFilterFn,
           (results: LazyArray<HydratedGestaltInstance>) => {
             this.clearAsyncFilterTimeout = undefined
-            this.setState((prevState) => {
+            this.setState((prevState: GestaltComponentState) => {
               return {
                 filtering: prevState.filtering - 1,
                 filteredEntries: results
