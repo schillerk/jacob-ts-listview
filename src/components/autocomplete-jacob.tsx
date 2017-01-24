@@ -115,17 +115,18 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
                 }
                 />
 
-              <li
-                className="suggestion"
-                onMouseDown={() => {
-                  if (typeof this.state.inputVal === "undefined") { throw Error() }
-                  this.createAndRelate(this.state.inputVal)
-                } }
-                >
-                {this.state.inputVal.length > 0 ?
+              {this.state.inputVal.length <= 0 ? null :
+                <li
+                  style={{ listStyleType: "none" }}
+                  className="suggestion"
+                  onMouseDown={() => {
+                    if (typeof this.state.inputVal === "undefined") { throw Error() }
+                    this.createAndRelate(this.state.inputVal)
+                  } }
+                  >
                   <span><span style={{ color: "gray" }}>+ add &quot;</span>{this.state.inputVal}<span style={{ color: "gray" }}>&quot; as new idea and relate </span></span>
-                  : ''}
-              </li>
+                </li>
+              }
             </ul>
           }
 
