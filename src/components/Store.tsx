@@ -19,7 +19,7 @@ export interface StoreState {
     allGestalts?: GestaltsMap
     allGestaltInstances?: GestaltInstancesMap
     rootGestaltInstanceId?: string
-    focusedInstanceId?: string
+    focusedInstanceId?: string | undefined
     hashtags?: Immutable.OrderedSet<string>
     // rootChildrenHeights?: number[]
 }
@@ -718,7 +718,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
     //#REDUCER
     gestaltComponentOnBlur = (instanceId: string): void => {
-        if (this.state.focusedInstanceId === instanceId) {
+        if (this.state.focusedInstanceId  === instanceId) {
             this.setState((prevState: StoreState) => { return { focusedInstanceId: undefined } })
         }
     }

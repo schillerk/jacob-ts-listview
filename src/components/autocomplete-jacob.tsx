@@ -70,18 +70,17 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
     const GestaltFilteredInfiniteList: (new () => FilteredInfiniteList<Gestalt>) = FilteredInfiniteList as any
 
     return (
-      <span style={{ position: "relative", margin: "0 40px", }}>
+      <span style={{ position: "relative", margin: "0 0 0 40px", }}>
 
         {/* add related input and dropdown */}
         <span
-          style={{ width: "120px" }}
           onFocus={() => this.setState({ suggestingRelations: true })}
           onBlur={() => this.setState({ suggestingRelations: false })}
           >
 
           {/* add related input */}
           <input
-            style={{ position: "absolute", left: "0px", width: "120px" }}
+            style={{ position: "relative", width: "120px" }}
             type="text"
             placeholder="+ Add Related"
             onChange={(e) => this.setState({ inputVal: e.currentTarget.value })}
@@ -91,7 +90,7 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
           {/* add relations dropdown*/}
           {!this.state.suggestingRelations ? null :
             <ul style={{
-              position: "absolute", left: "0px", top: "20px", padding: "0 3px", zIndex: 999, backgroundColor: "white", width: "120px",
+              position: "absolute", left: "0px", top: "20px", padding: "0 3px", zIndex: 999, backgroundColor: "white", width: "240px",
               display: (this.state.suggestingRelations ? "block" : "none")
             }}>
               <GestaltFilteredInfiniteList
