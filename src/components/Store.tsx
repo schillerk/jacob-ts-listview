@@ -191,8 +191,8 @@ export class Store extends React.Component<StoreProps, StoreState> {
     // }
 
     componentDidUpdate() {
-        if (this.state.allGestalts)
-            console.log(this.state.allGestalts.toJS())
+        // if (this.state.allGestalts)
+        //     console.log(this.state.allGestalts.toJS())
     }
 
     componentDidMount() {
