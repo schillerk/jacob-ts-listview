@@ -12,7 +12,7 @@ import * as Util from '../util';
 
 export interface FilteredInfiniteListState<T> {
   filtering?: number
-  filteredEntries?: LazyArray<T> | undefined
+  filteredEntriesIdxs?: LazyArray<number> | undefined
 }
 
 export interface FilteredInfiniteListProps<T> extends React.Props<FilteredInfiniteList<T>> {
@@ -69,24 +69,32 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
         let data: LazyArray<T> = this.props.data
 
         this.setState((prevState: FilteredInfiniteListState<T>) => { return { filtering: prevState.filtering + 1 } })
-        this.clearAsyncFilterTimeout = data.asyncFilter(
-          this.props.textFilterFn(nextProps.filter),
-          (results: LazyArray<T>) => {
+
+
+        type IndexedElem<T> = { val: T, idx: number }
+
+        this.clearAsyncFilterTimeout = data
+          .map((e: T, idx: number): IndexedElem<T> => {
+            return { val: e, idx: idx }
+          }).
+          asyncFilter(
+          (e: IndexedElem<T>) => this.props.textFilterFn(nextProps.filter)(e.val),
+          (results: LazyArray<{ val: T, idx: number }>) => {
             this.clearAsyncFilterTimeout = undefined
             this.setState((prevState: FilteredInfiniteListState<T>) => {
               return {
                 filtering: prevState.filtering - 1,
-                filteredEntries: results
+                filteredEntriesIdxs: results.map((r) => r.idx)
               }
             })
 
           }
-        )
+          )
 
       }
       else { // filter cleared
-        if (this.state.filteredEntries) {
-          this.setState({ filteredEntries: this.props.data })
+        if (this.state.filteredEntriesIdxs) {
+          this.setState({ filteredEntriesIdxs: undefined })
         }
       }
 
@@ -107,8 +115,9 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
 
     if (this.props.filter) {
 
-      if (this.state.filteredEntries) {
-        filteredData = this.state.filteredEntries
+      if (this.state.filteredEntriesIdxs) {
+        filteredData = this.state.filteredEntriesIdxs
+          .map((idx: number) => this.props.data.get(idx))
       }
       // data =
       // data = (data as LazyArray<T>).filter(this.textFilterFn)

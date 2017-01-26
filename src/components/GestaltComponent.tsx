@@ -295,7 +295,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
       //filter has some nonempty (new) val, start running it
       if (nextProps.filter) {
-        let hydratedChildren: LazyArray<HydratedGestaltInstance> =
+        let hydratedChildrenLazy: LazyArray<HydratedGestaltInstance> =
           nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
 
         const textFilterFn = (e: HydratedGestaltInstance): boolean => {
@@ -313,9 +313,11 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
         this.setState((prevState: GestaltComponentState) => { return { filtering: prevState.filtering + 1 } })
 
-        this.clearAsyncFilterTimeout = hydratedChildren.map((e, idx) => {
-          return { ...e, idx: idx }
-        }).asyncFilter(
+        this.clearAsyncFilterTimeout = hydratedChildrenLazy
+          .map((e, idx) => {
+            return { ...e, idx: idx }
+          })
+          .asyncFilter(
           textFilterFn,
           (results: LazyArray<HydratedGestaltInstance>) => {
 
