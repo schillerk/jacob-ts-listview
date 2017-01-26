@@ -33,7 +33,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     updateTimes: number[] = []
     hashtagTimeout: number
 
-    NUM_EXTRA_GESTALTS_TO_GEN: number = 400000
+    NUM_EXTRA_GESTALTS_TO_GEN: number = 4
 
 
     constructor(props: StoreProps) {
@@ -191,8 +191,11 @@ export class Store extends React.Component<StoreProps, StoreState> {
     // }
 
     componentDidUpdate() {
-        // if (this.state.allGestalts)
-        //     console.log(this.state.allGestalts.toJS())
+        if (this.state.allGestalts)
+            console.log(this.state.allGestalts.toJS())
+
+        if (this.state.allGestaltInstances)
+            console.log(this.state.allGestaltInstances.toJS())
     }
 
     componentDidMount() {

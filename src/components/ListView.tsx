@@ -111,8 +111,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 relatedGestalts: currGestalt.relatedIds.map((id: string) => allGestalts.get(id))
             }
 
-            nextHydChildren = currInstance.childrenInstanceIds.map((instanceId: string) =>
-                ListView._HydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances, focusedInstanceId))
+            nextHydChildren = currInstance.childrenInstanceIds
+                .filter((instanceId: string) => allGestaltInstances.get(instanceId).expanded)
+                .map((instanceId: string) =>
+                    ListView._HydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances, focusedInstanceId))
         }
 
 
@@ -143,7 +145,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         return (
             <div>
 
-                <div style={{ margin: "45px 10px 10px 10px",  float: "right", width: "300px" }}>
+                <div style={{ margin: "45px 10px 10px 10px", float: "right", width: "300px" }}>
                     <HashtagsBox hashtags={this.props.hashtags.toJS()} onClickTag={this.onClickTag} />
                 </div>
 
