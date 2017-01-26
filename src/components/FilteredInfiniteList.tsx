@@ -26,6 +26,7 @@ export interface FilteredInfiniteListProps<T> extends React.Props<FilteredInfini
 
   data: LazyArray<T>
   filter: string
+  excludes?: T[]
 
   textFilterFn: (filter: string) => ((e: T) => boolean)
   elemGenerator: (model: T, i: number) => JSX.Element
@@ -42,6 +43,13 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
       filtering: 0
     }
     console.assert(!(typeof props.fixedElementHeight === "undefined" && typeof props.multipleElementHeights === "undefined"))
+  }
+
+  componentWillUnmount() {
+    if (this.clearAsyncFilterTimeout) {
+      this.clearAsyncFilterTimeout()
+      this.clearAsyncFilterTimeout = undefined
+    }
   }
 
   componentWillReceiveProps(nextProps: FilteredInfiniteListProps<T>) {
@@ -64,7 +72,6 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
         this.clearAsyncFilterTimeout = data.asyncFilter(
           this.props.textFilterFn(nextProps.filter),
           (results: LazyArray<T>) => {
-            //#todo fix bug: if component has unmounted before this returns throws warning
             this.clearAsyncFilterTimeout = undefined
             this.setState((prevState: FilteredInfiniteListState<T>) => {
               return {
@@ -90,7 +97,13 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
 
   render() {
 
-    let filteredData: LazyArray<T> = this.props.data
+    let filteredData: LazyArray<T | undefined> = this.props.data
+
+    if (this.props.excludes)
+      filteredData = filteredData.map((e: T) => {
+        if (!this.props.excludes) { throw Error() }
+        return _.includes(this.props.excludes, e) ? undefined : e
+      })
 
     if (this.props.filter) {
 
