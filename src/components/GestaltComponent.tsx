@@ -16,6 +16,7 @@ import { LazyArray } from "../LazyArray"
 
 
 import { InfiniteList } from "./InfiniteList"
+import { FilteredInfiniteList } from "./FilteredInfiniteList"
 
 // var Infinite: any = require("react-infinite");
 // var InfiniteList: any = require("../src/components/InfiniteList");
@@ -283,64 +284,65 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
   componentWillReceiveProps(nextProps: GestaltComponentProps) {
 
-    //if filter changed
-    if (nextProps.isRoot && nextProps.filter !== this.props.filter) {
 
-      //if there is a running async filter, clear it
-      if (this.clearAsyncFilterTimeout) {
-        this.clearAsyncFilterTimeout()
-        this.clearAsyncFilterTimeout = undefined
-        this.setState((prevState: GestaltComponentState) => { return { filtering: prevState.filtering - 1 } })
-      }
+    // //if filter changed
+    // if (nextProps.isRoot && nextProps.filter !== this.props.filter) {
 
-      //filter has some nonempty (new) val, start running it
-      if (nextProps.filter) {
-        let hydratedChildrenLazy: LazyArray<HydratedGestaltInstance> =
-          nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
+    //   //if there is a running async filter, clear it
+    //   if (this.clearAsyncFilterTimeout) {
+    //     this.clearAsyncFilterTimeout()
+    //     this.clearAsyncFilterTimeout = undefined
+    //     this.setState((prevState: GestaltComponentState) => { return { filtering: prevState.filtering - 1 } })
+    //   }
 
-        const textFilterFn = (e: HydratedGestaltInstance): boolean => {
-          if (nextProps.filter) {
-            if (!e.gestalt) { throw Error("should never be called on root instance itself") }
-            return e.gestalt.text.toLowerCase().indexOf(nextProps.filter.toLowerCase()) >= 0
-          }
-          else {
-            // means there's no filter
-            // Should never happen in this context
-            console.error("Should never happen")
-            return true
-          }
-        }
+    //   //filter has some nonempty (new) val, start running it
+    //   if (nextProps.filter) {
+    //     let hydratedChildrenLazy: LazyArray<HydratedGestaltInstance> =
+    //       nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
 
-        this.setState((prevState: GestaltComponentState) => { return { filtering: prevState.filtering + 1 } })
+    //     const textFilterFn = (e: HydratedGestaltInstance): boolean => {
+    //       if (nextProps.filter) {
+    //         if (!e.gestalt) { throw Error("should never be called on root instance itself") }
+    //         return e.gestalt.text.toLowerCase().indexOf(nextProps.filter.toLowerCase()) >= 0
+    //       }
+    //       else {
+    //         // means there's no filter
+    //         // Should never happen in this context
+    //         console.error("Should never happen")
+    //         return true
+    //       }
+    //     }
 
-        this.clearAsyncFilterTimeout = hydratedChildrenLazy
-          .map((e, idx) => {
-            return { ...e, idx: idx }
-          })
-          .asyncFilter(
-          textFilterFn,
-          (results: LazyArray<HydratedGestaltInstance>) => {
+    //     this.setState((prevState: GestaltComponentState) => { return { filtering: prevState.filtering + 1 } })
 
-            this.clearAsyncFilterTimeout = undefined
+    //     this.clearAsyncFilterTimeout = hydratedChildrenLazy
+    //       .map((e, idx) => {
+    //         return { ...e, idx: idx }
+    //       })
+    //       .asyncFilter(
+    //       textFilterFn,
+    //       (results: LazyArray<HydratedGestaltInstance>) => {
+
+    //         this.clearAsyncFilterTimeout = undefined
 
 
-            this.setState((prevState: GestaltComponentState) => {
-              return {
-                filtering: prevState.filtering - 1,
-                filteredEntriesIdxs: results.map((r) => r.idx)
-              }
-            })
+    //         this.setState((prevState: GestaltComponentState) => {
+    //           return {
+    //             filtering: prevState.filtering - 1,
+    //             filteredEntriesIdxs: results.map((r) => r.idx)
+    //           }
+    //         })
 
-          }
-          )
+    //       }
+    //       )
 
-      }
-      else { // filter cleared
-        if (this.state.filteredEntriesIdxs)
-          this.setState({ filteredEntriesIdxs: undefined })
-      }
+    //   }
+    //   else { // filter cleared
+    //     if (this.state.filteredEntriesIdxs)
+    //       this.setState({ filteredEntriesIdxs: undefined })
+    //   }
 
-    }
+    // }
 
   }
 
@@ -416,12 +418,32 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       // expandedChildrenListComponent = <div>
       //   {expandedChildGestaltInstances.map(this.genGestaltComponentFromInstance).toArray()}
       // </div>
-      expandedChildrenListComponent = <InfiniteList
+
+      const HydratedGestaltInstanceFilteredInfiniteList: (new () => FilteredInfiniteList<HydratedGestaltInstance>) = FilteredInfiniteList as any
+      expandedChildrenListComponent = <HydratedGestaltInstanceFilteredInfiniteList
         containerHeight={myHeight - 20}
         fixedElementHeight={36}
-        // multipleElementHeights={this.props.rootChildrenHeights}
-        elements={expandedChildGestaltInstances.map(this._genGestaltComponentFromInstance)}
+
+        data={hydratedChildrenLazy}
+        filter={this.props.filter || ""}
+
+        textFilterFn={(filter: string) => (
+          (e: HydratedGestaltInstance) => {
+            if (!e.gestalt) { throw Error() }
+            return (e.gestalt.text.toLowerCase().indexOf(filter.toLowerCase()) !== -1)
+          }
+        )
+        }
+
+        elemGenerator={this._genGestaltComponentFromInstance}
         />
+
+      // expandedChildrenListComponent = <InfiniteList
+      //   containerHeight={myHeight - 20}
+      //   fixedElementHeight={36}
+      //   // multipleElementHeights={this.props.rootChildrenHeights}
+      //   elements={expandedChildGestaltInstances.map(this._genGestaltComponentFromInstance)}
+      //   />
       // ElementComponent={GestaltComponent} />
 
       gestaltBody = <div style={{ color: "gray" }}>{true || this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes" : Util.SPECIAL_CHARS_JS.NBSP}</div>
