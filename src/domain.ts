@@ -26,8 +26,9 @@ export interface HydratedGestalt extends Gestalt {
 export interface HydratedGestaltInstance extends GestaltInstance {
   readonly shouldFocus?: boolean
   readonly gestalt: HydratedGestalt | undefined //undefined if root
-  readonly hydratedChildren: ReadonlyArray<HydratedGestaltInstance> | LazyArray<HydratedGestaltInstance> | null
+  readonly hydratedChildren: ReadonlyArray<HydratedGestaltInstance> | LazyArray<HydratedGestaltInstance> 
   // readonly childrenHeights?: number[] //assert should be here if isRoot
+  readonly idx?:number
 }
 
 

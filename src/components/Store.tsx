@@ -190,13 +190,13 @@ export class Store extends React.Component<StoreProps, StoreState> {
     //     )
     // }
 
-    componentDidUpdate() {
-        if (this.state.allGestalts)
-            console.log(this.state.allGestalts.toJS())
+    // componentDidUpdate() {
+    //     if (this.state.allGestalts)
+    //         console.log("ges",this.state.allGestalts.toJS())
 
-        if (this.state.allGestaltInstances)
-            console.log(this.state.allGestaltInstances.toJS())
-    }
+    //     if (this.state.allGestaltInstances)
+    //         console.log("insts",this.state.allGestaltInstances.toJS())
+    // }
 
     componentDidMount() {
 

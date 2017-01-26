@@ -24,7 +24,7 @@ import { InfiniteList } from "./InfiniteList"
 export interface GestaltComponentState {
   filter?: string
   filtering?: number
-  filteredEntries?: LazyArray<HydratedGestaltInstance> | undefined
+  filteredEntriesIdxs?: LazyArray<number> | undefined
 }
 
 export interface GestaltComponentProps extends React.Props<GestaltComponent> {
@@ -63,7 +63,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
   constructor(props: GestaltComponentProps) {
     super(props)
-    this.state = { filteredEntries: undefined, filtering: 0 }
+    this.state = { filteredEntriesIdxs: undefined, filtering: 0 }
   }
 
 
@@ -295,7 +295,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
       //filter has some nonempty (new) val, start running it
       if (nextProps.filter) {
-        let hydratedChildren: LazyArray<HydratedGestaltInstance> = nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
+        let hydratedChildren: LazyArray<HydratedGestaltInstance> =
+          nextProps.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
 
         const textFilterFn = (e: HydratedGestaltInstance): boolean => {
           if (nextProps.filter) {
@@ -312,24 +313,29 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
         this.setState((prevState: GestaltComponentState) => { return { filtering: prevState.filtering + 1 } })
 
-        this.clearAsyncFilterTimeout = hydratedChildren.asyncFilter(
+        this.clearAsyncFilterTimeout = hydratedChildren.map((e, idx) => {
+          return { ...e, idx: idx }
+        }).asyncFilter(
           textFilterFn,
           (results: LazyArray<HydratedGestaltInstance>) => {
+
             this.clearAsyncFilterTimeout = undefined
+
+
             this.setState((prevState: GestaltComponentState) => {
               return {
                 filtering: prevState.filtering - 1,
-                filteredEntries: results
+                filteredEntriesIdxs: results.map((r) => r.idx)
               }
             })
 
           }
-        )
+          )
 
       }
       else { // filter cleared
-        if (this.state.filteredEntries)
-          this.setState({ filteredEntries: undefined })
+        if (this.state.filteredEntriesIdxs)
+          this.setState({ filteredEntriesIdxs: undefined })
       }
 
     }
@@ -340,6 +346,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     if (!this.props.gestaltInstance.hydratedChildren) {
       throw Error('Node with null hydratedChildren should never be rendered')
     }
+
 
     let filteredHydratedChildren: LazyArray<HydratedGestaltInstance> | ReadonlyArray<HydratedGestaltInstance>
       = this.props.gestaltInstance.hydratedChildren
@@ -370,11 +377,17 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
 
     if (this.props.isRoot) { //Is Root. hydratedChildren as LazyArray<HydratedGestaltInstance>
-      filteredHydratedChildren = filteredHydratedChildren as LazyArray<HydratedGestaltInstance>
+
+      let filteredHydratedChildrenLazy: LazyArray<HydratedGestaltInstance> =
+        filteredHydratedChildren as LazyArray<HydratedGestaltInstance>
+
+      const hydratedChildrenLazy: LazyArray<HydratedGestaltInstance> =
+        this.props.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
 
       if (this.props.filter) {
-        if (this.state.filteredEntries) {
-          filteredHydratedChildren = this.state.filteredEntries
+        if (this.state.filteredEntriesIdxs) {
+          filteredHydratedChildrenLazy = this.state.filteredEntriesIdxs
+            .map((idx: number) => hydratedChildrenLazy.get(idx))
         }
         // hydratedChildren =
         // hydratedChildren = (hydratedChildren as LazyArray<HydratedGestaltInstance>).filter(this.textFilterFn)
@@ -392,7 +405,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       gestaltBody = null
 
       //all are expanded at root
-      expandedChildGestaltInstances = (filteredHydratedChildren as LazyArray<HydratedGestaltInstance>)
+      expandedChildGestaltInstances = filteredHydratedChildrenLazy
 
       // finalRndComp.slice(100, 110)
       //onScrollChange={this.props.onScrollChange}
@@ -515,7 +528,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
             return this.props.createAndRelate(this.props.gestaltInstance.gestaltId, text)
           } }
           relateToCurrentIdea={(targetId: string) => {
-            if (!this.props.gestaltInstance.gestaltId) { throw Error() }            
+            if (!this.props.gestaltInstance.gestaltId) { throw Error() }
             return this.props.addRelation(this.props.gestaltInstance.gestaltId, targetId)
           } }
           />
