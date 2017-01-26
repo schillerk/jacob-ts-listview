@@ -56,17 +56,18 @@ export class LazyArray<T>  {
         return out
     }
 
-    filter = (fn: (elem: T, i: number, array: LazyArray<T>) => boolean): LazyArray<T> => {
+    //#BAD #EXPENSIVE
+    // filter = (fn: (elem: T, i: number, array: LazyArray<T>) => boolean): LazyArray<T> => {
 
-        let outRay = Array<T>()
+    //     let outRay = Array<T>()
 
-        for (let i = 0; i < this.length; i++) {
-            if (fn(this.get(i), i, this))
-                outRay.push(this.get(i))
-        }
+    //     for (let i = 0; i < this.length; i++) {
+    //         if (fn(this.get(i), i, this))
+    //             outRay.push(this.get(i))
+    //     }
 
-        return LazyArray.fromArray(outRay)
-    }
+    //     return LazyArray.fromArray(outRay)
+    // }
 
 
     filterRangeReturnsArray = (fn: (elem: T, i: number, array: LazyArray<T>) => boolean, start: number, end: number): T[] => {

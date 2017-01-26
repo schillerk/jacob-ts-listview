@@ -53,56 +53,64 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
     }
   }
 
+  componentWillMount() {
+    this._runFilter(this.props)
+  }
+
   componentWillReceiveProps(nextProps: FilteredInfiniteListProps<T>) {
 
     //if filter changed
     if (nextProps.filter !== this.props.filter) {
-
-      //if there is a running async filter, clear it
-      if (this.clearAsyncFilterTimeout) {
-        this.clearAsyncFilterTimeout()
-        this.clearAsyncFilterTimeout = undefined
-        this.setState((prevState: FilteredInfiniteListState<T>) => { return { filtering: prevState.filtering - 1 } })
-      }
-
-      //filter has some nonempty (new) val, start running it
-      if (nextProps.filter) {
-        let data: LazyArray<T> = this.props.data
-
-        this.setState((prevState: FilteredInfiniteListState<T>) => { return { filtering: prevState.filtering + 1 } })
-
-
-        type IndexedElem<T> = { val: T, idx: number }
-
-        this.clearAsyncFilterTimeout = data
-          .map((e: T, idx: number): IndexedElem<T> => {
-            return { val: e, idx: idx }
-          }).
-          asyncFilter(
-          (e: IndexedElem<T>) => this.props.textFilterFn(nextProps.filter)(e.val),
-          (results: LazyArray<{ val: T, idx: number }>) => {
-            this.clearAsyncFilterTimeout = undefined
-            this.setState((prevState: FilteredInfiniteListState<T>) => {
-              return {
-                filtering: prevState.filtering - 1,
-                filteredEntriesIdxs: results.map((r) => r.idx)
-              }
-            })
-
-          }
-          )
-
-      }
-      else { // filter cleared
-        if (this.state.filteredEntriesIdxs) {
-          this.setState({ filteredEntriesIdxs: undefined })
-        }
-      }
-
+      this._runFilter(nextProps)
     }
-
   }
 
+  private _runFilter(props: FilteredInfiniteListProps<T>) {
+
+    //if there is a running async filter, clear it
+    if (this.clearAsyncFilterTimeout) {
+      this.clearAsyncFilterTimeout()
+      this.clearAsyncFilterTimeout = undefined
+      this.setState((prevState: FilteredInfiniteListState<T>) => { return { filtering: prevState.filtering - 1 } })
+    }
+
+    //filter has some nonempty (new) val, start running it
+    if (props.filter) {
+      let data: LazyArray<T> = this.props.data
+
+      this.setState((prevState: FilteredInfiniteListState<T>) => { return { filtering: prevState.filtering + 1 } })
+
+
+      type IndexedElem<T> = { val: T, idx: number }
+
+      this.clearAsyncFilterTimeout = data
+        .map((e: T, idx: number): IndexedElem<T> => {
+          return { val: e, idx: idx }
+        })
+        .asyncFilter(
+        (e: IndexedElem<T>) => this.props.textFilterFn(props.filter)(e.val),
+        (results: LazyArray<{ val: T, idx: number }>) => {
+          this.clearAsyncFilterTimeout = undefined
+          this.setState((prevState: FilteredInfiniteListState<T>) => {
+            return {
+              filtering: prevState.filtering - 1,
+              filteredEntriesIdxs: results.map((r) => r.idx)
+            }
+          })
+
+        }
+        )
+
+    }
+    else { // filter cleared
+      if (this.state.filteredEntriesIdxs) {
+        this.setState({ filteredEntriesIdxs: undefined })
+      }
+    }
+
+
+
+  }
 
   render() {
 
@@ -132,27 +140,30 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
     //   this.calcHeight(instance.gestalt.text)
     // ))
 
+    return (
+      <div>
+        <div style={{ color: "gray" }}>
+          {
+            "Showing "
+            + (this.state.filteredEntriesIdxs ? this.state.filteredEntriesIdxs.length + "/" : "")
+            + this.props.data.length + " entries. "
+            + (this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes"
+              : Util.SPECIAL_CHARS_JS.NBSP)
+          }
+        </div>
 
-    return <div>
-      <div style={{ color: "gray" }}>
         {
-          "Showing "
-          + (this.state.filteredEntriesIdxs ? this.state.filteredEntriesIdxs.length + "/" : "")
-          + this.props.data.length + " entries. "
-          + (this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes"
-            : Util.SPECIAL_CHARS_JS.NBSP)
+          this.props.hideResultsWhileFiltering && this.state.filtering > 0
+            ? "Results filtering..." //#todo animation here
+            : <InfiniteList
+              containerHeight={this.props.containerHeight}
+              fixedElementHeight={this.props.fixedElementHeight}
+              // mthis.props.//}
+              elements={filteredData.map(this.props.elemGenerator)}
+              />
         }
       </div>
-
-      {this.props.hideResultsWhileFiltering && this.state.filtering > 0 ? "Results filtering..." :
-        <InfiniteList
-          containerHeight={this.props.containerHeight}
-          fixedElementHeight={this.props.fixedElementHeight}
-          // mthis.props.//}
-          elements={filteredData.map(this.props.elemGenerator)}
-          />
-      }
-    </div>
+    )
   }
 }
 

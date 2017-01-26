@@ -142,11 +142,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             this.props.focusedInstanceId,
         )
 
-        if (hydratedRootGestaltInstance.hydratedChildren.length > 6)
-            console.log("insts",
-                (hydratedRootGestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>)
-                    .get(6))
-
+        
         return (
             <div>
 

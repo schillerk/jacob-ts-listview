@@ -21,6 +21,7 @@ export interface AddRelatedFormState {
 }
 
 export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRelatedFormState> {
+  addRelated: HTMLElement
 
   constructor(props: AddRelatedFormProps) {
     super(props);
@@ -32,11 +33,15 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
 
   relateToCurrentIdea = (targetId: string) => {
     this.props.relateToCurrentIdea(targetId)
+    this.addRelated && this.addRelated.focus()
+    setTimeout(() => this.addRelated && this.addRelated.focus(), 10); //#hack
   }
 
   createAndRelate = (text: string) => {
     this.props.createAndRelate(text);
     this.setState({ inputVal: '' })
+    
+    setTimeout(() => this.addRelated && this.addRelated.focus(), 10); //#hack
   }
 
   // addRelated = (id: string) => {
@@ -85,7 +90,7 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
             placeholder="+ Add Related"
             onChange={(e) => this.setState({ inputVal: e.currentTarget.value })}
             value={this.state.inputVal}
-            ref="addRelated" />
+            ref={(e)=>this.addRelated=e} />
 
           {/* add relations dropdown*/}
           {!this.state.suggestingRelations ? null :

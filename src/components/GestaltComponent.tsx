@@ -197,6 +197,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       _.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
       && _.isEqual(nextProps.filter, this.props.filter)
       && _.isEqual(nextState, this.state)
+      && nextProps.filterOptions === this.props.filterOptions //#todo check if this works
     )
 
 
