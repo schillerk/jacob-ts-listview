@@ -278,36 +278,38 @@ export class Store extends React.Component<StoreProps, StoreState> {
     //returns partial StoreState containing new objects to merge into StoreState
     private _addGestalts = (texts: string[], parentInstanceId?: string, instanceOffset: number = 0, shouldFocusIdx?: number): ReadonlyArray<string> => {
 
+
         const newGestalts: ReadonlyArray<Gestalt> = texts.map(text => Store._CreateGestalt(text))
         const newInstances: ReadonlyArray<GestaltInstance> = newGestalts.map(g => Store._CreateGestaltInstance(g.gestaltId))
 
-        if (typeof parentInstanceId === "undefined") {
-            if (!this.state.rootGestaltInstanceId) { throw Error() }
-            parentInstanceId = this.state.rootGestaltInstanceId
-        }
-
-        if (!this.state.allGestaltInstances) { throw Error() }
-        const parentInstance: GestaltInstance = this.state.allGestaltInstances.get(parentInstanceId)
-
-        const updatedParentGestaltInstance: GestaltInstance = Store._InsertChildInstanceIds(
-            parentInstance,
-            newInstances.map(nI => nI.instanceId),
-            instanceOffset
-        )
-
-        // else
-        //     this.addRelation(parentGestaltInstance.gestaltId, newGestalts.gestaltId) //#todo
-
-        const newGestaltsImm: GestaltsMap = Immutable.Map(_.keyBy(newGestalts, g => g.gestaltId))
-
-
-        const newGestaltInstancesImm: GestaltInstancesMap =
-            Immutable.Map({
-                ...(_.keyBy(newInstances, i => i.instanceId)),
-                [updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance
-            })
-
         this.setState((prevState: StoreState) => {
+
+            if (typeof parentInstanceId === "undefined") {
+                if (!prevState.rootGestaltInstanceId) { throw Error() }
+                parentInstanceId = prevState.rootGestaltInstanceId
+            }
+
+            if (!prevState.allGestaltInstances) { throw Error() }
+            const parentInstance: GestaltInstance = prevState.allGestaltInstances.get(parentInstanceId)
+
+            const updatedParentGestaltInstance: GestaltInstance = Store._InsertChildInstanceIds(
+                parentInstance,
+                newInstances.map(nI => nI.instanceId),
+                instanceOffset
+            )
+
+            // else
+            //     this.addRelation(parentGestaltInstance.gestaltId, newGestalts.gestaltId) //#todo
+
+            const newGestaltsImm: GestaltsMap = Immutable.Map(_.keyBy(newGestalts, g => g.gestaltId))
+
+
+            const newGestaltInstancesImm: GestaltInstancesMap =
+                Immutable.Map({
+                    ...(_.keyBy(newInstances, i => i.instanceId)),
+                    [updatedParentGestaltInstance.instanceId]: updatedParentGestaltInstance
+                })
+
             if (!prevState.allGestaltInstances || !prevState.rootGestaltInstanceId || !prevState.allGestalts || !prevState.hashtags) { throw Error() }
 
             const outStatePartial: StoreState = {
@@ -613,62 +615,47 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
     //#REDUCER
     toggleExpand = (gestaltToExpandId: string, parentGestaltInstance: GestaltInstance): void => {
-
-        if (!this.state.allGestaltInstances || !this.state.allGestalts) { throw Error() }
-
-        const existingChildIdIndex: number = _.findIndex(parentGestaltInstance.childrenInstanceIds,
-            childId => {
-                if (!this.state.allGestaltInstances) { throw Error() }
-                return this.state.allGestaltInstances.get(childId).gestaltId == gestaltToExpandId
-            })
-
-        let nextChildrenInstanceIds: string[]
-        let instance: GestaltInstance
-
-        //not found, then create new expanded gestalt instance
-        if (existingChildIdIndex === -1) {
-            instance = Store._CreateGestaltInstance(gestaltToExpandId, true, this.state.allGestalts)
-            nextChildrenInstanceIds = [instance.instanceId]
-                .concat(parentGestaltInstance.childrenInstanceIds as string[])
-
-            //add newly created instance to registry
-            this.setState((prevState: StoreState) => {
-                if (!prevState.allGestaltInstances) { throw Error() }
-                return {
-                    allGestaltInstances: prevState.allGestaltInstances
-                        .set(instance.instanceId, instance)
-                }
-            })
-        }
-        else { //else toggle expanded on found one
-            const instanceId = parentGestaltInstance.childrenInstanceIds[existingChildIdIndex]
-            instance = this.state.allGestaltInstances.get(instanceId)
-            instance = { ...instance, expanded: !instance.expanded }
-
-            this.setState((prevState: StoreState) => {
-                if (!prevState.allGestaltInstances) { throw Error() }
-                return {
-                    allGestaltInstances: prevState.allGestaltInstances
-                        .set(instance.instanceId, instance)
-                }
-            })
-
-            //move to beginning of array
-            nextChildrenInstanceIds = Util.immSpliceFast(parentGestaltInstance.childrenInstanceIds, existingChildIdIndex, 1)
-            nextChildrenInstanceIds.unshift(instance.instanceId)
-
-        }
-
         this.setState((prevState: StoreState) => {
-            if (!prevState.allGestaltInstances) { throw Error() }
+
+            if (!prevState.allGestaltInstances || !prevState.allGestalts) { throw Error() }
+
+            const existingChildIdIndex: number = _.findIndex(parentGestaltInstance.childrenInstanceIds,
+                childId => {
+                    if (!prevState.allGestaltInstances) { throw Error() }
+                    return prevState.allGestaltInstances.get(childId).gestaltId == gestaltToExpandId
+                })
+
+            let nextChildrenInstanceIds: string[]
+            let instance: GestaltInstance
+
+            let nextAllGestaltInstances: GestaltInstancesMap
+
+            //not found, then create new expanded gestalt instance
+            if (existingChildIdIndex === -1) {
+                instance = Store._CreateGestaltInstance(gestaltToExpandId, true, prevState.allGestalts)
+                nextChildrenInstanceIds = [instance.instanceId]
+                    .concat(parentGestaltInstance.childrenInstanceIds as string[])
+            }
+            else { //else toggle expanded on found one
+                const instanceId = parentGestaltInstance.childrenInstanceIds[existingChildIdIndex]
+                instance = prevState.allGestaltInstances.get(instanceId)
+                instance = { ...instance, expanded: !instance.expanded }
+
+                //move to beginning of array
+                nextChildrenInstanceIds = Util.immSpliceFast(parentGestaltInstance.childrenInstanceIds, existingChildIdIndex, 1)
+                nextChildrenInstanceIds.unshift(instance.instanceId)
+            }
+
             return {
                 allGestaltInstances: prevState.allGestaltInstances
-                    .set(parentGestaltInstance.instanceId,
+                    .set(instance.instanceId, instance) //add newly created instance to registry
+                    .set(parentGestaltInstance.instanceId, //update parent childrenInstanceIds
                     {
                         ...prevState.allGestaltInstances.get(parentGestaltInstance.instanceId),
                         childrenInstanceIds: nextChildrenInstanceIds
                     })
             }
+
         })
 
     }
@@ -676,25 +663,28 @@ export class Store extends React.Component<StoreProps, StoreState> {
     //#REDUCER
     updateGestaltText = (id: string, newText: string) => {
         const timeInd = this.updateTimes.push(Date.now()) - 1
-        if (!this.state.allGestaltInstances || !this.state.allGestalts) { throw Error() }
-
-        // TODO: recompute gestalt.textHeight
-        const updatedGestalt: Gestalt = {
-            ...this.state.allGestalts.get(id),
-            text: newText,
-            gestaltHeight: Util.computeGestaltHeight(newText)
-        }
-
-        const updatedAllGestalts: GestaltsMap = this.state.allGestalts.merge(Immutable.Map({ [updatedGestalt.gestaltId]: updatedGestalt }))
-
-        // this.state.hashtags.merge(
-        //                 Util.computeHashtagsFromGestaltsMap(Immutable.Map(_.keyBy(newGestalts, g => g.gestaltId)))
 
         window.clearTimeout(this.hashtagTimeout)
+
         this.setState((prevState: StoreState) => {
+
+            if (!prevState.allGestaltInstances || !prevState.allGestalts) { throw Error() }
+
+            // TODO: recompute gestalt.textHeight
+            const updatedGestalt: Gestalt = {
+                ...prevState.allGestalts.get(id),
+                text: newText,
+                gestaltHeight: Util.computeGestaltHeight(newText)
+            }
+
+            const updatedAllGestalts: GestaltsMap = prevState.allGestalts.merge(Immutable.Map({ [updatedGestalt.gestaltId]: updatedGestalt }))
+
+            // prevState.hashtags.merge(
+            //                 Util.computeHashtagsFromGestaltsMap(Immutable.Map(_.keyBy(newGestalts, g => g.gestaltId)))
+
             return {
                 allGestalts: updatedAllGestalts,
-                // hashtags: this.state.hashtags.merge(
+                // hashtags: prevState.hashtags.merge(
                 //     Util.computeHashtagsFromGestaltsArray([updatedGestalt])
                 // )
             }
@@ -718,9 +708,14 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
     //#REDUCER
     gestaltComponentOnBlur = (instanceId: string): void => {
-        if (this.state.focusedInstanceId  === instanceId) {
-            this.setState((prevState: StoreState) => { return { focusedInstanceId: undefined } })
-        }
+        this.setState((prevState: StoreState) => {
+            if (prevState.focusedInstanceId === instanceId) {
+                return { focusedInstanceId: undefined }
+            }
+            else {
+                return
+            }
+        })
     }
 
 
