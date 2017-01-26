@@ -11,14 +11,15 @@
   "license": "ISC",
   "dependencies": {
     "@types/lodash": "^4.14.47",
-    "@types/react": "^0.14.55",
-    "@types/react-dom": "^0.14.19",
+    "@types/react": "^0.14.57",
+    "@types/react-dom": "^0.14.21",
     "immutable": "^3.8.1",
     "lodash": "^4.17.4",
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "react-infinite": "^0.10.0",
-    "redux": "^3.6.0"
+    "redux": "^3.6.0",
+    "typescript": "^2.1.5"
   },
   "devDependencies": {
     "@types/node": "^6.0.54",
