@@ -113,6 +113,8 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
                   {suggestion.text}
                 </li>
                 }
+
+                hideResultsWhileFiltering
                 />
 
               {this.state.inputVal.length <= 0 ? null :

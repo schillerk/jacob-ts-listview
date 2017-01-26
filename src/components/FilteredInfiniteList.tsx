@@ -31,6 +31,7 @@ export interface FilteredInfiniteListProps<T> extends React.Props<FilteredInfini
   textFilterFn: (filter: string) => ((e: T) => boolean)
   elemGenerator: (model: T, i: number) => JSX.Element
 
+  hideResultsWhileFiltering?: boolean
 }
 
 // Required props: elements, ElementComponent, elementHeight, containerHeight
@@ -133,13 +134,24 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
 
 
     return <div>
-      <div style={{ color: "gray" }}>{true || this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes" : Util.SPECIAL_CHARS_JS.NBSP}</div>
-      <InfiniteList
-        containerHeight={this.props.containerHeight}
-        fixedElementHeight={this.props.fixedElementHeight}
-        // mthis.props.//}
-        elements={filteredData.map(this.props.elemGenerator)}
-        />
+      <div style={{ color: "gray" }}>
+        {
+          "Showing "
+          + (this.state.filteredEntriesIdxs ? this.state.filteredEntriesIdxs.length + "/" : "")
+          + this.props.data.length + " entries. "
+          + (this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes"
+            : Util.SPECIAL_CHARS_JS.NBSP)
+        }
+      </div>
+
+      {this.props.hideResultsWhileFiltering && this.state.filtering > 0 ? "Results filtering..." :
+        <InfiniteList
+          containerHeight={this.props.containerHeight}
+          fixedElementHeight={this.props.fixedElementHeight}
+          // mthis.props.//}
+          elements={filteredData.map(this.props.elemGenerator)}
+          />
+      }
     </div>
   }
 }
