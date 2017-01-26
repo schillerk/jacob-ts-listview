@@ -64,6 +64,7 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
         this.clearAsyncFilterTimeout = data.asyncFilter(
           this.props.textFilterFn(nextProps.filter),
           (results: LazyArray<T>) => {
+            //#todo fix bug: if component has unmounted before this returns throws warning
             this.clearAsyncFilterTimeout = undefined
             this.setState((prevState: FilteredInfiniteListState<T>) => {
               return {
