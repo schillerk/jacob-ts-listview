@@ -113,7 +113,10 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
 
                 elemGenerator={(suggestion: Gestalt) => <li
                   className="suggestion"
-                  onMouseDown={() => this.relateToCurrentIdea(suggestion.gestaltId)}
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    this.relateToCurrentIdea(suggestion.gestaltId)
+                  }}
                   key={suggestion.gestaltId}>
                   {suggestion.text}
                 </li>
