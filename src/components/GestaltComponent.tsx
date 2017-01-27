@@ -49,6 +49,8 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 
   isRoot?: boolean
   filter?: string
+  instancesCreatedOnThisFilter?: { [instanceId: string]: boolean }
+
   rootChildrenHeights?: number[]
 
   gestaltComponentOnBlur: (instanceId: string) => void
@@ -347,6 +349,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         textFilterFn={(filter: string) => (
           (e: HydratedGestaltInstance) => {
             if (!e.gestalt) { throw Error() }
+
+            if(this.props.instancesCreatedOnThisFilter && e.instanceId in this.props.instancesCreatedOnThisFilter)
+              return true
+
             return (e.gestalt.text.toLowerCase().indexOf(filter.toLowerCase()) !== -1)
           }
         )
