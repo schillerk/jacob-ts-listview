@@ -128,10 +128,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             hydratedChildren: nextHydChildren,
             shouldFocus: focusedInstanceId === currInstance.instanceId
         }
-
+        console.assert(currHydratedGestaltInstance.expanded)
         console.assert(!(currHydratedGestaltInstance.expanded && currHydratedGestaltInstance.hydratedChildren === null),
             "expanded and hydratedChildren===null", currHydratedGestaltInstance)
-        console.assert(!(currHydratedGestaltInstance.expanded && focusedInstanceId === currInstance.instanceId),
+        console.assert(!(!currHydratedGestaltInstance.expanded && focusedInstanceId === currInstance.instanceId),
             "never shouldFocus on nonexpanded node")
 
         return currHydratedGestaltInstance
