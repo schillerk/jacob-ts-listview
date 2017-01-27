@@ -9,6 +9,7 @@ import { HashtagsBox } from './HashtagsBox'
 import { Gestalt, GestaltsMap, GestaltInstancesMap, GestaltInstance, HydratedGestalt, HydratedGestaltInstance } from '../domain';
 import * as Util from '../util';
 import { LazyArray } from "../LazyArray"
+import { AddRelatedForm } from "./autocomplete-jacob"
 
 
 
@@ -148,7 +149,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const newIIdsSet: Immutable.Set<string> = Immutable.Set<string>(
             this.props.addGestalt(text, parentInstanceId, offset, shouldFocus).newInstanceIds
         )
-        
+
         if (this.state.filter) {
             this.setState((prevState) => {
                 if (!prevState.instancesCreatedOnThisFilter) { throw Error() }
@@ -167,6 +168,10 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
             this.props.focusedInstanceId,
         )
 
+        const filterOptions:LazyArray<HydratedGestalt> = (hydratedRootGestaltInstance.hydratedChildren).map((gi: HydratedGestaltInstance) => {
+                            if (!gi.gestalt) { throw Error() }
+                            return gi.gestalt
+                        })
 
         return (
             <div>
@@ -190,6 +195,21 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         ref={(instance: SearchAddBox) => this.searchAddBox = instance}
                         value={this.state.filter || ""}
                     />
+{/*
+                    <AddRelatedForm
+                        filterOptions={filterOptions}
+                        createAndRelate={(text: string) => {
+                            return
+                            // if (!this.props.gestaltInstance.gestaltId) { throw Error() }
+                            // return this.props.createAndRelate(this.props.gestaltInstance.gestaltId, text)
+                        }}
+                        relateToCurrentIdea={(targetId: string) => {
+                            return
+                            // if (!this.props.gestaltInstance.gestaltId) { throw Error() }
+                            // return this.props.addRelation(this.props.gestaltInstance.gestaltId, targetId)
+                        }}
+                    />
+                    */}
 
                     <GestaltComponent
                         key={this.props.rootGestaltInstanceId}
@@ -214,10 +234,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         gestaltComponentOnBlur={this.props.gestaltComponentOnBlur}
 
                         //for AddRelatedForm
-                        filterOptions={(hydratedRootGestaltInstance.hydratedChildren).map((gi: HydratedGestaltInstance) => {
-                            if (!gi.gestalt) { throw Error() }
-                            return gi.gestalt
-                        })}
+                        filterOptions={filterOptions}
                         // filterOptions={LazyArray.fromImmMap(this.props.allGestalts)}
                         createAndRelate={this.props.createAndRelate}
                         addRelation={this.props.addRelation}
