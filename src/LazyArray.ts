@@ -106,7 +106,7 @@ export class LazyArray<T>  {
         fn: (elem: T, i: number, array: LazyArray<T>) => boolean,
         callback: (results: LazyArray<T>) => any
     ): (() => void) => {
-
+console.log("hi")
         this._asyncFilterHelper(
             [], 0, fn, callback)
 

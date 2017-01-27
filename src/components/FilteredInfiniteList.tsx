@@ -28,7 +28,7 @@ export interface FilteredInfiniteListProps<T> extends React.Props<FilteredInfini
   filter: string
 
   textFilterFn: (filter: string) => ((e: T | undefined) => boolean)
-  elemGenerator: (model: T, i: number) => JSX.Element | null
+  elemGenerator: (model: T | undefined, i: number) => JSX.Element | null
 
   hideResultsWhileFiltering?: boolean
 }
@@ -59,7 +59,7 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
   componentWillReceiveProps(nextProps: FilteredInfiniteListProps<T>) {
 
     //if filter changed
-    if (nextProps.filter !== this.props.filter) {
+    if (nextProps.filter !== this.props.filter || nextProps.data !== this.props.data) {
       this._runFilter(nextProps)
     }
   }
@@ -116,11 +116,18 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
     let filteredData: LazyArray<T | undefined> = this.props.data
 
 
+    let indexedFilteredData: LazyArray<{ val: T | undefined, idx: number }> | undefined = undefined
+
     if (this.props.filter) {
 
       if (this.state.filteredEntriesIdxs) {
-        filteredData = this.state.filteredEntriesIdxs
-          .map((idx: number) => this.props.data.get(idx))
+        indexedFilteredData = this.state.filteredEntriesIdxs
+          .map((idx: number) => {
+            return {
+              val: this.props.data.get(idx),
+              idx: idx
+            }
+          })
       }
       // data =
       // data = (data as LazyArray<T>).filter(this.textFilterFn)
@@ -134,7 +141,7 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
     //   this.calcHeight(instance.gestalt.text)
     // ))
 
-    const entriesShown=this.props.data.length-this.props.data.numLazyExcluded
+    const entriesShown = this.props.data.length - this.props.data.numLazyExcluded
     return (
       <div>
         <div style={{ color: "gray" }}>
@@ -155,7 +162,10 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
               containerHeight={this.props.containerHeight}
               fixedElementHeight={this.props.fixedElementHeight}
               // mthis.props.//}
-              elements={filteredData.map(this.props.elemGenerator)}
+              elements={indexedFilteredData ?
+                indexedFilteredData.map(ie => this.props.elemGenerator(ie.val, ie.idx))
+                :
+                filteredData.map(this.props.elemGenerator)}
             />
         }
       </div>
