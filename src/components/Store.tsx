@@ -63,6 +63,12 @@ export class Store extends React.Component<StoreProps, StoreState> {
                     relatedIds: ['1id'],
 
                 },
+                '3id': {
+                    gestaltId: '3id',
+                    text: '#idea app that suggests what to cook',
+                    relatedIds: ['1id'],
+
+                },
             })
         }
 

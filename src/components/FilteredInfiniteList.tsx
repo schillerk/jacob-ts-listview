@@ -63,9 +63,9 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
     // }
 
     // //if filter changed
-    // if (nextProps.filter !== this.props.filter || nextProps.data !== this.props.data) {
-    this._runFilter(nextProps)
-    // }
+    if (nextProps.filter !== this.props.filter || nextProps.data !== this.props.data) {
+      this._runFilter(nextProps)
+    }
   }
 
   private _runFilter(props: FilteredInfiniteListProps<T>) {
@@ -150,13 +150,19 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
     // ))
 
     const entriesShown = this.props.data.length - this.props.data.numLazyExcluded
+
+    const entriesToRenderGen = filteredDataWithIdx ?
+      filteredDataWithIdx.map(eWithIdx => this.props.elemGenerator(eWithIdx.val, eWithIdx.idx))
+      :
+      origData.map(this.props.elemGenerator)
+
     return (
       <div>
         <div style={{ color: "gray" }}>
           {
             "Showing "
             + (this.state.filteredEntriesIdxs ? this.state.filteredEntriesIdxs.length + "/" : "")
-            + entriesShown + " entries."
+            + entriesShown + " entries. "
             // + this.props.data.numLazyExcluded
             + (this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes"
               : Util.SPECIAL_CHARS_JS.NBSP)
@@ -166,15 +172,15 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
         {
           this.props.hideResultsWhileFiltering && this.state.filtering > 0
             ? "Results filtering..." //#todo animation here
-            : <InfiniteList
-              containerHeight={this.props.containerHeight}
-              fixedElementHeight={this.props.fixedElementHeight}
-              // mthis.props.//}
-              elements={filteredDataWithIdx ?
-                filteredDataWithIdx.map(eWithIdx => this.props.elemGenerator(eWithIdx.val, eWithIdx.idx))
-                :
-                origData.map(this.props.elemGenerator)}
-            />
+            : (entriesToRenderGen.length < 100 //2 * this.props.containerHeight / this.props.fixedElementHeight
+              ? <div style={{ maxHeight: this.props.containerHeight, overflow: "auto" }}>
+                {entriesToRenderGen.toArray()}</div>
+              : <InfiniteList
+                containerHeight={this.props.containerHeight}
+                fixedElementHeight={this.props.fixedElementHeight}
+                // mthis.props.//}
+                elements={entriesToRenderGen}
+              />)
         }
       </div>
     )

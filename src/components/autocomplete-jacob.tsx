@@ -95,8 +95,9 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
           {/* add relations dropdown*/}
           {!this.state.suggestingRelations ? null :
             <ul style={{
-              position: "absolute", left: "0px", top: "20px", padding: "0 3px", zIndex: 999, backgroundColor: "white", width: "240px",
-              display: (this.state.suggestingRelations ? "block" : "none")
+              position: "absolute", left: "0px", top: "20px", padding: "0 3px", zIndex: 999, backgroundColor: "white", border: "1px solid lightGray", width: "240px",
+              display: (this.state.suggestingRelations ? "block" : "none"),
+              listStyleType: "none"              
             }}>
               <GestaltFilteredInfiniteList
                 containerHeight={100}
