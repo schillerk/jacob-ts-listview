@@ -7,6 +7,8 @@ export class LazyArray<T>  {
     length: number
     timeout: number
 
+    numLazyExcluded: number = 0
+
     constructor(length: number, genElem: (i: number) => T) {
         this.length = length
         this.genElem = genElem
@@ -49,12 +51,18 @@ export class LazyArray<T>  {
     }
 
     //#wip
-    // lazyExclude = <O>(shouldExclude: (elem: T, i: number) => boolean): LazyArray<O> => {
-    //     return this.map(()=>shouldExclude
-    //      new LazyArray<O>(this.length,
-    //         (i) => shouldExclude(this.get(i), i)
-    //     )
-    // }
+    //Runtime: O(n) where n = entriesToExclude.length
+    //if entriesToExclude element not in this array, numLazyExcluded count gets messed up
+    lazyExclude = <A>(entriesToExclude: ReadonlyArray<T>, attrToCompareFn:(e:T)=>A): LazyArray<T | undefined> => {
+        const entriesToExcludeAttr: ReadonlyArray<A>=entriesToExclude.map(attrToCompareFn)
+        const newLazyArray: LazyArray<T | undefined> = this.map(
+            (elem: T, i: number): T | undefined =>
+                _.includes(entriesToExcludeAttr, attrToCompareFn(elem)) ? undefined : elem
+        )
+        newLazyArray.numLazyExcluded = entriesToExclude.length
+
+        return newLazyArray
+    }
 
     toArray = (): T[] => {
         let out = new Array(this.length)
@@ -109,7 +117,7 @@ export class LazyArray<T>  {
         resultsSoFar: T[],
         i: number,
         fn: (elem: T, i: number, array: LazyArray<T>) => boolean,
-        callback: (allResults:  LazyArray<T>) => any,
+        callback: (allResults: LazyArray<T>) => any,
     ): void => {
         const CHUNK_SIZE = 1000
 

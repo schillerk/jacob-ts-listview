@@ -368,11 +368,17 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     else { //Not root. hydratedChildren as HydratedGestaltInstance[]
       if (!this.props.gestaltInstance.gestalt) { throw Error("implies root instance") }
 
+      // let childFilterOptions: LazyArray<Gestalt | undefined> = this.props.filterOptions
+      //   .map((e: Gestalt) => {
+      //     if (!this.props.gestaltInstance.gestalt) { throw Error("implies root instance") }
+      //     return _.includes(this.props.gestaltInstance.gestalt.relatedIds, e.gestaltId) ? undefined : e
+      //   })
+
       let childFilterOptions: LazyArray<Gestalt | undefined> = this.props.filterOptions
-        .map((e: Gestalt) => {
-          if (!this.props.gestaltInstance.gestalt) { throw Error("implies root instance") }
-          return _.includes(this.props.gestaltInstance.gestalt.relatedIds, e.gestaltId) ? undefined : e
-        })
+        .lazyExclude(
+        this.props.gestaltInstance.gestalt.relatedGestalts,
+        (e: Gestalt) => e.gestaltId
+        )
 
       _.assign(mainLiStyles,
         { height: "34px", borderLeft: "2px solid lightgray", padding: "0px 4px", margin: "8px 0" })

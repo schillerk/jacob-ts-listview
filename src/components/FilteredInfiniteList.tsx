@@ -134,13 +134,15 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
     //   this.calcHeight(instance.gestalt.text)
     // ))
 
+    const entriesShown=this.props.data.length-this.props.data.numLazyExcluded
     return (
       <div>
         <div style={{ color: "gray" }}>
           {
             "Showing "
             + (this.state.filteredEntriesIdxs ? this.state.filteredEntriesIdxs.length + "/" : "")
-            + this.props.data.length + " entries minus excludes. "
+            + entriesShown + " entries."
+            // + this.props.data.numLazyExcluded
             + (this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes"
               : Util.SPECIAL_CHARS_JS.NBSP)
           }
