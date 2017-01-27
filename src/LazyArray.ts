@@ -6,12 +6,15 @@ export class LazyArray<T>  {
     genElem: (i: number) => T
     length: number
     timeout: number
+    private _arrayForm: T[] //for #debug only! #slow
 
     numLazyExcluded: number = 0
 
     constructor(length: number, genElem: (i: number) => T) {
         this.length = length
         this.genElem = genElem
+
+        // this._arrayForm=this.toArray() //for #debug only! #slow
     }
 
 
@@ -113,7 +116,6 @@ export class LazyArray<T>  {
         fn: (elem: T, i: number, array: LazyArray<T>) => boolean,
         callback: (results: LazyArray<T>) => any
     ): (() => void) => {
-        console.log("hi")
         this._asyncFilterHelper(
             [], 0, fn, callback)
 

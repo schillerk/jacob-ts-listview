@@ -18,7 +18,7 @@ import * as Immutable from 'immutable'
 
 export interface ListViewState {
     filter?: string
-    instancesCreatedOnThisFilter?: { [instanceId: string]: boolean }
+    instancesCreatedOnThisFilter?: Immutable.Set<string>
 }
 
 export interface ListViewProps extends React.Props<ListView> {
@@ -51,14 +51,14 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         super(props)
         this.state = {
             filter: "",
-            instancesCreatedOnThisFilter: {}
+            instancesCreatedOnThisFilter: Immutable.Set<string>()
         }
     }
 
     setFilter = (text: string): void => {
         this.setState({
             filter: text,
-            instancesCreatedOnThisFilter: {}
+            instancesCreatedOnThisFilter: Immutable.Set<string>()
         })
     }
 
@@ -144,20 +144,17 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
 
     addGestalt = (text: string, parentInstanceId?: string, offset?: number, shouldFocus?: boolean): void => {
 
-
         //#wip
-        const newIIdsDict: { [instanceId: string]: boolean } = _.mapValues(
-            _.keyBy(
-                this.props.addGestalt(text, parentInstanceId, offset, shouldFocus).newInstanceIds,
-                (e: string): string => e
-            ),
-            (e) => true
+        const newIIdsSet: Immutable.Set<string> = Immutable.Set<string>(
+            this.props.addGestalt(text, parentInstanceId, offset, shouldFocus).newInstanceIds
         )
-
-        this.setState((prevState) => {
-            _.assign(prevState.instancesCreatedOnThisFilter, newIIdsDict)
-            return {} //forceUpdate #hacky?
-        })
+        
+        if (this.state.filter) {
+            this.setState((prevState) => {
+                if (!prevState.instancesCreatedOnThisFilter) { throw Error() }
+                return { instancesCreatedOnThisFilter: prevState.instancesCreatedOnThisFilter.merge(newIIdsSet) }
+            })
+        }
     }
 
 

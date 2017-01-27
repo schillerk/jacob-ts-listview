@@ -17,6 +17,7 @@ import { LazyArray } from "../LazyArray"
 
 import { InfiniteList } from "./InfiniteList"
 import { FilteredInfiniteList } from "./FilteredInfiniteList"
+import * as Immutable from "immutable"
 
 // var Infinite: any = require("react-infinite");
 // var InfiniteList: any = require("../src/components/InfiniteList");
@@ -49,7 +50,7 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
   //root only props
   isRoot?: boolean
   filter?: string
-  instancesCreatedOnThisFilter?: { [instanceId: string]: boolean }
+  instancesCreatedOnThisFilter?: Immutable.Set<string>
   rootChildrenHeights?: number[]
 
   //nonroot only props
@@ -104,7 +105,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     if (compToFocus)
       this.props.setFocus(compToFocus.instanceId)
-      
+
     //   compToFocus._syncTextInputFocus()
   }
 
@@ -227,13 +228,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     //         this.props.gestaltInstance, nextProps.gestaltInstance);
     // }
 
-    // return true;
-    return !(
-      _.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
-      && _.isEqual(nextProps.filter, this.props.filter)
-      && _.isEqual(nextState, this.state)
-      && nextProps.filterOptions === this.props.filterOptions //#todo check if this works
-    )
+    return true;
+    // return !(
+    //   _.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
+    //   && _.isEqual(nextProps.filter, this.props.filter)
+    //   && _.isEqual(nextState, this.state)
+    //   && nextProps.filterOptions === this.props.filterOptions //#todo check if this works
+    // )
 
 
     // slower by 8fps!
@@ -354,6 +355,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
       const hydratedChildrenLazy: LazyArray<HydratedGestaltInstance> =
         this.props.gestaltInstance.hydratedChildren
+              // console.log(hydratedChildrenLazy.toArray())
 
       //childrenHeights = _.times(this.props.gestaltInstance.hydratedChildren.length, () => 36)
       // expandedChildGestaltInstances.map((instance, i): number => (
@@ -384,7 +386,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
           (e: HydratedGestaltInstance) => {
             if (!e.gestalt) { throw Error() }
 
-            if (this.props.instancesCreatedOnThisFilter && e.instanceId in this.props.instancesCreatedOnThisFilter)
+            if (this.props.instancesCreatedOnThisFilter && this.props.instancesCreatedOnThisFilter.contains(e.instanceId))
               return true
 
             return (e.gestalt.text.toLowerCase().indexOf(filter.toLowerCase()) !== -1)

@@ -117,6 +117,7 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
                     className="suggestion"
                     onMouseDown={(e) => {
                       e.preventDefault()
+                      e.stopPropagation()
                       this.relateToCurrentIdea(suggestion.gestaltId)
                     }}
                     key={suggestion.gestaltId}>
