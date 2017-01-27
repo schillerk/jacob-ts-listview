@@ -55,6 +55,8 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
   //nonroot only props
   getOffsetChild?: ((prevSelfNext: number, fromIndex: number) => HydratedGestaltInstance | undefined)
 
+  setFocus: (instanceId: string) => void
+
 }
 
 // #TODO: order comes out randomly, needs to be an OrderedMap
@@ -100,7 +102,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     }
 
-    // if (compToFocus)
+    if (compToFocus)
+      this.props.setFocus(compToFocus.instanceId)
+      
     //   compToFocus._syncTextInputFocus()
   }
 
@@ -304,6 +308,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         createAndRelate={this.props.createAndRelate}
         addRelation={this.props.addRelation}
 
+        setFocus={this.props.setFocus}
+
       />
     )
   }
@@ -315,7 +321,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
 
-    let filteredHydratedChildren: LazyArray<HydratedGestaltInstance> 
+    let filteredHydratedChildren: LazyArray<HydratedGestaltInstance>
       = this.props.gestaltInstance.hydratedChildren
 
 
@@ -347,7 +353,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     if (this.props.isRoot) { //Is Root. 
 
       const hydratedChildrenLazy: LazyArray<HydratedGestaltInstance> =
-        this.props.gestaltInstance.hydratedChildren 
+        this.props.gestaltInstance.hydratedChildren
 
       //childrenHeights = _.times(this.props.gestaltInstance.hydratedChildren.length, () => 36)
       // expandedChildGestaltInstances.map((instance, i): number => (
@@ -426,7 +432,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       myHeight = "auto"
 
       //only some are expanded when deeper than root
-      expandedChildGestaltInstances = (filteredHydratedChildren )
+      expandedChildGestaltInstances = (filteredHydratedChildren)
         .filter(instance => instance.expanded)
       // this.renderedGestaltComponents = Array(expandedChildGestaltInstances.length)
       expandedChildrenListComponent = <div>

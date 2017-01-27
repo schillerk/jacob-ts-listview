@@ -40,6 +40,7 @@ export interface ListViewProps extends React.Props<ListView> {
     createAndRelate: (srcGestaltId: string, text: string, expandAndFocusInstanceId?: string) => void
     addRelation: (srcGestaltId: string, tgtGestaltId: string, expandAndFocusInstanceId?: string) => void
 
+    setFocus: (instanceId: string) => void
 }
 
 
@@ -223,6 +224,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         // filterOptions={LazyArray.fromImmMap(this.props.allGestalts)}
                         createAndRelate={this.props.createAndRelate}
                         addRelation={this.props.addRelation}
+
+                        setFocus={this.props.setFocus}
                     />
                 </div>
             </div >

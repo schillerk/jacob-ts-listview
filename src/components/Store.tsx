@@ -236,7 +236,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     // #REDUCER
     // Mutates state
     // @returns newly created gestalts
-    addGestaltsFromText = (text: string, parentInstanceId?: string, instanceOffset?: number, shouldFocus?: boolean): { newGestaltIds: ReadonlyArray<string>, newInstanceIds: ReadonlyArray<string> }  => {
+    addGestaltsFromText = (text: string, parentInstanceId?: string, instanceOffset?: number, shouldFocus?: boolean): { newGestaltIds: ReadonlyArray<string>, newInstanceIds: ReadonlyArray<string> } => {
         if (!this.state.allGestaltInstances || !this.state.rootGestaltInstanceId || !this.state.allGestalts || !this.state.hashtags) { throw Error() }
 
         const splitTexts: string[] = text.split("\n\n")
@@ -730,6 +730,10 @@ export class Store extends React.Component<StoreProps, StoreState> {
     // setFilter = (text: string): void => {
     //     this.setState((prevState: StoreState)=>{ return { filter: text }})
     // }
+    
+    setFocus = (instanceId: string): void => {
+        this.setState((prevState: StoreState) => { return { focusedInstanceId: instanceId } })
+    }
 
     render() {
         if (!this.state.allGestaltInstances || !this.state.allGestalts || !this.state.rootGestaltInstanceId || !this.state.hashtags) { throw Error() }
@@ -756,6 +760,8 @@ export class Store extends React.Component<StoreProps, StoreState> {
 
                 createAndRelate={this.createAndRelate}
                 addRelation={this.addRelation}
+
+                setFocus={this.setFocus}
 
             />
         )
