@@ -49,7 +49,8 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
     constructor(props: ListViewProps) {
         super(props)
         this.state = {
-            filter: ""
+            filter: "",
+            instancesCreatedOnThisFilter: {}
         }
     }
 
@@ -77,7 +78,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
         const currInstance: GestaltInstance = allGestaltInstances.get(gestaltInstanceId)
         console.assert(typeof currInstance !== "undefined", `${gestaltInstanceId} not in allGestaltInstances`)
 
-        let nextHydChildren: LazyArray<HydratedGestaltInstance> | HydratedGestaltInstance[]
+        let nextHydChildren: LazyArray<HydratedGestaltInstance>
 
 
         let hydCurrGestalt: HydratedGestalt | undefined
@@ -115,10 +116,13 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                 relatedGestalts: currGestalt.relatedIds.map((id: string) => allGestalts.get(id))
             }
 
-            nextHydChildren = currInstance.childrenInstanceIds
-                .filter((instanceId: string) => allGestaltInstances.get(instanceId).expanded)
-                .map((instanceId: string) =>
-                    ListView._HydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances, focusedInstanceId))
+            nextHydChildren = LazyArray.fromArray(
+                currInstance.childrenInstanceIds
+                    .filter((instanceId: string) => allGestaltInstances.get(instanceId).expanded)
+                    .map((instanceId: string) =>
+                        ListView._HydrateGestaltInstanceAndChildren(instanceId, allGestalts, allGestaltInstances, focusedInstanceId))
+            )
+
         }
 
 
@@ -212,7 +216,7 @@ export class ListView extends React.Component<ListViewProps, ListViewState> {
                         gestaltComponentOnBlur={this.props.gestaltComponentOnBlur}
 
                         //for AddRelatedForm
-                        filterOptions={(hydratedRootGestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>).map((gi: HydratedGestaltInstance) => {
+                        filterOptions={(hydratedRootGestaltInstance.hydratedChildren).map((gi: HydratedGestaltInstance) => {
                             if (!gi.gestalt) { throw Error() }
                             return gi.gestalt
                         })}

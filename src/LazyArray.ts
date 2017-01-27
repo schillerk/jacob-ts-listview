@@ -53,8 +53,8 @@ export class LazyArray<T>  {
     //#wip
     //Runtime: O(n) where n = entriesToExclude.length
     //if entriesToExclude element not in this array, numLazyExcluded count gets messed up
-    lazyExclude = <A>(entriesToExclude: ReadonlyArray<T>, attrToCompareFn:(e:T)=>A): LazyArray<T | undefined> => {
-        const entriesToExcludeAttr: ReadonlyArray<A>=entriesToExclude.map(attrToCompareFn)
+    lazyExclude = <A>(entriesToExclude: ReadonlyArray<T>, attrToCompareFn: (e: T) => A): LazyArray<T | undefined> => {
+        const entriesToExcludeAttr: ReadonlyArray<A> = entriesToExclude.map(attrToCompareFn)
         const newLazyArray: LazyArray<T | undefined> = this.map(
             (elem: T, i: number): T | undefined =>
                 _.includes(entriesToExcludeAttr, attrToCompareFn(elem)) ? undefined : elem
@@ -65,6 +65,10 @@ export class LazyArray<T>  {
     }
 
     toArray = (): T[] => {
+        if (this.length > 10000) {
+            console.warn("this could get expensive, might want to rearchitect your code")
+        }
+        
         let out = new Array(this.length)
         for (let i = 0; i < this.length; i++) {
             out[i] = this.get(i)
@@ -72,18 +76,21 @@ export class LazyArray<T>  {
         return out
     }
 
-    //#BAD #EXPENSIVE
-    // filter = (fn: (elem: T, i: number, array: LazyArray<T>) => boolean): LazyArray<T> => {
+    // #EXPENSIVE (O(n))
+    filter = (fn: (elem: T, i: number, array: LazyArray<T>) => boolean): LazyArray<T> => {
+        if (this.length > 10000) {
+            console.warn("this could get expensive, might want to rearchitect your code")
+        }
 
-    //     let outRay = Array<T>()
+        let outRay = Array<T>()
 
-    //     for (let i = 0; i < this.length; i++) {
-    //         if (fn(this.get(i), i, this))
-    //             outRay.push(this.get(i))
-    //     }
+        for (let i = 0; i < this.length; i++) {
+            if (fn(this.get(i), i, this))
+                outRay.push(this.get(i))
+        }
 
-    //     return LazyArray.fromArray(outRay)
-    // }
+        return LazyArray.fromArray(outRay)
+    }
 
 
     filterRangeReturnsArray = (fn: (elem: T, i: number, array: LazyArray<T>) => boolean, start: number, end: number): T[] => {
@@ -106,7 +113,7 @@ export class LazyArray<T>  {
         fn: (elem: T, i: number, array: LazyArray<T>) => boolean,
         callback: (results: LazyArray<T>) => any
     ): (() => void) => {
-console.log("hi")
+        console.log("hi")
         this._asyncFilterHelper(
             [], 0, fn, callback)
 
