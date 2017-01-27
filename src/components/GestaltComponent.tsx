@@ -130,11 +130,11 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     this._syncTextInputFocus()
   }
 
-  getLastChild = (gi: HydratedGestaltInstance): HydratedGestaltInstance => {
-    if (this.props.gestaltInstance.hydratedChildren.length > 0)
-      return this.getLastChild(this.props.gestaltInstance.hydratedChildren.get(this.props.gestaltInstance.hydratedChildren.length - 1))
+  static getLastChild = (gi: HydratedGestaltInstance): HydratedGestaltInstance => {
+    if (gi.hydratedChildren.length > 0)
+      return GestaltComponent.getLastChild(gi.hydratedChildren.get(gi.hydratedChildren.length - 1))
     else
-      return this.props.gestaltInstance
+      return gi
   }
 
   // getLastChild = (): HydratedGestaltInstance => {
@@ -165,7 +165,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         return this.props.getOffsetChild ? this.props.getOffsetChild(0, this.props.index) : undefined
 
       //return prev sibling's last child
-      return this.getLastChild(this.props.gestaltInstance.hydratedChildren.get(newIndex))
+      return GestaltComponent.getLastChild(this.props.gestaltInstance.hydratedChildren.get(newIndex))
       // return this.props.gestaltInstance.hydratedChildren.get(newIndex).getLastChild()
     }
     else { //going down or still
