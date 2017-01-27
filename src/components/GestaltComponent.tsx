@@ -17,6 +17,7 @@ import { LazyArray } from "../LazyArray"
 
 import { InfiniteList } from "./InfiniteList"
 import { FilteredInfiniteList } from "./FilteredInfiniteList"
+import * as Immutable from "immutable"
 
 // var Infinite: any = require("react-infinite");
 // var InfiniteList: any = require("../src/components/InfiniteList");
@@ -31,8 +32,6 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
 
   index: number
 
-  getOffsetChild: ((prevSelfNext: number, fromIndex: number) => GestaltComponent | undefined) | undefined
-
   addGestaltAsChild: (text: string, offset: number) => void
   // indentChild: (childIndex: number) => void
 
@@ -46,27 +45,54 @@ export interface GestaltComponentProps extends React.Props<GestaltComponent> {
   createAndRelate: (srcGestaltId: string, text: string, expandAndFocusInstanceId?: string) => void
   addRelation: (srcGestaltId: string, tgtGestaltId: string, expandAndFocusInstanceId?: string) => void
 
+  gestaltComponentOnBlur: (instanceId: string) => void
 
+  //root only props
   isRoot?: boolean
   filter?: string
+  instancesCreatedOnThisFilter?: Immutable.Set<string>
   rootChildrenHeights?: number[]
 
-  gestaltComponentOnBlur: (instanceId: string) => void
+  //nonroot only props
+  getOffsetChild?: ((prevSelfNext: number, fromIndex: number) => HydratedGestaltInstance | undefined)
+
+  setFocus: (instanceId: string) => void
+
 }
 
 // #TODO: order comes out randomly, needs to be an OrderedMap
 export class GestaltComponent extends React.Component<GestaltComponentProps, GestaltComponentState> {
   nodeSpan: HTMLSpanElement
-  renderedGestaltComponents: GestaltComponent[]
+  renderedChildComponents: GestaltComponent[]
 
   constructor(props: GestaltComponentProps) {
     super(props)
+    console.assert(
+      (
+        this.props.isRoot
+        && !this.props.getOffsetChild
+        && !this.props.gestaltInstance.gestaltId
+        && typeof this.props.filter === "string"
+        // && this.props.rootChildrenHeights
+        && this.props.instancesCreatedOnThisFilter
+      )
+      ||
+      (
+        !this.props.isRoot
+        && this.props.getOffsetChild
+        && this.props.gestaltInstance.gestaltId
+        && typeof this.props.filter === "undefined"
+        && !this.props.rootChildrenHeights
+        && !this.props.instancesCreatedOnThisFilter
+      )
+    )
+
     this.state = { filteredEntriesIdxs: undefined, filtering: 0 }
   }
 
 
   handleArrows = (arrowDir: Util.KEY_CODES) => {
-    let compToFocus: GestaltComponent | undefined = undefined
+    let compToFocus: HydratedGestaltInstance | undefined = undefined
     switch (arrowDir) {
       case Util.KEY_CODES.UP:
         compToFocus = this.getPrev()
@@ -78,7 +104,9 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
     if (compToFocus)
-      compToFocus._syncTextInputFocus()
+      this.props.setFocus(compToFocus.instanceId)
+
+    //   compToFocus._syncTextInputFocus()
   }
 
   addGestaltAsChild = (text: string, offset: number = 0): void => {
@@ -107,27 +135,34 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     this._syncTextInputFocus()
   }
 
-  getLastChild = (): GestaltComponent => {
-    if (this.renderedGestaltComponents.length > 0)
-      return this.renderedGestaltComponents[this.renderedGestaltComponents.length - 1].getLastChild()
+  static getLastChild = (gi: HydratedGestaltInstance): HydratedGestaltInstance => {
+    if (gi.hydratedChildren.length > 0)
+      return GestaltComponent.getLastChild(gi.hydratedChildren.get(gi.hydratedChildren.length - 1))
     else
-      return this
+      return gi
   }
 
-  getNext = (): GestaltComponent | undefined => {
-    if (this.renderedGestaltComponents.length) //return first child
-      return this.renderedGestaltComponents[0]
+  // getLastChild = (): HydratedGestaltInstance => {
+  //   if (this.props.gestaltInstance.hydratedChildren.length > 0)
+  //     return this.props.gestaltInstance.hydratedChildren.get(this.props.gestaltInstance.hydratedChildren.length - 1).getLastChild()
+  //   else
+  //     return this.props.gestaltInstance
+  // }
+
+  getNext = (): HydratedGestaltInstance | undefined => {
+    if (this.props.gestaltInstance.hydratedChildren.length > 0) //return first child
+      return this.props.gestaltInstance.hydratedChildren.get(0)
     else //return next sibling or node after parent
       return this.props.getOffsetChild ? this.props.getOffsetChild(1, this.props.index) : undefined
   }
 
-  getPrev = (): GestaltComponent | undefined => {
+  getPrev = (): HydratedGestaltInstance | undefined => {
     return this.props.getOffsetChild ? this.props.getOffsetChild(-1, this.props.index) : undefined
   }
 
   //returns prevSelfNext child relative to child at fromIndex
   //prevSelfNext = -1, 0, 1
-  getOffsetChild = (prevSelfNext: number, fromIndex: number): GestaltComponent | undefined => {
+  getOffsetChild = (prevSelfNext: number, fromIndex: number): HydratedGestaltInstance | undefined => {
     const newIndex = fromIndex + prevSelfNext
 
     if (prevSelfNext < 0) { //going up
@@ -135,14 +170,15 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         return this.props.getOffsetChild ? this.props.getOffsetChild(0, this.props.index) : undefined
 
       //return prev sibling's last child
-      return this.renderedGestaltComponents[newIndex].getLastChild()
+      return GestaltComponent.getLastChild(this.props.gestaltInstance.hydratedChildren.get(newIndex))
+      // return this.props.gestaltInstance.hydratedChildren.get(newIndex).getLastChild()
     }
     else { //going down or still
-      if (newIndex >= this.renderedGestaltComponents.length) //hit end of sublist. return node after parent
+      if (newIndex >= this.props.gestaltInstance.hydratedChildren.length) //hit end of sublist. return node after parent
         return this.props.getOffsetChild ? this.props.getOffsetChild(1, this.props.index) : undefined
 
       //return next sibling or self
-      return this.renderedGestaltComponents[newIndex]
+      return this.props.gestaltInstance.hydratedChildren.get(newIndex)
     }
   }
 
@@ -192,13 +228,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     //         this.props.gestaltInstance, nextProps.gestaltInstance);
     // }
 
-    // return true;
-    return !(
-      _.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
-      && _.isEqual(nextProps.filter, this.props.filter)
-      && _.isEqual(nextState, this.state)
-      && nextProps.filterOptions === this.props.filterOptions //#todo check if this works
-    )
+    return true;
+    // return !(
+    //   _.isEqual(nextProps.gestaltInstance, this.props.gestaltInstance)
+    //   && _.isEqual(nextProps.filter, this.props.filter)
+    //   && _.isEqual(nextState, this.state)
+    //   && nextProps.filterOptions === this.props.filterOptions //#todo check if this works
+    // )
 
 
     // slower by 8fps!
@@ -267,12 +303,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
         getOffsetChild={this.getOffsetChild}
         gestaltComponentOnBlur={this.props.gestaltComponentOnBlur}
-        filter={this.props.filter}
 
         //for AddRelatedForm
         filterOptions={this.props.filterOptions}
         createAndRelate={this.props.createAndRelate}
         addRelation={this.props.addRelation}
+
+        setFocus={this.props.setFocus}
 
       />
     )
@@ -285,7 +322,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
 
 
-    let filteredHydratedChildren: LazyArray<HydratedGestaltInstance> | ReadonlyArray<HydratedGestaltInstance>
+    let filteredHydratedChildren: LazyArray<HydratedGestaltInstance>
       = this.props.gestaltInstance.hydratedChildren
 
 
@@ -314,10 +351,11 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     let childrenHeights: number[] | undefined = undefined
 
 
-    if (this.props.isRoot) { //Is Root. hydratedChildren as LazyArray<HydratedGestaltInstance>
+    if (this.props.isRoot) { //Is Root. 
 
       const hydratedChildrenLazy: LazyArray<HydratedGestaltInstance> =
-        this.props.gestaltInstance.hydratedChildren as LazyArray<HydratedGestaltInstance>
+        this.props.gestaltInstance.hydratedChildren
+              // console.log(hydratedChildrenLazy.toArray())
 
       //childrenHeights = _.times(this.props.gestaltInstance.hydratedChildren.length, () => 36)
       // expandedChildGestaltInstances.map((instance, i): number => (
@@ -347,6 +385,10 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         textFilterFn={(filter: string) => (
           (e: HydratedGestaltInstance) => {
             if (!e.gestalt) { throw Error() }
+
+            if (this.props.instancesCreatedOnThisFilter && this.props.instancesCreatedOnThisFilter.contains(e.instanceId))
+              return true
+
             return (e.gestalt.text.toLowerCase().indexOf(filter.toLowerCase()) !== -1)
           }
         )
@@ -392,17 +434,16 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
       myHeight = "auto"
 
       //only some are expanded when deeper than root
-      expandedChildGestaltInstances = (filteredHydratedChildren as ReadonlyArray<HydratedGestaltInstance>)
+      expandedChildGestaltInstances = (filteredHydratedChildren)
         .filter(instance => instance.expanded)
       // this.renderedGestaltComponents = Array(expandedChildGestaltInstances.length)
       expandedChildrenListComponent = <div>
-        {expandedChildGestaltInstances.map(this._genGestaltComponentFromInstance)}
+        {expandedChildGestaltInstances.map(this._genGestaltComponentFromInstance).toArray()}
       </div>
 
-      console.assert(this.props.gestaltInstance.hydratedChildren instanceof Array)
 
       const gestaltIdsToNubInstances: { [id: string]: HydratedGestaltInstance } = _.keyBy(
-        this.props.gestaltInstance.hydratedChildren as HydratedGestaltInstance[],
+        this.props.gestaltInstance.hydratedChildren.toArray(),
         (hydratedChild: HydratedGestaltInstance) => hydratedChild.gestaltId
       );
 

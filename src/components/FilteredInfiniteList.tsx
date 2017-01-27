@@ -28,7 +28,7 @@ export interface FilteredInfiniteListProps<T> extends React.Props<FilteredInfini
   filter: string
 
   textFilterFn: (filter: string) => ((e: T | undefined) => boolean)
-  elemGenerator: (model: T, i: number) => JSX.Element | null
+  elemGenerator: (model: T | undefined, i: number) => JSX.Element | null
 
   hideResultsWhileFiltering?: boolean
 }
@@ -58,8 +58,12 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
 
   componentWillReceiveProps(nextProps: FilteredInfiniteListProps<T>) {
 
-    //if filter changed
-    if (nextProps.filter !== this.props.filter) {
+    // if (!_.isEqual(nextProps, this.props)) {
+    // this._runFilter(nextProps)
+    // }
+
+    // //if filter changed
+    if (nextProps.filter !== this.props.filter || nextProps.data !== this.props.data) {
       this._runFilter(nextProps)
     }
   }
@@ -73,9 +77,9 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
       this.setState((prevState: FilteredInfiniteListState<T>) => { return { filtering: prevState.filtering - 1 } })
     }
 
-    //filter has some nonempty (new) val, start running it
+    //filter has some nonempty val, start running it
     if (props.filter) {
-      let data: LazyArray<T | undefined> = this.props.data
+      let data: LazyArray<T | undefined> = props.data
 
       this.setState((prevState: FilteredInfiniteListState<T>) => { return { filtering: prevState.filtering + 1 } })
 
@@ -87,8 +91,9 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
           return { val: e, idx: idx }
         })
         .asyncFilter(
-        (e: IndexedElem<T>) => this.props.textFilterFn(props.filter)(e.val),
+        (e: IndexedElem<T>) => props.textFilterFn(props.filter)(e.val),
         (results: LazyArray<{ val: T, idx: number }>) => {
+
           this.clearAsyncFilterTimeout = undefined
           this.setState((prevState: FilteredInfiniteListState<T>) => {
             return {
@@ -113,14 +118,24 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
 
   render() {
 
-    let filteredData: LazyArray<T | undefined> = this.props.data
+    const origData: LazyArray<T | undefined> = this.props.data
+    // if(this.state.filteredEntriesIdxs)
+    //           console.log(this.state.filteredEntriesIdxs.toArray())
 
+
+    let filteredDataWithIdx: LazyArray<{ val: T | undefined, idx: number }> | undefined = undefined
 
     if (this.props.filter) {
 
       if (this.state.filteredEntriesIdxs) {
-        filteredData = this.state.filteredEntriesIdxs
-          .map((idx: number) => this.props.data.get(idx))
+        filteredDataWithIdx = this.state.filteredEntriesIdxs
+          .map((idx: number) => {
+            return {
+              val: this.props.data.get(idx),
+              idx: idx
+            }
+          })
+
       }
       // data =
       // data = (data as LazyArray<T>).filter(this.textFilterFn)
@@ -134,14 +149,20 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
     //   this.calcHeight(instance.gestalt.text)
     // ))
 
-    const entriesShown=this.props.data.length-this.props.data.numLazyExcluded
+    const entriesShown = this.props.data.length - this.props.data.numLazyExcluded
+
+    const entriesToRenderGen = filteredDataWithIdx ?
+      filteredDataWithIdx.map(eWithIdx => this.props.elemGenerator(eWithIdx.val, eWithIdx.idx))
+      :
+      origData.map(this.props.elemGenerator)
+
     return (
       <div>
         <div style={{ color: "gray" }}>
           {
             "Showing "
             + (this.state.filteredEntriesIdxs ? this.state.filteredEntriesIdxs.length + "/" : "")
-            + entriesShown + " entries."
+            + entriesShown + " entries. "
             // + this.props.data.numLazyExcluded
             + (this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes"
               : Util.SPECIAL_CHARS_JS.NBSP)
@@ -151,12 +172,15 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
         {
           this.props.hideResultsWhileFiltering && this.state.filtering > 0
             ? "Results filtering..." //#todo animation here
-            : <InfiniteList
-              containerHeight={this.props.containerHeight}
-              fixedElementHeight={this.props.fixedElementHeight}
-              // mthis.props.//}
-              elements={filteredData.map(this.props.elemGenerator)}
-            />
+            : (entriesToRenderGen.length < 100 //2 * this.props.containerHeight / this.props.fixedElementHeight
+              ? <div style={{ maxHeight: this.props.containerHeight, overflow: "auto" }}>
+                {entriesToRenderGen.toArray()}</div>
+              : <InfiniteList
+                containerHeight={this.props.containerHeight}
+                fixedElementHeight={this.props.fixedElementHeight}
+                // mthis.props.//}
+                elements={entriesToRenderGen}
+              />)
         }
       </div>
     )

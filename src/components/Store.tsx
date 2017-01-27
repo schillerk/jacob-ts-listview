@@ -63,6 +63,12 @@ export class Store extends React.Component<StoreProps, StoreState> {
                     relatedIds: ['1id'],
 
                 },
+                '3id': {
+                    gestaltId: '3id',
+                    text: '#idea app that suggests what to cook',
+                    relatedIds: ['1id'],
+
+                },
             })
         }
 
@@ -236,7 +242,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     // #REDUCER
     // Mutates state
     // @returns newly created gestalts
-    addGestaltsFromText = (text: string, parentInstanceId?: string, instanceOffset?: number, shouldFocus?: boolean): ReadonlyArray<string> => {
+    addGestaltsFromText = (text: string, parentInstanceId?: string, instanceOffset?: number, shouldFocus?: boolean): { newGestaltIds: ReadonlyArray<string>, newInstanceIds: ReadonlyArray<string> } => {
         if (!this.state.allGestaltInstances || !this.state.rootGestaltInstanceId || !this.state.allGestalts || !this.state.hashtags) { throw Error() }
 
         const splitTexts: string[] = text.split("\n\n")
@@ -279,7 +285,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     // default value for parentInstanceId is this.state.rootGestaltInstanceId
     // shouldFocusIdx has no default
     //returns partial StoreState containing new objects to merge into StoreState
-    private _addGestalts = (texts: string[], parentInstanceId?: string, instanceOffset: number = 0, shouldFocusIdx?: number): ReadonlyArray<string> => {
+    private _addGestalts = (texts: string[], parentInstanceId?: string, instanceOffset: number = 0, shouldFocusIdx?: number): { newGestaltIds: ReadonlyArray<string>, newInstanceIds: ReadonlyArray<string> } => {
 
 
         const newGestalts: ReadonlyArray<Gestalt> = texts.map(text => Store._CreateGestalt(text))
@@ -328,7 +334,10 @@ export class Store extends React.Component<StoreProps, StoreState> {
             return outStatePartial
         })
 
-        return newGestalts.map((g) => g.gestaltId)
+        return {
+            newGestaltIds: newGestalts.map((g) => g.gestaltId),
+            newInstanceIds: newInstances.map((i) => i.instanceId)
+        }
     }
 
     //#IMMUTABLE
@@ -399,7 +408,7 @@ export class Store extends React.Component<StoreProps, StoreState> {
     createAndRelate = (srcGestaltId: string, text: string, expandAndFocusInstanceId?: string): void => {
         if (expandAndFocusInstanceId) { throw Error("#TODO implement expandAndFocusInstanceId") }
 
-        const newGestaltIds: ReadonlyArray<string> = this.addGestaltsFromText(text)
+        const newGestaltIds: ReadonlyArray<string> = this.addGestaltsFromText(text).newGestaltIds
 
         newGestaltIds.forEach((gId: string) => {
             this.addRelation(srcGestaltId, gId, expandAndFocusInstanceId)
@@ -727,6 +736,10 @@ export class Store extends React.Component<StoreProps, StoreState> {
     // setFilter = (text: string): void => {
     //     this.setState((prevState: StoreState)=>{ return { filter: text }})
     // }
+    
+    setFocus = (instanceId: string): void => {
+        this.setState((prevState: StoreState) => { return { focusedInstanceId: instanceId } })
+    }
 
     render() {
         if (!this.state.allGestaltInstances || !this.state.allGestalts || !this.state.rootGestaltInstanceId || !this.state.hashtags) { throw Error() }
@@ -754,7 +767,9 @@ export class Store extends React.Component<StoreProps, StoreState> {
                 createAndRelate={this.createAndRelate}
                 addRelation={this.addRelation}
 
-                />
+                setFocus={this.setFocus}
+
+            />
         )
     }
 }
