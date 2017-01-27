@@ -8,7 +8,7 @@ import {LinkedList, Stack} from "../LinkedList"
 
 interface LLVizState {
     theList: Stack<string>
-    lastPopped: string
+    lastPopped: string | undefined
 }
 
 

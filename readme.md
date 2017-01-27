@@ -1,5 +1,12 @@
-To run:
+##To run:
+
 Just open index.html
+
+1. ```
+  npm install
+  npm start
+  ```
+2. Visit [localhost:8080](http://localhost:8080)
 
 For dev:
 If you want react dev tools chrome extension: webpack-dev-server => localhost:8080

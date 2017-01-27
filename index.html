@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <title>List View Typscript</title>
-        <style>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>List View Typscript</title>
+    <style>
             .nub {
                 padding: 3px 6px;
                 display: inline-block;
@@ -16,17 +17,41 @@
             .nub:hover {
                 border-color: blue;
             }
+            
+            .box {
+                background: white;
+                border: 1px solid #d6d6d6;
+                padding:5px;
+            }
             body {
-                background: #F7F7F7
+                background: #F7F7F7;
+                color: #333333;
+
+                /* NOTE: make sure the font stays up to date with util.js */
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                font-size: 16px;
+                line-height: 1.4em;
+            }
+            input, textarea {
+                font: inherit;
+            }
+
+            .suggestion {
+                cursor: pointer
+            }
+            .suggestion:hover {
+                background: lightblue
             }
         </style>
-    </head>
-    <body>
-        <div id="app-container"></div>
+</head>
 
-        <!-- Dependencies -->
+<body>
+    <div id="app-container"></div>
 
-        <!-- Main -->
-        <script src="./dist/bundle.js"></script>
-    </body>
+    <!-- Dependencies -->
+
+    <!-- Main -->
+    <script src="./bundle.js"></script>
+</body>
+
 </html>
