@@ -274,7 +274,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         createAndRelate={this.props.createAndRelate}
         addRelation={this.props.addRelation}
 
-        />
+      />
     )
   }
 
@@ -287,6 +287,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
 
     let filteredHydratedChildren: LazyArray<HydratedGestaltInstance> | ReadonlyArray<HydratedGestaltInstance>
       = this.props.gestaltInstance.hydratedChildren
+
 
     // warn about tricky edge case
     // _.mapValues(
@@ -352,7 +353,7 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         }
 
         elemGenerator={this._genGestaltComponentFromInstance}
-        />
+      />
 
       // expandedChildrenListComponent = <InfiniteList
       //   containerHeight={myHeight - 20}
@@ -366,6 +367,12 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
     }
     else { //Not root. hydratedChildren as HydratedGestaltInstance[]
       if (!this.props.gestaltInstance.gestalt) { throw Error("implies root instance") }
+
+      let childFilterOptions: LazyArray<Gestalt | undefined> = this.props.filterOptions
+        .map((e: Gestalt) => {
+          if (!this.props.gestaltInstance.gestalt) { throw Error("implies root instance") }
+          return _.includes(this.props.gestaltInstance.gestalt.relatedIds, e.gestaltId) ? undefined : e
+        })
 
       _.assign(mainLiStyles,
         { height: "34px", borderLeft: "2px solid lightgray", padding: "0px 4px", margin: "8px 0" })
@@ -407,13 +414,13 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
         suppressContentEditableWarning
         ref={(nodeSpan: HTMLSpanElement) => {
           this.nodeSpan = nodeSpan
-        } }
+        }}
         onKeyDown={this.onKeyDown}
         onInput={this.onInput}
         onFocus={this.moveCaretToEnd}
         onBlur={(e: React.FocusEvent<HTMLElement>) => this._onTextInputBlur(e)}
-        // dangerouslySetInnerHTML={{ __html: highlightedText }}
-        >
+      // dangerouslySetInnerHTML={{ __html: highlightedText }}
+      >
         {highlightedText}
       </span >
 
@@ -445,8 +452,8 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
                 onClick={() => {
                   if (!nubGestalt.gestaltId) { throw Error() }
                   this.props.toggleExpand(nubGestalt.gestaltId, this.props.gestaltInstance)
-                } }
-                >
+                }}
+              >
 
                 { //assert nubId in this.props.allGestalts
                   // (nubGestalt.gestaltId in this.props.allGestalts) ?
@@ -458,20 +465,21 @@ export class GestaltComponent extends React.Component<GestaltComponentProps, Ges
           })}
       </ul>
 
+
       gestaltBody = <div>
         {/* #NOTE: contentEditable is very expensive when working with a large number of nodes*/}
         {gestaltTextSpan}
         <AddRelatedForm
-          filterOptions={this.props.filterOptions}
+          filterOptions={childFilterOptions}
           createAndRelate={(text: string) => {
             if (!this.props.gestaltInstance.gestaltId) { throw Error() }
             return this.props.createAndRelate(this.props.gestaltInstance.gestaltId, text)
-          } }
+          }}
           relateToCurrentIdea={(targetId: string) => {
             if (!this.props.gestaltInstance.gestaltId) { throw Error() }
             return this.props.addRelation(this.props.gestaltInstance.gestaltId, targetId)
-          } }
-          />
+          }}
+        />
         {/* related gestalts nubs list */}
         {relatedGestaltNubs}
       </div>

@@ -48,6 +48,14 @@ export class LazyArray<T>  {
         )
     }
 
+    //#wip
+    // lazyExclude = <O>(shouldExclude: (elem: T, i: number) => boolean): LazyArray<O> => {
+    //     return this.map(()=>shouldExclude
+    //      new LazyArray<O>(this.length,
+    //         (i) => shouldExclude(this.get(i), i)
+    //     )
+    // }
+
     toArray = (): T[] => {
         let out = new Array(this.length)
         for (let i = 0; i < this.length; i++) {

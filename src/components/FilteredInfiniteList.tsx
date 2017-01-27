@@ -24,12 +24,11 @@ export interface FilteredInfiniteListProps<T> extends React.Props<FilteredInfini
   multipleElementHeights?: number[] //todo
 
 
-  data: LazyArray<T>
+  data: LazyArray<T | undefined>
   filter: string
-  excludes?: T[]
 
-  textFilterFn: (filter: string) => ((e: T) => boolean)
-  elemGenerator: (model: T, i: number) => JSX.Element
+  textFilterFn: (filter: string) => ((e: T | undefined) => boolean)
+  elemGenerator: (model: T, i: number) => JSX.Element | null
 
   hideResultsWhileFiltering?: boolean
 }
@@ -76,7 +75,7 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
 
     //filter has some nonempty (new) val, start running it
     if (props.filter) {
-      let data: LazyArray<T> = this.props.data
+      let data: LazyArray<T | undefined> = this.props.data
 
       this.setState((prevState: FilteredInfiniteListState<T>) => { return { filtering: prevState.filtering + 1 } })
 
@@ -116,11 +115,6 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
 
     let filteredData: LazyArray<T | undefined> = this.props.data
 
-    if (this.props.excludes)
-      filteredData = filteredData.map((e: T) => {
-        if (!this.props.excludes) { throw Error() }
-        return _.includes(this.props.excludes, e) ? undefined : e
-      })
 
     if (this.props.filter) {
 
@@ -146,7 +140,7 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
           {
             "Showing "
             + (this.state.filteredEntriesIdxs ? this.state.filteredEntriesIdxs.length + "/" : "")
-            + this.props.data.length + " entries. "
+            + this.props.data.length + " entries minus excludes. "
             + (this.state.filtering > 0 ? "Filtering... " + this.state.filtering + " processes"
               : Util.SPECIAL_CHARS_JS.NBSP)
           }
@@ -160,7 +154,7 @@ export class FilteredInfiniteList<T> extends React.Component<FilteredInfiniteLis
               fixedElementHeight={this.props.fixedElementHeight}
               // mthis.props.//}
               elements={filteredData.map(this.props.elemGenerator)}
-              />
+            />
         }
       </div>
     )

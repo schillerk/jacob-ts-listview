@@ -8,7 +8,7 @@ export interface AddRelatedFormProps extends React.Props<AddRelatedForm> {
   // onChange: (value: string) => void;
   // itemClickHandler: (name: string) => void;
   // value: string;
-  filterOptions: LazyArray<Gestalt>
+  filterOptions: LazyArray<Gestalt | undefined>
 
   createAndRelate: (text: string) => void;
   relateToCurrentIdea: (targetId: string) => void
@@ -40,7 +40,7 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
   createAndRelate = (text: string) => {
     this.props.createAndRelate(text);
     this.setState({ inputVal: '' })
-    
+
     setTimeout(() => this.addRelated && this.addRelated.focus(), 10); //#hack
   }
 
@@ -81,7 +81,7 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
         <span
           onFocus={() => this.setState({ suggestingRelations: true })}
           onBlur={() => this.setState({ suggestingRelations: false })}
-          >
+        >
 
           {/* add related input */}
           <input
@@ -90,7 +90,7 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
             placeholder="+ Add Related"
             onChange={(e) => this.setState({ inputVal: e.currentTarget.value })}
             value={this.state.inputVal}
-            ref={(e)=>this.addRelated=e} />
+            ref={(e) => this.addRelated = e} />
 
           {/* add relations dropdown*/}
           {!this.state.suggestingRelations ? null :
@@ -106,24 +106,26 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
                 filter={this.state.inputVal}
 
                 textFilterFn={(filter: string) => (
-                  (g: Gestalt) =>
+                  (g: Gestalt | undefined) => (!!g &&
                     (g.text.toLowerCase().indexOf(filter.toLowerCase()) !== -1)
+                  )
                 )
                 }
 
-                elemGenerator={(suggestion: Gestalt) => <li
-                  className="suggestion"
-                  onMouseDown={(e) => {
-                    e.preventDefault()
-                    this.relateToCurrentIdea(suggestion.gestaltId)
-                  }}
-                  key={suggestion.gestaltId}>
-                  {suggestion.text}
-                </li>
+                elemGenerator={(suggestion: Gestalt | undefined): JSX.Element | null => suggestion ?
+                  <li
+                    className="suggestion"
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      this.relateToCurrentIdea(suggestion.gestaltId)
+                    }}
+                    key={suggestion.gestaltId}>
+                    {suggestion.text}
+                  </li> : null
                 }
 
                 hideResultsWhileFiltering
-                />
+              />
 
               {this.state.inputVal.length <= 0 ? null :
                 <li
@@ -132,8 +134,8 @@ export class AddRelatedForm extends React.Component<AddRelatedFormProps, AddRela
                   onMouseDown={() => {
                     if (typeof this.state.inputVal === "undefined") { throw Error() }
                     this.createAndRelate(this.state.inputVal)
-                  } }
-                  >
+                  }}
+                >
                   <span><span style={{ color: "gray" }}>+ add &quot;</span>{this.state.inputVal}<span style={{ color: "gray" }}>&quot; as new idea and relate </span></span>
                 </li>
               }

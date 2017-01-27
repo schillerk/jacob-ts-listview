@@ -17,7 +17,7 @@ export interface InfiniteListProps extends React.Props<InfiniteList> {
   fixedElementHeight?: number
   multipleElementHeights?: number[] //todo
 
-  elements: LazyArray<JSX.Element>
+  elements: LazyArray<JSX.Element | null>
   ElementComponent?: any
 }
 
